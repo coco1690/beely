@@ -20,7 +20,7 @@ pnpm dev:club        # http://localhost:5174
 
 Para las apps, copia `apps/<app>/.env.example` a `apps/<app>/.env.local` y pon la `anon key` que muestra `pnpm exec supabase status`. Todas las variables están en [.env.example](.env.example).
 
-Para el panel también necesitas las Edge Functions: `pnpm exec supabase functions serve`. La semilla local (`supabase/seed.sql`) crea `plataforma@hibeely.test`, `dueno@hibeely.test` y `cajero@hibeely.test` con clave `beely1234`. Detalles en [docs/sprint-1.md](docs/sprint-1.md).
+Para el panel también necesitas las Edge Functions: `pnpm exec supabase functions serve`. La semilla local (`supabase/seed.sql`) crea `superadmin@hibeely.test`, `dueno@hibeely.test` y `cajero@hibeely.test` con clave `beely1234`. Detalles en [docs/sprint-1.md](docs/sprint-1.md).
 
 ## Comandos
 

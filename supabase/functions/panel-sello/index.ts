@@ -15,7 +15,7 @@ servir(async (peticion) => {
   if (!datos.success) return responderError('solicitud_invalida', 400)
   const { negocio_id, token, sede_id, monto_venta, unidades, clave_idempotencia } = datos.data
 
-  // RLS de negocios deja ver la fila solo a miembros del negocio (o a la plataforma).
+  // RLS de negocios deja ver la fila solo a miembros del negocio (o al superadmin).
   const { data: negocio, error } = await cliente.from('negocios').select('id').eq('id', negocio_id).maybeSingle()
   if (error) throw error
   if (!negocio) throw new ErrorApi('sin_permiso', 403)

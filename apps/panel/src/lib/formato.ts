@@ -51,7 +51,7 @@ export function extraerToken(texto: string): string {
 }
 
 export const nombresRol: Record<string, string> = {
-  plataforma: 'Plataforma',
+  superadmin: 'Superadmin',
   dueno: 'Dueño',
   administrador: 'Administrador',
   cajero: 'Cajero',

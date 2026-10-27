@@ -19,7 +19,7 @@ Beely es independiente del POS. Nunca importar código de Angelato ni compartir 
 ```
 beely/
 ├── apps/
-│   ├── panel/          # Panel web del negocio y de plataforma (app.hibeely.com)
+│   ├── panel/          # Panel web del negocio y del superadmin (app.hibeely.com)
 │   └── club/           # PWA del cliente final, una por negocio ({slug}.hibeely.com)
 ├── packages/
 │   ├── tipos/          # Tipos generados de Supabase + esquemas zod compartidos
@@ -55,7 +55,7 @@ beely/
 
 | Rol | Dónde vive | Puede |
 |-----|-----------|-------|
-| `admin_plataforma` | tabla `administradores_plataforma` | Todo. Crea negocios y sedes, cambia plan y estado. |
+| `superadmin` | tabla `superadmins` | Todo. Crea negocios y sedes, cambia plan y estado, asigna dueños. |
 | `dueno` | `miembros_negocio.rol` | Configura programa, tarjeta, ofertas, campañas, equipo y llaves API. |
 | `administrador` | `miembros_negocio.rol` | Igual que dueño, excepto equipo y llaves API. |
 | `cajero` | `miembros_negocio.rol` | Escanea QR, suma sellos y canjea cupones desde el panel. Solo lectura del resto. |
@@ -76,7 +76,7 @@ beely/
 
 ## Seguridad y Supabase
 
-- Funciones auxiliares de RLS en el esquema `privado` (no expuesto): `privado.tiene_rol(negocio_id, roles[])`, `privado.es_admin_plataforma()`.
+- Funciones auxiliares de RLS en el esquema `privado` (no expuesto): `privado.tiene_rol(negocio_id, roles[])`, `privado.es_superadmin()`.
 - En políticas envolver funciones en `select` para que se evalúen una vez: `using ((select privado.tiene_rol(...)))`.
 - RLS decide filas; `grant update (columnas)` decide columnas. No dar `update` de tabla completa a `authenticated`.
 - Toda FK lleva índice. Fechas en `timestamptz`, dinero en `numeric(12,2)`, textos en `text` con `check`.
@@ -95,7 +95,7 @@ beely/
 | `pos-cupones-canjear` | POS (llave API) | `POST /v1/cupones/canjear` → `canjear_cupon`. |
 | `pos-clientes` | POS (llave API) | Buscar tarjeta por token o celular. |
 | `panel-sello` | Panel (cajero autenticado) | Igual que `pos-sellos` pero con sesión del cajero. ✅ Sprint 1 |
-| `panel-equipo` | Panel (dueño o plataforma) | Invita al equipo por correo y crea la membresía. ✅ Sprint 1 |
+| `panel-equipo` | Panel (dueño o superadmin) | Invita al equipo por correo y crea la membresía. ✅ Sprint 1 |
 | `wallet-google` | Interno | Crea/actualiza LoyaltyClass y LoyaltyObject, genera JWT de guardado. |
 | `campanas-motor` | pg_cron | Evalúa disparadores, aplica topes y envía push/Wallet. |
 | `llaves-api` | Panel (dueño) | Genera llave, guarda hash, la muestra una vez. |

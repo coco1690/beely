@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase'
 
 export type Negocio = Tabla<'negocios'>
 export type Sede = Tabla<'sedes'>
-export type RolPanel = RolEquipo | 'plataforma'
+export type RolPanel = RolEquipo | 'superadmin'
 
 export type Membresia = { negocio: Negocio; rol: RolPanel }
 
@@ -15,7 +15,7 @@ type EstadoNegocio = {
   sedeCajaId: string | null
   cargando: boolean
   error: string | null
-  cargar: (usuarioId: string, esAdminPlataforma: boolean) => Promise<void>
+  cargar: (usuarioId: string, esSuperadmin: boolean) => Promise<void>
   elegirNegocio: (negocioId: string) => Promise<void>
   elegirSedeCaja: (sedeId: string | null) => void
   recargarNegocio: () => Promise<void>
@@ -51,7 +51,7 @@ export const useNegocioStore = create<EstadoNegocio>()((set, get) => ({
   cargando: true,
   error: null,
 
-  cargar: async (usuarioId, esAdminPlataforma) => {
+  cargar: async (usuarioId, esSuperadmin) => {
     // Solo la primera carga muestra "Cargando…"; las recargas no desmontan la página.
     set({ cargando: get().membresias.length === 0, error: null })
     const [{ data: negocios, error }, { data: propias }] = await Promise.all([
@@ -64,7 +64,7 @@ export const useNegocioStore = create<EstadoNegocio>()((set, get) => ({
     }
     const rolPorNegocio = new Map((propias ?? []).map((m) => [m.negocio_id, m.rol as RolEquipo]))
     const membresias: Membresia[] = (negocios ?? []).flatMap((negocio) => {
-      const rol = rolPorNegocio.get(negocio.id) ?? (esAdminPlataforma ? 'plataforma' : null)
+      const rol = rolPorNegocio.get(negocio.id) ?? (esSuperadmin ? 'superadmin' : null)
       return rol ? [{ negocio, rol }] : []
     })
     set({ membresias, cargando: false })
@@ -114,5 +114,5 @@ export function useNegocioActivo(): Membresia | null {
 }
 
 export const puedeConfigurar = (rol: RolPanel | undefined) =>
-  rol === 'dueno' || rol === 'administrador' || rol === 'plataforma'
-export const puedeGestionarEquipo = (rol: RolPanel | undefined) => rol === 'dueno' || rol === 'plataforma'
+  rol === 'dueno' || rol === 'administrador' || rol === 'superadmin'
+export const puedeGestionarEquipo = (rol: RolPanel | undefined) => rol === 'dueno' || rol === 'superadmin'

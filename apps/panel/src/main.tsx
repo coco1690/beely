@@ -9,7 +9,7 @@ import { PaginaDefinirClave } from './paginas/PaginaDefinirClave'
 import { PaginaEquipo } from './paginas/PaginaEquipo'
 import { PaginaIngreso } from './paginas/PaginaIngreso'
 import { PaginaNegocio } from './paginas/PaginaNegocio'
-import { PaginaPlataforma } from './paginas/PaginaPlataforma'
+import { PaginaSuperadmin } from './paginas/PaginaSuperadmin'
 import { PaginaPrograma } from './paginas/PaginaPrograma'
 import { PaginaRecuperar } from './paginas/PaginaRecuperar'
 import { PaginaSedes } from './paginas/PaginaSedes'
@@ -27,7 +27,7 @@ import './estilos.css'
 function ConSesion() {
   const sesion = useSesionStore((e) => e.sesion)
   const cargandoSesion = useSesionStore((e) => e.cargando)
-  const esAdminPlataforma = useSesionStore((e) => e.esAdminPlataforma)
+  const esSuperadmin = useSesionStore((e) => e.esSuperadmin)
   const cargar = useNegocioStore((e) => e.cargar)
   const limpiar = useNegocioStore((e) => e.limpiar)
   const cargandoNegocios = useNegocioStore((e) => e.cargando)
@@ -35,9 +35,9 @@ function ConSesion() {
 
   useEffect(() => {
     if (cargandoSesion) return
-    if (usuarioId) void cargar(usuarioId, esAdminPlataforma)
+    if (usuarioId) void cargar(usuarioId, esSuperadmin)
     else limpiar()
-  }, [usuarioId, esAdminPlataforma, cargandoSesion, cargar, limpiar])
+  }, [usuarioId, esSuperadmin, cargandoSesion, cargar, limpiar])
 
   if (cargandoSesion) return <Cargando />
   if (!sesion) return <Navigate to="/ingresar" replace />
@@ -55,8 +55,8 @@ function SinSesion() {
 // Exige un negocio elegido; si el usuario no tiene, muestra cómo seguir.
 function ConNegocio() {
   const activo = useNegocioActivo()
-  const esAdminPlataforma = useSesionStore((e) => e.esAdminPlataforma)
-  if (!activo) return esAdminPlataforma ? <Navigate to="/plataforma" replace /> : <SinNegocio />
+  const esSuperadmin = useSesionStore((e) => e.esSuperadmin)
+  if (!activo) return esSuperadmin ? <Navigate to="/superadmin" replace /> : <SinNegocio />
   return <Outlet />
 }
 
@@ -65,9 +65,9 @@ function SoloConfiguracion() {
   return puedeConfigurar(activo?.rol) ? <Outlet /> : <Navigate to="/caja" replace />
 }
 
-function SoloPlataforma() {
-  const esAdminPlataforma = useSesionStore((e) => e.esAdminPlataforma)
-  return esAdminPlataforma ? <Outlet /> : <Navigate to="/" replace />
+function SoloSuperadmin() {
+  const esSuperadmin = useSesionStore((e) => e.esSuperadmin)
+  return esSuperadmin ? <Outlet /> : <Navigate to="/" replace />
 }
 
 const enrutador = createBrowserRouter([
@@ -86,8 +86,8 @@ const enrutador = createBrowserRouter([
         element: <DisenoPanel />,
         children: [
           {
-            element: <SoloPlataforma />,
-            children: [{ path: '/plataforma', element: <PaginaPlataforma /> }],
+            element: <SoloSuperadmin />,
+            children: [{ path: '/superadmin', element: <PaginaSuperadmin /> }],
           },
           {
             element: <ConNegocio />,

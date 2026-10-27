@@ -41,7 +41,7 @@ Ambas exigen la sesión del equipo (`Authorization: Bearer <jwt>`; `verify_jwt` 
 }
 ```
 
-1. Valida el JWT y que quien llama vea el negocio por RLS (miembro de cualquier rol o plataforma). Si no → `403 sin_permiso`.
+1. Valida el JWT y que quien llama vea el negocio por RLS (miembro de cualquier rol o superadmin). Si no → `403 sin_permiso`.
 2. Llama `registrar_sello` con `service_role`, `origen = 'panel'`, `creado_por = usuario` y `venta_externa_id = 'panel:' + clave_idempotencia`. El panel genera una clave por intento: si la petición se repite (doble toque, reintento de red) responde `duplicado: true` sin sumar.
 3. `monto_venta` se pide en caja cuando la regla es `por_monto` o `por_venta` con monto mínimo; `unidades` cuando es `por_unidad`.
 
@@ -61,7 +61,7 @@ Respuesta 200: el JSON de `registrar_sello` (`sellos_sumados`, `sellos_actuales`
 { "negocio_id": "uuid", "email": "persona@negocio.com", "rol": "dueno | administrador | cajero" }
 ```
 
-1. Permiso: el dueño invita administradores y cajeros; solo la plataforma asigna dueños. Si no → `403 sin_permiso`.
+1. Permiso: el dueño invita administradores y cajeros; solo el superadmin asigna dueños. Si no → `403 sin_permiso`.
 2. Si el correo no tiene cuenta, `auth.admin.inviteUserByEmail` envía la invitación con destino `{PANEL_URL}/definir-clave`. Si ya tiene cuenta (trabaja en otro negocio), solo se crea la membresía.
 3. La membresía se inserta con el cliente del usuario, así RLS vuelve a validar el permiso.
 
@@ -78,12 +78,12 @@ React + Vite + TypeScript estricto + Zustand + Tailwind v4 + react-hook-form/zod
 | `/definir-clave` | Enlace de invitación o recuperación | Fija la clave y entra al panel. |
 | `/caja` | Todo el equipo | Elegir sede (se recuerda por negocio), escanear QR con la cámara trasera (`qr-scanner`) o buscar por celular / código. Muestra nombre, celular oculto, sellos, cupones por canjear; pide monto o unidades según la regla; suma el sello y avisa si se emitió el premio o si llegó al tope del día. Lista de últimos movimientos. |
 | `/programa` | Todo el equipo (edita dueño/admin) | Sellos requeridos, regla, monto mínimo o por sello, tope diario, premio y vigencia. |
-| `/sedes` | Todo el equipo (edita dueño/admin; crea plataforma) | Nombre, dirección, coordenadas y si está activa. |
+| `/sedes` | Todo el equipo (edita dueño/admin; crea superadmin) | Nombre, dirección, coordenadas y si está activa. |
 | `/negocio` | Dueño/admin | Nombre, razón social, NIT, colores, zona horaria. Plan y estado se ven pero no se editan. |
 | `/equipo` | Dueño/admin (gestiona dueño) | Lista con correo, último ingreso e invitación pendiente; invitar, cambiar rol, quitar. |
-| `/plataforma` | Admin de plataforma | Crear negocio, cambiar plan/estado, invitar dueño. |
+| `/superadmin` | Superadmin | Crear negocio, cambiar plan/estado, invitar dueño. |
 
-Stores: `useSesionStore` (sesión de Auth y si es admin de plataforma) y `useNegocioStore` (negocios y rol del usuario, negocio activo, sedes, sede de la caja).
+Stores: `useSesionStore` (sesión de Auth y si es superadmin) y `useNegocioStore` (negocios y rol del usuario, negocio activo, sedes, sede de la caja).
 
 El QR puede traer el token solo o la URL de la PWA (`https://{slug}.hibeely.com/t/{token}`): la caja toma el último segmento.
 
@@ -102,7 +102,7 @@ Usuarios de la semilla (clave `beely1234`):
 
 | Correo | Rol |
 |-------|-----|
-| `plataforma@hibeely.test` | Admin de plataforma |
+| `superadmin@hibeely.test` | Superadmin |
 | `dueno@hibeely.test` | Dueño de Heladería Demo |
 | `cajero@hibeely.test` | Cajero de Heladería Demo |
 
@@ -116,7 +116,7 @@ La cámara del navegador exige `https` o `localhost`; para probar con un celular
 - Auth → Site URL `https://app.hibeely.com` y redirect `https://app.hibeely.com/**`.
 - Secretos: `supabase secrets set PANEL_URL=https://app.hibeely.com`.
 - Desplegar: `supabase functions deploy panel-sello panel-equipo`.
-- Primer admin de plataforma: `insert into public.administradores_plataforma (usuario_id) values ('<uuid del usuario>');` desde el SQL editor.
+- Primer superadmin: `insert into public.superadmins (usuario_id) values ('<uuid del usuario>');` desde el SQL editor.
 
 ## Checklist de pruebas manuales (hecho en local con Playwright y curl)
 
@@ -126,6 +126,6 @@ La cámara del navegador exige `https` o `localhost`; para probar con un celular
 - [x] Pedir el mismo sello dos veces con la misma clave no suma doble; Pedro con 9 sellos recibe el premio
 - [x] Dueño edita programa (valida monto por sello), negocio e invita a una cajera; el correo llega a Mailpit
 - [x] La cajera invitada abre el enlace, define su clave y entra a la caja
-- [x] Dueño no ve "Nueva sede"; la plataforma crea un negocio y una sede
+- [x] Dueño no ve "Nueva sede"; el superadmin crea un negocio y una sede
 - [x] Vista móvil de la caja
 - [ ] Escaneo con cámara real en un celular (pendiente: requiere https)

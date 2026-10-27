@@ -5,21 +5,7 @@ export type Database = {
   
   "public": {
           Tables: {
-            "administradores_plataforma": {
-                  Row: {
-                    "creado_en": string,"usuario_id": string
-                  }
-                  ComputedFields: never
-                  Insert: {
-                    "creado_en"?: string,"usuario_id": string
-                  }
-                  Update: {
-                    "creado_en"?: string,"usuario_id"?: string
-                  }
-                  Relationships: [
-                    
-                  ]
-                },"campanas": {
+            "campanas": {
                   Row: {
                     "actualizado_en": string,"canales": (string)[],"config": NonNullable<Json>,"creado_en": string,"creado_por": string | null,"disparador": string,"estado": string,"id": string,"mensaje": string,"negocio_id": string,"nombre": string,"oferta_id": string | null,"programada_para": string | null,"segmento": NonNullable<Json>,"titulo": string
                   }
@@ -339,6 +325,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"superadmins": {
+                  Row: {
+                    "creado_en": string,"usuario_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "creado_en"?: string,"usuario_id": string
+                  }
+                  Update: {
+                    "creado_en"?: string,"usuario_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"suscripciones_push": {
                   Row: {
                     "agente_usuario": string | null,"auth": string,"creado_en": string,"endpoint": string,"id": string,"negocio_id": string,"p256dh": string,"revocada_en": string | null,"tarjeta_id": string,"ultimo_uso_en": string | null
@@ -414,11 +414,11 @@ isOneToOne: false
               "creado_en": string,"email": string,"invitacion_pendiente": boolean,"rol": string,"ultimo_ingreso_en": string,"usuario_id": string
             }[]
                            },
-"plataforma_actualizar_negocio":
-{ Args: { "p_estado": string,"p_negocio_id": string,"p_plan": string }; Returns: undefined
-                           },
 "registrar_sello":
 { Args: { "p_creado_por"?: string,"p_monto_venta"?: number,"p_negocio_id": string,"p_origen"?: string,"p_sede_id"?: string,"p_token_tarjeta": string,"p_unidades"?: number,"p_venta_externa_id": string }; Returns: Json
+                           },
+"superadmin_actualizar_negocio":
+{ Args: { "p_estado": string,"p_negocio_id": string,"p_plan": string }; Returns: undefined
                            },
 "usuario_por_email":
 { Args: { "p_email": string }; Returns: string

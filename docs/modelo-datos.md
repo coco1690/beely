@@ -10,7 +10,7 @@ El Sprint 1 no agrega tablas: agrega funciones, políticas y validaciones sobre 
 erDiagram
     negocios ||--o{ miembros_negocio : "equipo"
     auth_users ||--o{ miembros_negocio : "usuario del panel"
-    auth_users ||--o| administradores_plataforma : "admin Beely"
+    auth_users ||--o| superadmins : "superadmin Beely"
     negocios ||--o{ sedes : "tiene"
     negocios ||--o{ clientes : "registra"
     negocios ||--o{ programas : "define"
@@ -93,10 +93,10 @@ erDiagram
 
 | Tabla | Para qué | Escribe |
 |-------|---------|---------|
-| `administradores_plataforma` | Usuarios con control total de Beely | Manual / SQL |
-| `negocios` | Cada empresa cliente de Beely (marca, plan, límites de envío) | Plataforma crea; dueño/admin editan columnas de marca |
-| `miembros_negocio` | Equipo del negocio con rol | Dueño (administradores y cajeros) · Plataforma (dueños) · Edge Function `panel-equipo` |
-| `sedes` | Puntos de venta con coordenadas (para Wallet) | Plataforma crea; dueño/admin editan |
+| `superadmins` | Usuarios con control total de Beely | Manual / SQL |
+| `negocios` | Cada empresa cliente de Beely (marca, plan, límites de envío) | Superadmin crea; dueño/admin editan columnas de marca |
+| `miembros_negocio` | Equipo del negocio con rol | Dueño (administradores y cajeros) · Superadmin (dueños) · Edge Function `panel-equipo` |
+| `sedes` | Puntos de venta con coordenadas (para Wallet) | Superadmin crea; dueño/admin editan |
 | `clientes` | Cliente final de un negocio + autorizaciones Ley 1581 | Edge Function `club-registro`; equipo solo marca `celular_verificado` |
 | `programas` | Reglas de sellos y premio (uno activo por negocio) | `crear_negocio()` crea el primero; dueño/admin editan |
 | `disenos_tarjeta` | Apariencia del pase y de la PWA; `version` sube → re-sincronizar Wallet | Dueño/admin |
@@ -136,8 +136,8 @@ Ambas solo se pueden ejecutar con `service_role`.
 
 | Función | Quién | Hace | Errores |
 |--------|-------|------|---------|
-| `crear_negocio(slug, nombre, zona_horaria?) → uuid` | Admin de plataforma | Crea el negocio con su programa de sellos y diseño de tarjeta por defecto | `sin_permiso`, `slug_en_uso`, `zona_horaria_invalida` |
-| `plataforma_actualizar_negocio(negocio_id, plan, estado)` | Admin de plataforma | Cambia plan y estado (columnas que el negocio no puede tocar) | `sin_permiso`, `negocio_no_encontrado` |
+| `crear_negocio(slug, nombre, zona_horaria?) → uuid` | Superadmin | Crea el negocio con su programa de sellos y diseño de tarjeta por defecto | `sin_permiso`, `slug_en_uso`, `zona_horaria_invalida` |
+| `superadmin_actualizar_negocio(negocio_id, plan, estado)` | Superadmin | Cambia plan y estado (columnas que el negocio no puede tocar) | `sin_permiso`, `negocio_no_encontrado` |
 | `equipo_negocio(negocio_id) → table` | Dueño / administrador | Equipo con correo, rol, último ingreso e invitación pendiente | `sin_permiso` |
 | `usuario_por_email(email) → uuid` | Solo `service_role` | La usa `panel-equipo` para no reinvitar a quien ya tiene cuenta | — |
 
@@ -146,7 +146,7 @@ Trigger `negocios_zona_horaria`: rechaza zonas horarias que Postgres no conoce (
 ### Reglas de equipo (RLS de `miembros_negocio`)
 
 - El dueño invita, cambia de rol y quita **administradores y cajeros**; no puede crear dueños, ascender a dueño ni tocar su propia fila.
-- Solo la plataforma asigna o quita dueños.
+- Solo el superadmin asigna o quita dueños.
 - El administrador ve el equipo pero no lo gestiona; el cajero no lo ve.
 - Del equipo solo se puede actualizar la columna `rol`.
 
@@ -168,8 +168,8 @@ Trigger `negocios_zona_horaria`: rechaza zonas horarias que Postgres no conoce (
 
 ### Sprint 1 (`0003_panel_aserciones.sql`)
 
-- [x] Plataforma crea negocio con programa activo y diseño; slug repetido y zona horaria inválida fallan
-- [x] Plataforma crea sedes, asigna dueños y cambia plan
+- [x] Superadmin crea negocio con programa activo y diseño; slug repetido y zona horaria inválida fallan
+- [x] Superadmin crea sedes, asigna dueños y cambia plan
 - [x] Dueño agrega administradores y cajeros y cambia su rol; no crea ni asciende dueños, no toca otro negocio, no cambia la llave de un miembro, no se borra a sí mismo
 - [x] Dueño y administrador ven el equipo con correo; cajero y otros negocios reciben `sin_permiso`
 - [x] Dueño no crea negocios ni cambia su plan; `usuario_por_email` es solo de `service_role`

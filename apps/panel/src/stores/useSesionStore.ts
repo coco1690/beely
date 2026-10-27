@@ -4,17 +4,17 @@ import { supabase } from '../lib/supabase'
 
 type EstadoSesion = {
   sesion: Session | null
-  esAdminPlataforma: boolean
+  esSuperadmin: boolean
   cargando: boolean
   // Escucha los cambios de Auth; devuelve la función para dejar de escuchar.
   iniciar: () => () => void
   salir: () => Promise<void>
 }
 
-async function consultarAdminPlataforma(usuarioId: string): Promise<boolean> {
-  // RLS: la fila solo es visible para un admin de plataforma.
+async function consultarSuperadmin(usuarioId: string): Promise<boolean> {
+  // RLS: la fila solo es visible para un superadmin.
   const { data } = await supabase
-    .from('administradores_plataforma')
+    .from('superadmins')
     .select('usuario_id')
     .eq('usuario_id', usuarioId)
     .maybeSingle()
@@ -23,7 +23,7 @@ async function consultarAdminPlataforma(usuarioId: string): Promise<boolean> {
 
 export const useSesionStore = create<EstadoSesion>()((set, get) => ({
   sesion: null,
-  esAdminPlataforma: false,
+  esSuperadmin: false,
   cargando: true,
 
   iniciar: () => {
@@ -31,14 +31,14 @@ export const useSesionStore = create<EstadoSesion>()((set, get) => ({
       const anterior = get().sesion?.user.id
       set({ sesion })
       if (!sesion) {
-        set({ esAdminPlataforma: false, cargando: false })
+        set({ esSuperadmin: false, cargando: false })
         return
       }
       if (anterior === sesion.user.id && !get().cargando) return
       // Fuera del callback de Auth para no bloquearlo (recomendación de supabase-js).
       setTimeout(() => {
-        void consultarAdminPlataforma(sesion.user.id).then((esAdminPlataforma) =>
-          set({ esAdminPlataforma, cargando: false }),
+        void consultarSuperadmin(sesion.user.id).then((esSuperadmin) =>
+          set({ esSuperadmin, cargando: false }),
         )
       }, 0)
     })

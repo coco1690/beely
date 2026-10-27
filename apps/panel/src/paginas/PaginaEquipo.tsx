@@ -40,7 +40,7 @@ const esquemaFormulario = esquemaInvitarMiembro.omit({ negocio_id: true })
 export function PaginaEquipo() {
   const activo = useNegocioActivo()
   const usuarioId = useSesionStore((e) => e.sesion?.user.id)
-  const esPlataforma = activo?.rol === 'plataforma'
+  const esSuperadmin = activo?.rol === 'superadmin'
   const gestiona = puedeGestionarEquipo(activo?.rol)
   const negocioId = activo?.negocio.id
   const [equipo, setEquipo] = useState<Integrante[] | null>(null)
@@ -106,9 +106,9 @@ export function PaginaEquipo() {
     await cargar()
   }
 
-  // El dueño gestiona administradores y cajeros; la plataforma, a todos.
-  const puedeEditar = (i: Integrante) => gestiona && i.usuario_id !== usuarioId && (esPlataforma || i.rol !== 'dueno')
-  const rolesAsignables: RolEquipo[] = esPlataforma ? ['dueno', 'administrador', 'cajero'] : ['administrador', 'cajero']
+  // El dueño gestiona administradores y cajeros; el superadmin, a todos.
+  const puedeEditar = (i: Integrante) => gestiona && i.usuario_id !== usuarioId && (esSuperadmin || i.rol !== 'dueno')
+  const rolesAsignables: RolEquipo[] = esSuperadmin ? ['dueno', 'administrador', 'cajero'] : ['administrador', 'cajero']
 
   return (
     <>
