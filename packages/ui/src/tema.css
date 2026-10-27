@@ -187,3 +187,28 @@
   --b-acento: #fb7185;
   --b-sobre-acento: #0e0d0c;
 }
+
+/* Capas flotantes: entran desde su origen con escala corta y salen más rápido.
+   Solo transform y opacity; el centrado de los diálogos usa `translate`, que es otra propiedad. */
+@keyframes desvanecer {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes entrar-capa {
+  from {
+    opacity: 0;
+    transform: scale(var(--escala-capa, 0.96));
+  }
+}
+@keyframes salir-capa {
+  to {
+    opacity: 0;
+    transform: scale(var(--escala-capa, 0.96));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --escala-capa: 1;
+  }
+}
