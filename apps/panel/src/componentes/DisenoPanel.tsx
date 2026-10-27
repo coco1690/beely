@@ -1,6 +1,6 @@
 import {
   cn,
-  LogoBeely,
+  LogoNegocio,
   MenuContenido,
   MenuDisparador,
   MenuEtiqueta,
@@ -154,7 +154,7 @@ function MenuNegocio() {
 
   const contenido = (
     <>
-      <LogoBeely className="size-7 shrink-0" />
+      <LogoNegocio url={activo?.negocio.logo_url} nombre={nombre} className="size-7 shrink-0" />
       <span className="flex min-w-0 flex-1 flex-col text-left leading-tight">
         <span className="truncate text-sm font-semibold text-texto">{nombre}</span>
         <span className="truncate text-xs text-texto-3">{detalle}</span>
