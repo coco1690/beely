@@ -25,10 +25,10 @@ export function EscanerQr({ onLeido, onCerrar }: { onLeido: (texto: string) => v
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="relative overflow-hidden rounded-xl bg-black">
+      <div className="relative overflow-hidden rounded-control bg-black">
         <video ref={video} className="aspect-square w-full object-cover" muted playsInline />
       </div>
-      {error ? <p className="text-sm text-peligro">{error}</p> : <p className="text-sm text-texto-3">Apunta al QR de la tarjeta del cliente.</p>}
+      {error ? <p className="text-etiqueta text-peligro">{error}</p> : <p className="text-etiqueta text-texto-3">Apunta al QR de la tarjeta del cliente.</p>}
       <Boton variante="contorno" onClick={onCerrar}>
         Cerrar cámara
       </Boton>
