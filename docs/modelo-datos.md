@@ -1,6 +1,6 @@
 # Modelo de datos — Beely
 
-Migración: `supabase/migrations/20261027000001_nucleo.sql` · Pruebas: `supabase/tests/0001_nucleo.sql`
+Migración: `supabase/migrations/20261027000001_nucleo.sql` · Pruebas: `supabase/tests/0001_nucleo.sql` (recorrido) y `supabase/tests/0002_nucleo_aserciones.sql` (aserciones, corren en CI)
 
 ## Diagrama ER
 
@@ -126,7 +126,7 @@ Errores: `cupon_no_encontrado`, `cupon_ya_canjeado`, `cupon_no_disponible`, `cup
 
 Ambas solo se pueden ejecutar con `service_role`.
 
-## Checklist de pruebas (verificado en Postgres 16)
+## Checklist de pruebas (verificado en Postgres 16 y en Supabase local con Postgres 17)
 
 - [x] Sello normal suma 1
 - [x] Misma `venta_externa_id` no suma dos veces

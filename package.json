@@ -1,0 +1,23 @@
+{
+  "name": "beely",
+  "private": true,
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "db:iniciar": "supabase start",
+    "db:detener": "supabase stop",
+    "db:reset": "supabase db reset",
+    "db:probar": "bash scripts/probar-sql.sh",
+    "db:tipos": "supabase gen types typescript --local --schema public > packages/tipos/src/database.ts",
+    "dev:panel": "pnpm --filter @beely/panel dev",
+    "dev:club": "pnpm --filter @beely/club dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck"
+  },
+  "devDependencies": {
+    "supabase": "2.122.0",
+    "typescript": "5.9.3"
+  }
+}
