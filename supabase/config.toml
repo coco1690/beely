@@ -219,8 +219,10 @@ web3 = 30
 # secret = ""
 
 [auth.email]
-# Allow/disallow new user signups via email to your project.
-enable_signup = false
+# Debe quedar en true: en [auth.email] este valor enciende el proveedor de correo y, con false,
+# también se apaga el ingreso (email_provider_disabled). El registro abierto lo bloquea
+# `enable_signup = false` de [auth]; el equipo entra solo por invitación.
+enable_signup = true
 # If enabled, a user will be required to confirm any email change on both the old, and new email
 # addresses. If disabled, only the new email is required to confirm.
 double_confirm_changes = true
