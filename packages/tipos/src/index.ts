@@ -18,3 +18,4 @@ export const esquemaErrorApi = z.object({
   }),
 })
 export type ErrorApi = z.infer<typeof esquemaErrorApi>
+export * from './formato'

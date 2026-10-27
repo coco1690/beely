@@ -1,4 +1,3 @@
-import type { ResultadoSello } from '@beely/tipos'
 import {
   Aviso,
   Boton,
@@ -16,15 +15,15 @@ import {
   TarjetaContenido,
   TarjetaEncabezado,
   TarjetaTitulo,
+  useMedia,
 } from '@beely/ui'
 import { Camera, Gift, Info, Search, Stamp } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { EncabezadoPagina } from '../componentes/DisenoPanel'
 import { EscanerQr } from '../componentes/EscanerQr'
-import { celularOculto, extraerToken, fecha, fechaHora, normalizarCelular, numero, pesos } from '../lib/formato'
+import { celularOculto, extraerToken, fecha, fechaHora, normalizarCelular, numero, pesos, type ResultadoSello } from '@beely/tipos'
 import { llamarFuncion, mensajeDe } from '../lib/funciones'
 import { supabase } from '../lib/supabase'
-import { useMedia } from '../lib/useMedia'
 import { useNegocioActivo, useNegocioStore } from '../stores/useNegocioStore'
 
 const consultaTarjeta = `id, token_publico, sellos_actuales, sellos_historicos, premios_ganados, ultima_visita_en, estado,

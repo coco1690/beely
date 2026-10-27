@@ -1,24 +1,23 @@
-import { Spinner } from '@beely/ui'
+import { Spinner } from './spinner'
 import { ArrowDown } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { esAppInstalada } from '../pwa'
 
 // Distancia (px) que hay que jalar para recargar y tope del recorrido del indicador.
 const UMBRAL = 72
 const MAXIMO = 120
 
-// La app instalada no tiene el "jalar para recargar" del navegador: lo hacemos nosotros.
-function esAppInstalada(): boolean {
-  const iosStandalone = (navigator as Navigator & { standalone?: boolean }).standalone === true
-  return iosStandalone || matchMedia('(display-mode: standalone)').matches
-}
-
 // Estilo Facebook: con la página arriba del todo, jalar hacia abajo baja un círculo que gira;
 // al soltar pasado el umbral, recarga (y así también toma la versión nueva publicada).
-export function JalarParaRecargar() {
+// La app instalada no tiene el "jalar para recargar" del navegador: lo hacemos nosotros.
+// `alRecargar`: en vez de recargar la página, vuelve a pedir los datos (el club refresca la tarjeta).
+export function JalarParaRecargar({ alRecargar }: { alRecargar?: () => Promise<unknown> } = {}) {
   const [activo] = useState(esAppInstalada)
   const [recargando, setRecargando] = useState(false)
   const indicador = useRef<HTMLDivElement>(null)
   const flecha = useRef<HTMLDivElement>(null)
+  const recargar = useRef(alRecargar)
+  recargar.current = alRecargar
 
   useEffect(() => {
     if (!activo) return
@@ -70,8 +69,17 @@ export function JalarParaRecargar() {
       if (distancia >= UMBRAL) {
         setRecargando(true)
         pintar(UMBRAL, true)
-        // Un instante para que se vea el giro antes de recargar.
-        window.setTimeout(() => window.location.reload(), 350)
+        const propio = recargar.current
+        if (propio) {
+          // Al menos un instante de giro, aunque los datos lleguen enseguida.
+          void Promise.allSettled([propio(), new Promise((r) => window.setTimeout(r, 450))]).then(() => {
+            setRecargando(false)
+            pintar(0, true)
+          })
+        } else {
+          // Un instante para que se vea el giro antes de recargar.
+          window.setTimeout(() => window.location.reload(), 350)
+        }
       } else {
         pintar(0, true)
       }

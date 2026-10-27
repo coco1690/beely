@@ -1,10 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { esquemaIngreso } from '@beely/tipos'
-import { Aviso, Boton, Campo, Entrada, EntradaClave, LogoBeely, Tarjeta, TarjetaContenido } from '@beely/ui'
+import { Aviso, Boton, BotonModo, Campo, Entrada, EntradaClave, LogoBeely, SelectorTema, Tarjeta, TarjetaContenido } from '@beely/ui'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link } from 'react-router'
-import { BotonModo, SelectorTema } from '../componentes/SelectorTema'
 import { supabase } from '../lib/supabase'
 
 export const claseEnlace =

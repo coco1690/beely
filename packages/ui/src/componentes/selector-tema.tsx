@@ -1,6 +1,6 @@
-import { cn } from '@beely/ui'
+import { cn } from '../utilidades'
 import { Check, Moon, Sun } from 'lucide-react'
-import { temas, useTemaStore } from '../stores/useTemaStore'
+import { temas, useTemaStore } from '../tema'
 
 // Interruptor claro/oscuro (fila del menú de cuenta y botón suelto en la pantalla de acceso).
 export function BotonModo({ className }: { className?: string }) {
