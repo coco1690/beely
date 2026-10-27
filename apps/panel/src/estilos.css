@@ -5,10 +5,27 @@
 @source '../../../packages/ui/src';
 
 body {
-  @apply bg-fondo font-sans text-texto antialiased transition-colors duration-200;
+  @apply bg-fondo font-sans text-sm text-texto antialiased;
   font-feature-settings: 'cv11', 'ss01';
+  font-optical-sizing: auto;
+  text-rendering: optimizeLegibility;
+}
+
+/* Sin la espera del doble toque en móvil. */
+a,
+button,
+label,
+summary,
+[role='button'] {
+  touch-action: manipulation;
 }
 
 ::selection {
   @apply bg-acento-suave text-texto;
+}
+
+/* El cambio de tema o modo es instantáneo: nada a medio camino. */
+.sin-transiciones,
+.sin-transiciones * {
+  transition: none !important;
 }

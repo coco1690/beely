@@ -38,8 +38,14 @@ function leer(): Guardado {
 }
 
 function aplicar({ tema, modo }: Guardado) {
-  document.documentElement.dataset.tema = tema
-  document.documentElement.dataset.modo = modo
+  const raiz = document.documentElement
+  // Se apagan las transiciones un cuadro para que el cambio no quede a medias.
+  raiz.classList.add('sin-transiciones')
+  raiz.dataset.tema = tema
+  raiz.dataset.modo = modo
+  requestAnimationFrame(() => requestAnimationFrame(() => raiz.classList.remove('sin-transiciones')))
+  // La barra del navegador móvil toma el color del fondo.
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', modo === 'oscuro' ? '#0e0d0c' : '#f7f6f4')
   try {
     localStorage.setItem(LLAVE, JSON.stringify({ tema, modo }))
   } catch {
