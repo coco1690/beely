@@ -27,7 +27,7 @@ export {
   MenuSeparador,
 } from './componentes/menu'
 export { PanelInferior } from './componentes/panel-inferior'
-export { LogoBeely, Sello } from './componentes/marca'
+export { LogoBeely, LogoNegocio, Sello } from './componentes/marca'
 export { BarraFlotante, clasePestana } from './componentes/barra-flotante'
 export { Cargando } from './componentes/cargando'
 export { JalarParaRecargar } from './componentes/jalar-para-recargar'

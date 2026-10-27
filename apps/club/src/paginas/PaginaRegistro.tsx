@@ -1,12 +1,11 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { edadMinimaClub, esquemaFechaNacimiento, esquemaNombreCliente, normalizarCelular, pesos } from '@beely/tipos'
 import { ErrorBeely, invocarFuncion, mensajeDe } from '@beely/tipos/supabase'
-import { Aviso, Boton, Campo, Casilla, Entrada, PanelInferior, SellosTarjeta } from '@beely/ui'
+import { Aviso, Boton, Campo, Casilla, Entrada, LogoNegocio, PanelInferior, SellosTarjeta } from '@beely/ui'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router'
 import { z } from 'zod'
-import { MarcaNegocio } from '../componentes/MarcaNegocio'
 import { clienteClub } from '../lib/supabase'
 import { useClubStore, type NegocioClub } from '../stores/useClubStore'
 
@@ -65,7 +64,7 @@ export function PaginaRegistro() {
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-6 px-4 pt-[max(1.5rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))] motion-safe:animate-aparecer">
       <header className="flex flex-col items-center gap-3 pt-4 text-center">
-        <MarcaNegocio logoUrl={negocio.logo_url} nombre={negocio.nombre} className="size-14" />
+        <LogoNegocio url={negocio.logo_url} nombre={negocio.nombre} className="size-14" />
         <div>
           <h1 className="text-titulo text-texto">{negocio.nombre}</h1>
           <p className="mt-1 text-sm text-texto-3">Únete al club y gana premios con tus compras</p>

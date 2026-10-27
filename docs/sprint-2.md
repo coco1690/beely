@@ -7,7 +7,7 @@ Entregable: cada negocio tiene su club en `{slug}.hibeely.com`. El cliente se re
 | Pieza | Dónde |
 |------|-------|
 | Migración `0005_club` | `supabase/migrations/20261027000005_club.sql` |
-| Pruebas SQL (55 aserciones) | `supabase/tests/0005_club_aserciones.sql` |
+| Pruebas SQL (55 aserciones) | `supabase/tests/0006_club_aserciones.sql` |
 | Edge Function | `supabase/functions/club-registro` |
 | Esquemas zod | `packages/tipos/src/esquemas.ts` (`esquemaClubRegistro`, `esquemaFechaNacimiento`, `edadMinimaClub`) |
 | PWA | `apps/club` (+ `api/manifest.ts`, función de Vercel) |

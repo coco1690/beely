@@ -143,6 +143,8 @@ Ambas solo se pueden ejecutar con `service_role`.
 | `equipo_negocio(negocio_id) → table` | Dueño / administrador | Equipo con correo, rol, último ingreso e invitación pendiente | `sin_permiso` |
 | `usuario_por_email(email) → uuid` | Solo `service_role` | La usa `panel-equipo` para no reinvitar a quien ya tiene cuenta | — |
 
+Logo propio (marca blanca, migración `0004_logos`): bucket público de Storage `logos`, ruta `{negocio_id}/logo-{marca de tiempo}.{png|jpg|webp}`, hasta 2 MB y sin SVG. Solo dueño, administrador o superadmin del negocio escriben en su carpeta (`privado.negocio_de_ruta(name)` + `privado.tiene_rol`). La URL pública queda en `negocios.logo_url` (check `negocios_logo_url_https`). Panel y club lo muestran con `LogoNegocio` de `packages/ui`.
+
 Trigger `negocios_zona_horaria`: rechaza zonas horarias que Postgres no conoce (`zona_horaria_invalida`), porque el tope diario de sellos se calcula con ellas.
 
 ### Reglas de equipo (RLS de `miembros_negocio`)
@@ -191,7 +193,14 @@ RLS de `anon` (la PWA): ve el negocio del slug o del token, su programa activo, 
 - [x] Sede de otro negocio o inactiva → `sede_no_encontrada`; negocio suspendido → `negocio_inactivo`; la venta repetida sigue siendo idempotente
 - [x] `detalle` distingue `compra_no_aplica` (monto bajo el mínimo) de `tope_diario`
 
-### Sprint 2 (`0005_club_aserciones.sql`)
+### Logos (`0005_logos_aserciones.sql`)
+
+- [x] Bucket `logos` público, de 2 MB y sin SVG; `negocio_de_ruta` solo acepta carpetas con uuid
+- [x] Dueño sube, lista y borra el logo de su negocio y guarda `logo_url`; `logo_url` que no sea http(s) falla
+- [x] Dueño no sube en la carpeta de otro negocio ni fuera de una carpeta de negocio
+- [x] Cajero no sube ni borra logos; el dueño de otro negocio no lista ni borra logos ajenos
+
+### Sprint 2 (`0006_club_aserciones.sql`)
 
 - [x] anon sin cabeceras no ve nada; el slug muestra solo su negocio, programa activo, diseño y sedes activas
 - [x] El token muestra solo su tarjeta, cliente, cupones y sellos; nunca celular, nacimiento, montos ni ids de venta

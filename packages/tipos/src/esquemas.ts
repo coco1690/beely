@@ -189,3 +189,26 @@ export const mensajesError: Record<string, string> = {
 }
 
 export const mensajeDeError = (codigo: string): string => mensajesError[codigo] ?? mensajesError.error_interno ?? codigo
+
+// Logo del negocio (marca blanca) en el bucket público `logos` de Storage.
+// La ruta empieza por el id del negocio: las políticas de Storage la usan para dar permiso.
+export const bucketLogos = 'logos'
+export const tiposLogo = ['image/png', 'image/jpeg', 'image/webp'] as const
+export const pesoMaximoLogo = 2 * 1024 * 1024
+const extensionesLogo: Record<(typeof tiposLogo)[number], string> = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp' }
+
+export const esquemaArchivoLogo = z.object({
+  type: z.enum(tiposLogo, 'El logo debe ser PNG, JPG o WebP'),
+  size: z.number().max(pesoMaximoLogo, 'El logo debe pesar menos de 2 MB'),
+})
+
+// Nombre nuevo en cada subida: la URL pública cambia y ningún caché muestra el logo viejo.
+export const rutaLogo = (negocioId: string, tipo: (typeof tiposLogo)[number]): string =>
+  `${negocioId}/logo-${Date.now()}.${extensionesLogo[tipo]}`
+
+// Ruta dentro del bucket a partir de la URL pública guardada en negocios.logo_url.
+export const rutaDeUrlLogo = (url: string): string | null => {
+  const marca = `/object/public/${bucketLogos}/`
+  const i = url.indexOf(marca)
+  return i === -1 ? null : decodeURIComponent(url.slice(i + marca.length).split('?')[0] ?? '')
+}

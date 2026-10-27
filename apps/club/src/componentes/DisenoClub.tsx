@@ -1,10 +1,9 @@
-import { BarraFlotante, Cargando, clasePestana, EstadoVacio, JalarParaRecargar, toast } from '@beely/ui'
+import { BarraFlotante, Cargando, clasePestana, EstadoVacio, JalarParaRecargar, LogoNegocio, toast } from '@beely/ui'
 import { CreditCard, SearchX, Ticket, UserRound } from 'lucide-react'
 import { useEffect, useRef, type ReactNode } from 'react'
 import { Navigate, NavLink, Outlet, useParams } from 'react-router'
 import { tokenGuardado, urlClub } from '../lib/club'
 import { cuponesVigentes, useClubStore } from '../stores/useClubStore'
-import { MarcaNegocio } from './MarcaNegocio'
 
 // Cada cuánto se vuelve a pedir la tarjeta mientras está en pantalla: así el sello
 // que suma la caja aparece solo, con el cliente todavía frente al mostrador.
@@ -55,7 +54,7 @@ export function DisenoClub() {
     <div className="min-h-dvh overflow-x-clip">
       <header className="sticky top-0 z-20 border-b border-borde bg-fondo/85 pt-[env(safe-area-inset-top)] backdrop-blur-lg">
         <div className="mx-auto flex h-14 max-w-md items-center gap-2.5 px-4">
-          <MarcaNegocio logoUrl={negocio.logo_url} nombre={negocio.nombre} />
+          <LogoNegocio url={negocio.logo_url} nombre={negocio.nombre} className="size-8" />
           <p className="truncate text-sm font-semibold text-texto">{negocio.nombre}</p>
         </div>
       </header>

@@ -1,10 +1,9 @@
 import { fecha } from '@beely/tipos'
-import { Boton, cn, EstadoVacio, FilaLista, Lista, PanelInferior, Sello, SellosTarjeta } from '@beely/ui'
+import { Boton, cn, EstadoVacio, FilaLista, Lista, LogoNegocio, PanelInferior, Sello, SellosTarjeta } from '@beely/ui'
 import { Gift, QrCode, Stamp } from 'lucide-react'
 import { useState, type CSSProperties } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { CodigoQr } from '../componentes/CodigoQr'
-import { MarcaNegocio } from '../componentes/MarcaNegocio'
 import { cuponesVigentes, useClubStore, type TarjetaClub } from '../stores/useClubStore'
 
 type Diseno = NonNullable<NonNullable<TarjetaClub['programas']>['disenos_tarjeta']>
@@ -89,7 +88,7 @@ function VariantePase({ tarjeta, negocio, requeridos, faltan, premio }: DatosVar
       <section className="relative overflow-hidden rounded-[1.25rem] p-5 shadow-capa" style={estiloPase(diseno)} aria-label="Tu tarjeta de sellos">
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-2.5">
-            <MarcaNegocio logoUrl={diseno?.logo_url ?? negocio.logo_url} nombre={negocio.nombre} className="size-9 ring-0" />
+            <LogoNegocio url={diseno?.logo_url ?? negocio.logo_url} nombre={negocio.nombre} className="size-9" />
             <div className="min-w-0 leading-tight">
               <p className="truncate font-semibold">{negocio.nombre}</p>
               <p className="truncate text-xs" style={{ color: diseno?.color_etiquetas }}>
