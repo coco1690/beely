@@ -406,8 +406,22 @@ isOneToOne: false
             "canjear_cupon":
 { Args: { "p_canjeado_por"?: string,"p_codigo": string,"p_negocio_id": string,"p_sede_id"?: string,"p_venta_externa_id"?: string }; Returns: Json
                            },
+"crear_negocio":
+{ Args: { "p_nombre": string,"p_slug": string,"p_zona_horaria"?: string }; Returns: string
+                           },
+"equipo_negocio":
+{ Args: { "p_negocio_id": string }; Returns: {
+              "creado_en": string,"email": string,"invitacion_pendiente": boolean,"rol": string,"ultimo_ingreso_en": string,"usuario_id": string
+            }[]
+                           },
+"plataforma_actualizar_negocio":
+{ Args: { "p_estado": string,"p_negocio_id": string,"p_plan": string }; Returns: undefined
+                           },
 "registrar_sello":
 { Args: { "p_creado_por"?: string,"p_monto_venta"?: number,"p_negocio_id": string,"p_origen"?: string,"p_sede_id"?: string,"p_token_tarjeta": string,"p_unidades"?: number,"p_venta_externa_id": string }; Returns: Json
+                           },
+"usuario_por_email":
+{ Args: { "p_email": string }; Returns: string
                            }
           }
           Enums: {

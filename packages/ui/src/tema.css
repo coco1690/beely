@@ -1,0 +1,18 @@
+/* Tema de Beely para Tailwind v4. Cada app lo importa después de `tailwindcss`
+   y agrega `@source` hacia packages/ui para que se generen las clases. */
+@theme {
+  --color-miel-50: #fff9e6;
+  --color-miel-100: #fdf0c2;
+  --color-miel-200: #fbe08a;
+  --color-miel-400: #f8c63a;
+  --color-miel-500: #f5b301;
+  --color-miel-600: #d49800;
+  --color-miel-700: #a87700;
+  --color-colmena-900: #1f1a17;
+  --color-colmena-700: #3d342e;
+  --color-colmena-500: #6b5d52;
+  --color-colmena-300: #b8aca2;
+  --color-colmena-100: #ece6e0;
+  --color-colmena-50: #f8f5f2;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+}

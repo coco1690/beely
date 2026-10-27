@@ -1,0 +1,9 @@
+@import 'tailwindcss';
+@import '@beely/ui/tema.css';
+
+/* Los componentes de packages/ui también usan clases de Tailwind. */
+@source '../../../packages/ui/src';
+
+body {
+  @apply bg-colmena-50 font-sans text-colmena-900 antialiased;
+}
