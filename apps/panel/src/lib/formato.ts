@@ -17,6 +17,11 @@ export function pesos(valor: number | null | undefined): string {
   return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(valor)
 }
 
+// 98765 → "98.765".
+export function numero(valor: number): string {
+  return new Intl.NumberFormat('es-CO').format(valor)
+}
+
 // +573001234567 → +57 300 ••• 4567 (el cajero confirma sin exponer el número completo).
 export function celularOculto(celular: string): string {
   const final = celular.slice(-4)

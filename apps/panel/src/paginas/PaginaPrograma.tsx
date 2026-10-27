@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { esquemaPrograma, type reglasSello, type Tabla } from '@beely/tipos'
-import { Aviso, Boton, Campo, Entrada, Selector, Tarjeta, TarjetaContenido } from '@beely/ui'
+import { Aviso, Boton, Campo, Entrada, Selector, Tarjeta, TarjetaContenido, toast } from '@beely/ui'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Cargando } from '../componentes/Cargando'
@@ -21,7 +21,7 @@ export function PaginaPrograma() {
   const activo = useNegocioActivo()
   const editable = puedeConfigurar(activo?.rol)
   const [programa, setPrograma] = useState<Tabla<'programas'> | null | undefined>(undefined)
-  const [estado, setEstado] = useState<{ tono: 'exito' | 'peligro'; texto: string } | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const { register, handleSubmit, reset, watch, formState } = useForm({ resolver: zodResolver(esquemaPrograma) })
   const regla = watch('regla_sello')
   const negocioId = activo?.negocio.id
@@ -56,7 +56,7 @@ export function PaginaPrograma() {
 
   const guardar = handleSubmit(async (valores) => {
     if (!programa) return
-    setEstado(null)
+    setError(null)
     const { error } = await supabase
       .from('programas')
       .update({
@@ -65,7 +65,8 @@ export function PaginaPrograma() {
         monto_por_sello: valores.regla_sello === 'por_monto' ? valores.monto_por_sello : null,
       })
       .eq('id', programa.id)
-    setEstado(error ? { tono: 'peligro', texto: mensajeDe(error) } : { tono: 'exito', texto: 'Programa guardado.' })
+    if (error) setError(mensajeDe(error))
+    else toast.success('Programa guardado')
   })
 
   return (
@@ -75,7 +76,7 @@ export function PaginaPrograma() {
         <Aviso tono="peligro">Este negocio no tiene un programa activo. Pide a soporte de Beely que lo active.</Aviso>
       ) : (
         <Tarjeta>
-          <TarjetaContenido className="pt-5">
+          <TarjetaContenido sinEncabezado>
             <form className="grid gap-4 sm:grid-cols-2" onSubmit={guardar} noValidate>
               <fieldset disabled={!editable} className="contents">
                 <Campo id="nombre" etiqueta="Nombre del programa" error={formState.errors.nombre?.message} className="sm:col-span-2">
@@ -125,13 +126,13 @@ export function PaginaPrograma() {
               {regla === 'por_unidad' ? (
                 <Aviso className="sm:col-span-2">Desde la caja del panel se suma un sello por toque; las unidades llegan desde el POS.</Aviso>
               ) : null}
-              {estado ? <Aviso tono={estado.tono} className="sm:col-span-2">{estado.texto}</Aviso> : null}
+              {error ? <Aviso tono="peligro" className="sm:col-span-2">{error}</Aviso> : null}
               {editable ? (
-                <Boton type="submit" className="sm:col-span-2 sm:justify-self-start" disabled={formState.isSubmitting}>
+                <Boton type="submit" className="sm:col-span-2 sm:justify-self-start" cargando={formState.isSubmitting}>
                   Guardar programa
                 </Boton>
               ) : (
-                <p className="text-sm text-texto-3 sm:col-span-2">Solo el dueño o un administrador pueden cambiar el programa.</p>
+                <p className="text-etiqueta text-texto-3 sm:col-span-2">Solo el dueño o un administrador pueden cambiar el programa.</p>
               )}
             </form>
           </TarjetaContenido>

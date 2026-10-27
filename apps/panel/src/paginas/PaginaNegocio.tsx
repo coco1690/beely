@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { esquemaMarcaNegocio } from '@beely/tipos'
-import { Aviso, Boton, Campo, Entrada, Insignia, Selector, Tarjeta, TarjetaContenido, TarjetaEncabezado, TarjetaTitulo } from '@beely/ui'
+import { Aviso, Boton, Campo, Entrada, Insignia, Selector, Tarjeta, TarjetaContenido, TarjetaEncabezado, TarjetaTitulo, toast } from '@beely/ui'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { EncabezadoPagina } from '../componentes/DisenoPanel'
@@ -14,7 +14,7 @@ const dominioClub = import.meta.env.VITE_CLUB_DOMINIO_BASE ?? 'hibeely.com'
 export function PaginaNegocio() {
   const activo = useNegocioActivo()
   const recargarNegocio = useNegocioStore((e) => e.recargarNegocio)
-  const [estado, setEstado] = useState<{ tono: 'exito' | 'peligro'; texto: string } | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const negocio = activo?.negocio
   const editable = puedeConfigurar(activo?.rol)
 
@@ -36,11 +36,11 @@ export function PaginaNegocio() {
   if (!negocio) return null
 
   const guardar = handleSubmit(async (valores) => {
-    setEstado(null)
+    setError(null)
     const { error } = await supabase.from('negocios').update(valores).eq('id', negocio.id)
-    if (error) setEstado({ tono: 'peligro', texto: mensajeDe(error) })
+    if (error) setError(mensajeDe(error))
     else {
-      setEstado({ tono: 'exito', texto: 'Cambios guardados.' })
+      toast.success('Cambios guardados')
       await recargarNegocio()
     }
   })
@@ -49,19 +49,26 @@ export function PaginaNegocio() {
     <>
       <EncabezadoPagina titulo="Negocio" descripcion="Marca, datos legales y zona horaria." />
       <div className="flex flex-col gap-6">
-        <Tarjeta>
-          <TarjetaContenido className="flex flex-wrap items-center gap-x-6 gap-y-2 pt-5 text-sm">
-            <span>
-              Club: <span className="font-mono">{negocio.slug}.{dominioClub}</span>
-            </span>
-            <span className="flex items-center gap-2">
-              Plan <Insignia tono="miel">{negocio.plan}</Insignia>
-            </span>
-            <span className="flex items-center gap-2">
-              Estado <Insignia tono={negocio.estado === 'activo' ? 'exito' : 'peligro'}>{negocio.estado}</Insignia>
-            </span>
-          </TarjetaContenido>
-        </Tarjeta>
+        <dl className="grid gap-px overflow-hidden rounded-tarjeta border border-borde bg-borde sm:grid-cols-[minmax(0,2fr)_1fr_1fr]">
+          <div className="flex min-w-0 flex-col gap-1 bg-superficie px-4 py-3">
+            <dt className="text-xs text-texto-3">Club</dt>
+            <dd className="truncate font-mono text-etiqueta text-texto" title={`${negocio.slug}.${dominioClub}`}>
+              {negocio.slug}.{dominioClub}
+            </dd>
+          </div>
+          <div className="flex flex-col items-start gap-1 bg-superficie px-4 py-3">
+            <dt className="text-xs text-texto-3">Plan</dt>
+            <dd>
+              <Insignia tono="miel">{negocio.plan}</Insignia>
+            </dd>
+          </div>
+          <div className="flex flex-col items-start gap-1 bg-superficie px-4 py-3">
+            <dt className="text-xs text-texto-3">Estado</dt>
+            <dd>
+              <Insignia tono={negocio.estado === 'activo' ? 'exito' : 'peligro'}>{negocio.estado}</Insignia>
+            </dd>
+          </div>
+        </dl>
 
         <Tarjeta>
           <TarjetaEncabezado>
@@ -80,10 +87,10 @@ export function PaginaNegocio() {
                   <Entrada id="nit" {...register('nit')} />
                 </Campo>
                 <Campo id="color_primario" etiqueta="Color primario" error={formState.errors.color_primario?.message}>
-                  <Entrada id="color_primario" type="color" className="p-1" {...register('color_primario')} />
+                  <Entrada id="color_primario" type="color" className="cursor-pointer p-1" {...register('color_primario')} />
                 </Campo>
                 <Campo id="color_secundario" etiqueta="Color secundario" error={formState.errors.color_secundario?.message}>
-                  <Entrada id="color_secundario" type="color" className="p-1" {...register('color_secundario')} />
+                  <Entrada id="color_secundario" type="color" className="cursor-pointer p-1" {...register('color_secundario')} />
                 </Campo>
                 <Campo
                   id="zona_horaria"
@@ -101,9 +108,9 @@ export function PaginaNegocio() {
                   </Selector>
                 </Campo>
               </fieldset>
-              {estado ? <Aviso tono={estado.tono} className="sm:col-span-2">{estado.texto}</Aviso> : null}
+              {error ? <Aviso tono="peligro" className="sm:col-span-2">{error}</Aviso> : null}
               {editable ? (
-                <Boton type="submit" className="sm:col-span-2 sm:justify-self-start" disabled={formState.isSubmitting}>
+                <Boton type="submit" className="sm:col-span-2 sm:justify-self-start" cargando={formState.isSubmitting}>
                   Guardar cambios
                 </Boton>
               ) : null}

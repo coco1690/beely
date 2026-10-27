@@ -7,7 +7,7 @@ import { Link, useNavigate } from 'react-router'
 import { Cargando } from '../componentes/Cargando'
 import { supabase } from '../lib/supabase'
 import { useSesionStore } from '../stores/useSesionStore'
-import { PantallaAcceso } from './PaginaIngreso'
+import { claseEnlace, PantallaAcceso } from './PaginaIngreso'
 
 // Destino de la invitación al equipo y del enlace de recuperar clave:
 // supabase-js toma la sesión del enlace y aquí se fija la clave.
@@ -35,13 +35,13 @@ export function PaginaDefinirClave() {
       {!sesion ? (
         <div className="flex flex-col gap-4">
           <Aviso tono="peligro">El enlace venció o ya se usó. Pide uno nuevo.</Aviso>
-          <Link to="/recuperar" className="text-center text-sm text-texto-3 hover:text-texto">
+          <Link to="/recuperar" className={claseEnlace}>
             Pedir enlace nuevo
           </Link>
         </div>
       ) : (
         <form className="flex flex-col gap-4" onSubmit={guardar} noValidate>
-          <p className="text-sm text-texto-3">{sesion.user.email}</p>
+          <p className="truncate text-sm text-texto-3">{sesion.user.email}</p>
           <Campo id="clave" etiqueta="Clave nueva" error={formState.errors.clave?.message}>
             <Entrada id="clave" type="password" autoComplete="new-password" {...register('clave')} />
           </Campo>
@@ -49,7 +49,7 @@ export function PaginaDefinirClave() {
             <Entrada id="confirmacion" type="password" autoComplete="new-password" {...register('confirmacion')} />
           </Campo>
           {error ? <Aviso tono="peligro">{error}</Aviso> : null}
-          <Boton type="submit" disabled={formState.isSubmitting}>
+          <Boton type="submit" cargando={formState.isSubmitting}>
             Guardar clave
           </Boton>
         </form>

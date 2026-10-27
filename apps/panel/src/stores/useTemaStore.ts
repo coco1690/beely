@@ -6,10 +6,10 @@ import { create } from 'zustand'
 
 export const temas = [
   { id: 'miel', nombre: 'Miel', color: '#f5b301' },
-  { id: 'oceano', nombre: 'Océano', color: '#0ea5e9' },
-  { id: 'bosque', nombre: 'Bosque', color: '#10b981' },
-  { id: 'uva', nombre: 'Uva', color: '#8b5cf6' },
-  { id: 'coral', nombre: 'Coral', color: '#f43f5e' },
+  { id: 'oceano', nombre: 'Océano', color: '#0277b5' },
+  { id: 'bosque', nombre: 'Bosque', color: '#05805c' },
+  { id: 'uva', nombre: 'Uva', color: '#7c3aed' },
+  { id: 'coral', nombre: 'Coral', color: '#d81b45' },
 ] as const
 
 export type IdTema = (typeof temas)[number]['id']
@@ -38,8 +38,14 @@ function leer(): Guardado {
 }
 
 function aplicar({ tema, modo }: Guardado) {
-  document.documentElement.dataset.tema = tema
-  document.documentElement.dataset.modo = modo
+  const raiz = document.documentElement
+  // Se apagan las transiciones un cuadro para que el cambio no quede a medias.
+  raiz.classList.add('sin-transiciones')
+  raiz.dataset.tema = tema
+  raiz.dataset.modo = modo
+  requestAnimationFrame(() => requestAnimationFrame(() => raiz.classList.remove('sin-transiciones')))
+  // La barra del navegador móvil toma el color del fondo.
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', modo === 'oscuro' ? '#0e0d0c' : '#f7f6f4')
   try {
     localStorage.setItem(LLAVE, JSON.stringify({ tema, modo }))
   } catch {

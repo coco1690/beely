@@ -1,12 +1,16 @@
 /* Tema de Beely para Tailwind v4. Cada app lo importa después de `tailwindcss`
    y agrega `@source` hacia packages/ui para que se generen las clases.
 
-   Los colores son semánticos (fondo, superficie, texto, acento…) y salen de
-   variables que cambian según:
-     * data-modo="claro" | "oscuro"  en <html>  → neutros, éxito y peligro.
-     * data-tema="miel" | "oceano" | "bosque" | "uva" | "coral"  en <html>  → acento.
-   Los derivados del acento (suave, borde, texto) se calculan con color-mix,
-   así cada tema solo define su color base y el texto que va encima. */
+   Todas las decisiones visuales viven aquí como tokens:
+     * Color: semántico (fondo, superficie, texto, acento…) y cambia según
+         data-modo="claro" | "oscuro"  en <html>  → neutros, éxito, peligro y sombras.
+         data-tema="miel" | "oceano" | "bosque" | "uva" | "coral"  en <html>  → acento.
+       Los derivados del acento (suave, borde, texto, foco) salen de color-mix,
+       así cada tema solo define su color base y el texto que va encima.
+     * Tipografía: text-titulo, text-seccion, text-sm, text-etiqueta, text-xs.
+     * Radios: rounded-control, rounded-tarjeta, rounded-capa.
+     * Sombras: shadow-tarjeta, shadow-capa, shadow-boton.
+     * Movimiento: ease-out / ease-in-out propios y --duracion-*. */
 
 @custom-variant dark (&:where([data-modo='oscuro'], [data-modo='oscuro'] *));
 
@@ -24,18 +28,85 @@
   --color-acento-hover: color-mix(in oklab, var(--b-acento) 88%, var(--b-texto));
   --color-acento-suave: color-mix(in oklab, var(--b-acento) 14%, var(--b-superficie));
   --color-acento-borde: color-mix(in oklab, var(--b-acento) 40%, var(--b-superficie));
-  --color-acento-texto: color-mix(in oklab, var(--b-acento) 62%, var(--b-texto));
+  --color-acento-texto: color-mix(in oklab, var(--b-acento) 50%, var(--b-texto));
   --color-sobre-acento: var(--b-sobre-acento);
+  /* Anillo de foco: el acento llevado hacia el texto para que contraste (≥ 3:1) en todo tema. */
+  --color-foco: color-mix(in oklab, var(--b-acento) 55%, var(--b-texto));
 
   --color-exito: var(--b-exito);
-  --color-exito-suave: color-mix(in oklab, var(--b-exito) 12%, var(--b-superficie));
-  --color-exito-borde: color-mix(in oklab, var(--b-exito) 35%, var(--b-superficie));
+  --color-exito-suave: color-mix(in oklab, var(--b-exito) 10%, var(--b-superficie));
+  --color-exito-borde: color-mix(in oklab, var(--b-exito) 30%, var(--b-superficie));
   --color-peligro: var(--b-peligro);
-  --color-peligro-suave: color-mix(in oklab, var(--b-peligro) 12%, var(--b-superficie));
-  --color-peligro-borde: color-mix(in oklab, var(--b-peligro) 35%, var(--b-superficie));
+  --color-peligro-hover: color-mix(in oklab, var(--b-peligro) 88%, var(--b-texto));
+  --color-peligro-suave: color-mix(in oklab, var(--b-peligro) 10%, var(--b-superficie));
+  --color-peligro-borde: color-mix(in oklab, var(--b-peligro) 30%, var(--b-superficie));
+  --color-sobre-peligro: var(--b-sobre-peligro);
 
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
-  --shadow-suave: var(--b-sombra);
+  --font-sans: 'Inter Variable', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  /* Escala tipográfica (tamaño / interlineado / tracking). */
+  --text-titulo: 1.5rem;
+  --text-titulo--line-height: 2rem;
+  --text-titulo--letter-spacing: -0.022em;
+  --text-titulo--font-weight: 600;
+  --text-seccion: 0.9375rem;
+  --text-seccion--line-height: 1.375rem;
+  --text-seccion--letter-spacing: -0.011em;
+  --text-seccion--font-weight: 600;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.25rem;
+  --text-sm--letter-spacing: -0.006em;
+  --text-etiqueta: 0.8125rem;
+  --text-etiqueta--line-height: 1.125rem;
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1rem;
+
+  --radius-control: 0.5rem;
+  --radius-tarjeta: 0.75rem;
+  --radius-capa: 0.875rem;
+
+  --shadow-tarjeta: var(--b-sombra-tarjeta);
+  --shadow-capa: var(--b-sombra-capa);
+  --shadow-boton: var(--b-sombra-boton);
+
+  /* Curvas: salen rápido y frenan suave. Nada de ease-in en la interfaz. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --default-transition-duration: 150ms;
+  --default-transition-timing-function: var(--ease-out);
+
+  --animate-aparecer: aparecer var(--duracion-media) var(--ease-out) both;
+  --animate-estampar: estampar var(--duracion-lenta) var(--ease-out) both;
+}
+
+:root {
+  --duracion-rapida: 120ms;
+  --duracion-media: 180ms;
+  --duracion-lenta: 240ms;
+}
+
+/* Entra con un desplazamiento corto; sin él si el sistema pide menos movimiento. */
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(var(--desplazamiento-aparecer, 4px));
+  }
+}
+
+/* Un sello nuevo: se asienta desde un poco más chico, nunca desde cero. */
+@keyframes estampar {
+  from {
+    opacity: 0;
+    transform: scale(var(--escala-estampar, 0.8));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --desplazamiento-aparecer: 0px;
+    --escala-estampar: 1;
+  }
 }
 
 /* Modo claro (por defecto). */
@@ -44,50 +115,100 @@
   --b-fondo: #f7f6f4;
   --b-superficie: #ffffff;
   --b-hundido: #f1efec;
-  --b-borde: #e8e4df;
+  --b-borde: #e7e3de;
   --b-borde-fuerte: #d4cdc6;
   --b-texto: #1c1917;
   --b-texto-2: #44403c;
-  --b-texto-3: #78716c;
-  --b-exito: #16a34a;
-  --b-peligro: #dc2626;
-  --b-sombra: 0 1px 2px rgb(0 0 0 / 0.04), 0 4px 16px -4px rgb(0 0 0 / 0.06);
+  --b-texto-3: #6f6862;
+  --b-exito: #15803d;
+  --b-peligro: #b91c1c;
+  --b-sobre-peligro: #ffffff;
+  --b-sombra-tarjeta: 0 1px 2px rgb(28 25 23 / 0.04);
+  --b-sombra-capa: 0 0 0 1px rgb(28 25 23 / 0.06), 0 12px 32px -8px rgb(28 25 23 / 0.16), 0 4px 8px -2px rgb(28 25 23 / 0.06);
+  --b-sombra-boton: inset 0 1px 0 rgb(255 255 255 / 0.18), 0 1px 2px rgb(28 25 23 / 0.1);
 }
 
+/* En oscuro las sombras no se ven: la profundidad sale de un brillo superior sutil. */
 :root[data-modo='oscuro'] {
   color-scheme: dark;
   --b-fondo: #0e0d0c;
-  --b-superficie: #181614;
-  --b-hundido: #221f1d;
-  --b-borde: #2c2826;
-  --b-borde-fuerte: #3f3a36;
+  --b-superficie: #171513;
+  --b-hundido: #211e1c;
+  --b-borde: #2a2725;
+  --b-borde-fuerte: #3d3834;
   --b-texto: #f5f3f1;
   --b-texto-2: #d6d3d1;
   --b-texto-3: #a29b95;
   --b-exito: #4ade80;
   --b-peligro: #f87171;
-  --b-sombra: 0 1px 2px rgb(0 0 0 / 0.4);
+  --b-sobre-peligro: #0e0d0c;
+  --b-sombra-tarjeta: inset 0 1px 0 rgb(255 255 255 / 0.04);
+  --b-sombra-capa: 0 0 0 1px rgb(255 255 255 / 0.08), inset 0 1px 0 rgb(255 255 255 / 0.06), 0 16px 40px -8px rgb(0 0 0 / 0.7);
+  --b-sombra-boton: inset 0 1px 0 rgb(255 255 255 / 0.2);
 }
 
-/* Temas de acento. Miel es el de la marca. */
+/* Temas de acento. Miel es el de la marca.
+   En claro el texto sobre el acento es blanco (≥ 4,5:1); en oscuro el acento
+   se aclara y el texto encima pasa a oscuro, para que brille sin perder contraste. */
 :root,
 :root[data-tema='miel'] {
   --b-acento: #f5b301;
   --b-sobre-acento: #1c1917;
 }
 :root[data-tema='oceano'] {
-  --b-acento: #0ea5e9;
+  --b-acento: #0277b5;
   --b-sobre-acento: #ffffff;
 }
 :root[data-tema='bosque'] {
-  --b-acento: #10b981;
+  --b-acento: #05805c;
   --b-sobre-acento: #ffffff;
 }
 :root[data-tema='uva'] {
-  --b-acento: #8b5cf6;
+  --b-acento: #7c3aed;
   --b-sobre-acento: #ffffff;
 }
 :root[data-tema='coral'] {
-  --b-acento: #f43f5e;
+  --b-acento: #d81b45;
   --b-sobre-acento: #ffffff;
+}
+:root[data-modo='oscuro'][data-tema='oceano'] {
+  --b-acento: #38bdf8;
+  --b-sobre-acento: #0e0d0c;
+}
+:root[data-modo='oscuro'][data-tema='bosque'] {
+  --b-acento: #34d399;
+  --b-sobre-acento: #0e0d0c;
+}
+:root[data-modo='oscuro'][data-tema='uva'] {
+  --b-acento: #a78bfa;
+  --b-sobre-acento: #0e0d0c;
+}
+:root[data-modo='oscuro'][data-tema='coral'] {
+  --b-acento: #fb7185;
+  --b-sobre-acento: #0e0d0c;
+}
+
+/* Capas flotantes: entran desde su origen con escala corta y salen más rápido.
+   Solo transform y opacity; el centrado de los diálogos usa `translate`, que es otra propiedad. */
+@keyframes desvanecer {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes entrar-capa {
+  from {
+    opacity: 0;
+    transform: scale(var(--escala-capa, 0.96));
+  }
+}
+@keyframes salir-capa {
+  to {
+    opacity: 0;
+    transform: scale(var(--escala-capa, 0.96));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --escala-capa: 1;
+  }
 }
