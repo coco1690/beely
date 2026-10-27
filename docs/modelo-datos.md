@@ -1,12 +1,16 @@
 # Modelo de datos — Beely
 
-Migración: `supabase/migrations/20261027000001_nucleo.sql` · Pruebas: `supabase/tests/0001_nucleo.sql` (recorrido) y `supabase/tests/0002_nucleo_aserciones.sql` (aserciones, corren en CI)
+Migraciones: `supabase/migrations/20261027000001_nucleo.sql` (núcleo) y `20261027000002_panel.sql` (Sprint 1, panel) · Pruebas: `supabase/tests/0001_nucleo.sql` (recorrido), `0002_nucleo_aserciones.sql` y `0003_panel_aserciones.sql` (aserciones, corren en CI)
+
+El Sprint 1 no agrega tablas: agrega funciones, políticas y validaciones sobre las del núcleo.
 
 ## Diagrama ER
 
 ```mermaid
 erDiagram
     negocios ||--o{ miembros_negocio : "equipo"
+    auth_users ||--o{ miembros_negocio : "usuario del panel"
+    auth_users ||--o| administradores_plataforma : "admin Beely"
     negocios ||--o{ sedes : "tiene"
     negocios ||--o{ clientes : "registra"
     negocios ||--o{ programas : "define"
@@ -91,10 +95,10 @@ erDiagram
 |-------|---------|---------|
 | `administradores_plataforma` | Usuarios con control total de Beely | Manual / SQL |
 | `negocios` | Cada empresa cliente de Beely (marca, plan, límites de envío) | Plataforma crea; dueño/admin editan columnas de marca |
-| `miembros_negocio` | Equipo del negocio con rol | Dueño |
+| `miembros_negocio` | Equipo del negocio con rol | Dueño (administradores y cajeros) · Plataforma (dueños) · Edge Function `panel-equipo` |
 | `sedes` | Puntos de venta con coordenadas (para Wallet) | Plataforma crea; dueño/admin editan |
 | `clientes` | Cliente final de un negocio + autorizaciones Ley 1581 | Edge Function `club-registro`; equipo solo marca `celular_verificado` |
-| `programas` | Reglas de sellos y premio (uno activo por negocio) | Dueño/admin |
+| `programas` | Reglas de sellos y premio (uno activo por negocio) | `crear_negocio()` crea el primero; dueño/admin editan |
 | `disenos_tarjeta` | Apariencia del pase y de la PWA; `version` sube → re-sincronizar Wallet | Dueño/admin |
 | `tarjetas` | Tarjeta del cliente en un programa; contadores denormalizados | Solo funciones SQL |
 | `eventos_sello` | Ledger inmutable de sellos (+venta, −premio, ±ajuste) | Solo `registrar_sello()` |
@@ -116,7 +120,9 @@ erDiagram
 4. Inserta en `eventos_sello`; si completa la tarjeta emite cupón `premio_sellos` y registra el descuento de sellos.
 5. Devuelve `sellos_sumados`, `sellos_actuales`, `premio_emitido` y el cupón si aplica.
 
-Errores: `tarjeta_no_encontrada`, `tarjeta_bloqueada`, `programa_inactivo`, `origen_invalido`.
+Desde la migración 0002 también valida que el negocio esté `activo` y que la sede (si viene) sea del negocio y esté activa. Si no suma nada devuelve `motivo: sin_sellos_aplicables` y `detalle`: `tope_diario` (ya llegó a `max_sellos_dia`) o `compra_no_aplica` (monto bajo el mínimo).
+
+Errores: `tarjeta_no_encontrada`, `tarjeta_bloqueada`, `programa_inactivo`, `origen_invalido`, `negocio_inactivo`, `sede_no_encontrada`.
 
 ### `canjear_cupon(negocio_id, codigo, venta_externa_id?, sede_id?, canjeado_por?) → jsonb`
 
@@ -126,7 +132,27 @@ Errores: `cupon_no_encontrado`, `cupon_ya_canjeado`, `cupon_no_disponible`, `cup
 
 Ambas solo se pueden ejecutar con `service_role`.
 
-## Checklist de pruebas (verificado en Postgres 16 y en Supabase local con Postgres 17)
+### Funciones del panel (migración 0002)
+
+| Función | Quién | Hace | Errores |
+|--------|-------|------|---------|
+| `crear_negocio(slug, nombre, zona_horaria?) → uuid` | Admin de plataforma | Crea el negocio con su programa de sellos y diseño de tarjeta por defecto | `sin_permiso`, `slug_en_uso`, `zona_horaria_invalida` |
+| `plataforma_actualizar_negocio(negocio_id, plan, estado)` | Admin de plataforma | Cambia plan y estado (columnas que el negocio no puede tocar) | `sin_permiso`, `negocio_no_encontrado` |
+| `equipo_negocio(negocio_id) → table` | Dueño / administrador | Equipo con correo, rol, último ingreso e invitación pendiente | `sin_permiso` |
+| `usuario_por_email(email) → uuid` | Solo `service_role` | La usa `panel-equipo` para no reinvitar a quien ya tiene cuenta | — |
+
+Trigger `negocios_zona_horaria`: rechaza zonas horarias que Postgres no conoce (`zona_horaria_invalida`), porque el tope diario de sellos se calcula con ellas.
+
+### Reglas de equipo (RLS de `miembros_negocio`)
+
+- El dueño invita, cambia de rol y quita **administradores y cajeros**; no puede crear dueños, ascender a dueño ni tocar su propia fila.
+- Solo la plataforma asigna o quita dueños.
+- El administrador ve el equipo pero no lo gestiona; el cajero no lo ve.
+- Del equipo solo se puede actualizar la columna `rol`.
+
+## Checklist de pruebas (Supabase local con Postgres 17)
+
+### Núcleo (`0002_nucleo_aserciones.sql`)
 
 - [x] Sello normal suma 1
 - [x] Misma `venta_externa_id` no suma dos veces
@@ -139,3 +165,17 @@ Ambas solo se pueden ejecutar con `service_role`.
 - [x] Cajero no puede editar fecha de nacimiento; sí puede marcar celular verificado
 - [x] Administrador no puede cambiar el plan del negocio
 - [x] Usuario sin negocio y `anon` no ven nada
+
+### Sprint 1 (`0003_panel_aserciones.sql`)
+
+- [x] Plataforma crea negocio con programa activo y diseño; slug repetido y zona horaria inválida fallan
+- [x] Plataforma crea sedes, asigna dueños y cambia plan
+- [x] Dueño agrega administradores y cajeros y cambia su rol; no crea ni asciende dueños, no toca otro negocio, no cambia la llave de un miembro, no se borra a sí mismo
+- [x] Dueño y administrador ven el equipo con correo; cajero y otros negocios reciben `sin_permiso`
+- [x] Dueño no crea negocios ni cambia su plan; `usuario_por_email` es solo de `service_role`
+- [x] Dueño edita marca y programa; zona horaria inválida falla al editar
+- [x] Cajero no gestiona equipo, no edita programa ni sedes y solo ve las sedes de su negocio
+- [x] Administrador edita sedes pero no quita cajeros
+- [x] Sello desde el panel guarda origen `panel`, sede y cajero
+- [x] Sede de otro negocio o inactiva → `sede_no_encontrada`; negocio suspendido → `negocio_inactivo`; la venta repetida sigue siendo idempotente
+- [x] `detalle` distingue `compra_no_aplica` (monto bajo el mínimo) de `tope_diario`

@@ -94,7 +94,8 @@ beely/
 | `pos-sellos` | POS (llave API) | `POST /v1/sellos` → `registrar_sello`. |
 | `pos-cupones-canjear` | POS (llave API) | `POST /v1/cupones/canjear` → `canjear_cupon`. |
 | `pos-clientes` | POS (llave API) | Buscar tarjeta por token o celular. |
-| `panel-sello` | Panel (cajero autenticado) | Igual que `pos-sellos` pero con sesión del cajero. |
+| `panel-sello` | Panel (cajero autenticado) | Igual que `pos-sellos` pero con sesión del cajero. ✅ Sprint 1 |
+| `panel-equipo` | Panel (dueño o plataforma) | Invita al equipo por correo y crea la membresía. ✅ Sprint 1 |
 | `wallet-google` | Interno | Crea/actualiza LoyaltyClass y LoyaltyObject, genera JWT de guardado. |
 | `campanas-motor` | pg_cron | Evalúa disparadores, aplica topes y envía push/Wallet. |
 | `llaves-api` | Panel (dueño) | Genera llave, guarda hash, la muestra una vez. |
@@ -121,6 +122,7 @@ Ningún sprint se cierra sin: SQL completo con migración, especificación de Ed
 VITE_SUPABASE_URL=
 VITE_SUPABASE_ANON_KEY=
 VITE_VAPID_PUBLIC_KEY=
+VITE_CLUB_DOMINIO_BASE=hibeely.com   # solo panel: muestra {slug}.hibeely.com
 
 # Edge Functions (supabase secrets set ...)
 SUPABASE_SERVICE_ROLE_KEY=
@@ -130,6 +132,7 @@ VAPID_SUBJECT=mailto:soporte@hibeely.com
 GOOGLE_WALLET_ISSUER_ID=
 GOOGLE_WALLET_SERVICE_ACCOUNT_JSON=
 CLUB_DOMINIO_BASE=hibeely.com
+PANEL_URL=https://app.hibeely.com   # destino de las invitaciones al equipo
 ```
 
 ## Roadmap
@@ -137,7 +140,7 @@ CLUB_DOMINIO_BASE=hibeely.com
 | Sprint | Entregable |
 |--------|-----------|
 | 0 | Monorepo, Supabase local, migración `0001_nucleo` (hecha), CI con pruebas SQL |
-| 1 | Panel: login del equipo, negocio, sedes, programa de sellos, cajero escanea QR y suma sellos |
+| 1 | Panel: login del equipo, negocio, sedes, programa de sellos, cajero escanea QR y suma sellos (ver `docs/sprint-1.md`) |
 | 2 | PWA club: registro, tarjeta con QR, cupones, instalación, manifest por negocio |
 | 3 | API POS con llaves + integración Angelato |
 | 4 | Google Wallet + editor de tarjeta con vista previa |

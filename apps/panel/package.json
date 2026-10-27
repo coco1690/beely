@@ -10,16 +10,26 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.2",
+    "tailwindcss": "^4.3.3",
     "typescript": "5.9.3",
     "vite": "^8.3.5"
   },
   "dependencies": {
     "@beely/tipos": "workspace:*",
     "@beely/ui": "workspace:*",
+    "@hookform/resolvers": "^6.0.1",
+    "@supabase/supabase-js": "^2.118.0",
+    "lucide-react": "^1.62.0",
+    "qr-scanner": "^1.4.2",
     "react": "^19.3.1",
-    "react-dom": "^19.3.1"
+    "react-dom": "^19.3.1",
+    "react-hook-form": "^7.91.0",
+    "react-router": "^8.5.0",
+    "zod": "^4.6.7",
+    "zustand": "^5.0.16"
   }
 }

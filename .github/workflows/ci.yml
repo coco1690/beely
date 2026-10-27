@@ -48,6 +48,25 @@ jobs:
         if: always()
         run: pnpm exec supabase stop --no-backup
 
+  funciones:
+    name: Edge Functions (deno check)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.1.x
+
+      - name: deno check
+        run: |
+          for funcion in supabase/functions/*/index.ts; do
+            dir=$(dirname "$funcion")
+            echo "▶ $dir"
+            deno check --config "$dir/deno.json" "$funcion"
+          done
+
   apps:
     name: Typecheck y build
     runs-on: ubuntu-latest
