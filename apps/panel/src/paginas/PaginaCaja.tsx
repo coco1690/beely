@@ -452,7 +452,7 @@ function ProgresoSellos({ actuales, requeridos, premio }: { actuales: number; re
       {requeridos <= 12 ? (
         <div className="flex flex-wrap gap-1" role="img" aria-label={`${actuales} de ${requeridos} sellos`}>
           {Array.from({ length: requeridos }, (_, i) => (
-            <Sello key={i} lleno={i < actuales} className={cn('size-9', esNuevo(i) && 'animate-estampar')} style={esNuevo(i) ? retraso(i) : undefined} />
+            <Sello key={i} lleno={i < actuales} className={cn('size-7 sm:size-9', esNuevo(i) && 'animate-estampar')} style={esNuevo(i) ? retraso(i) : undefined} />
           ))}
         </div>
       ) : (
