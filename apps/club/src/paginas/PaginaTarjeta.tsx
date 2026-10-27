@@ -1,8 +1,8 @@
 import { fecha } from '@beely/tipos'
-import { Boton, cn, EstadoVacio, FilaLista, Lista, LogoNegocio, PanelInferior, Sello, SellosTarjeta } from '@beely/ui'
-import { Gift, QrCode, Stamp } from 'lucide-react'
-import { useState, type CSSProperties } from 'react'
-import { Link, useSearchParams } from 'react-router'
+import { cn, EstadoVacio, FilaLista, Lista, LogoNegocio, SellosTarjeta } from '@beely/ui'
+import { Gift, Stamp } from 'lucide-react'
+import type { CSSProperties } from 'react'
+import { Link } from 'react-router'
 import { CodigoQr } from '../componentes/CodigoQr'
 import { cuponesVigentes, useClubStore, type TarjetaClub } from '../stores/useClubStore'
 
@@ -26,14 +26,12 @@ function estiloPase(d: Diseno | null): CSSProperties {
 export function PaginaTarjeta() {
   const tarjeta = useClubStore((e) => e.tarjeta)
   const negocio = useClubStore((e) => e.negocio)
-  const [parametros] = useSearchParams()
   if (!tarjeta || !negocio) return null
 
   const programa = tarjeta.programas
   const requeridos = programa?.sellos_requeridos ?? 10
   const faltan = Math.max(requeridos - tarjeta.sellos_actuales, 0)
   const premios = cuponesVigentes(tarjeta).filter((c) => c.origen === 'premio_sellos')
-  const variante = parametros.get('variante') ?? 'pase'
   const datos = { tarjeta, negocio, requeridos, faltan, premio: programa?.premio_descripcion ?? '' }
 
   return (
@@ -43,7 +41,7 @@ export function PaginaTarjeta() {
           Esta tarjeta está bloqueada. Pregunta en caja.
         </p>
       ) : null}
-      {variante === 'qr' ? <VarianteQr {...datos} /> : variante === 'panal' ? <VariantePanal {...datos} /> : <VariantePase {...datos} />}
+      <Pase {...datos} />
 
       {premios.length > 0 ? (
         <Link
@@ -69,7 +67,7 @@ export function PaginaTarjeta() {
   )
 }
 
-type DatosVariante = {
+type DatosPase = {
   tarjeta: TarjetaClub
   negocio: { nombre: string; logo_url: string | null }
   requeridos: number
@@ -77,11 +75,8 @@ type DatosVariante = {
   premio: string
 }
 
-const textoFaltan = (faltan: number, premio: string) =>
-  faltan === 0 ? `¡Completaste la tarjeta! ${premio}` : `Te ${faltan === 1 ? 'falta 1 sello' : `faltan ${faltan} sellos`} para ${premio.toLowerCase()}`
-
-// A · Pase: la tarjeta con los colores del negocio (como en Wallet) y el QR siempre a la vista.
-function VariantePase({ tarjeta, negocio, requeridos, faltan, premio }: DatosVariante) {
+// El pase: la tarjeta con los colores del negocio (como en Wallet) y el QR siempre a la vista.
+function Pase({ tarjeta, negocio, requeridos, faltan, premio }: DatosPase) {
   const diseno = tarjeta.programas?.disenos_tarjeta ?? null
   return (
     <>
@@ -129,66 +124,6 @@ function VariantePase({ tarjeta, negocio, requeridos, faltan, premio }: DatosVar
           <p className="mt-1 text-etiqueta text-texto-3">Muestra este código en caja para sumar tus sellos y canjear tus premios.</p>
         </div>
       </section>
-    </>
-  )
-}
-
-// B · QR primero: lo que se usa en caja, grande; el progreso en una barra debajo.
-function VarianteQr({ tarjeta, requeridos, faltan, premio }: DatosVariante) {
-  return (
-    <>
-      <section className="flex flex-col items-center gap-3 rounded-capa border border-borde bg-superficie p-5 text-center shadow-tarjeta">
-        <p className="text-seccion text-texto">Hola, {tarjeta.clientes?.nombre.split(' ')[0]}</p>
-        <CodigoQr valor={tarjeta.token_publico} className="w-full max-w-64 p-2" />
-        <p className="text-etiqueta text-texto-3">Muestra este código en caja</p>
-      </section>
-      <section className="rounded-tarjeta border border-borde bg-superficie p-4 shadow-tarjeta">
-        <div className="flex items-baseline justify-between gap-3">
-          <p className="flex items-baseline gap-1.5">
-            <span className="text-[1.75rem] leading-none font-semibold tracking-tight text-texto tabular-nums">{tarjeta.sellos_actuales}</span>
-            <span className="text-sm text-texto-3 tabular-nums">de {requeridos} sellos</span>
-          </p>
-          <Stamp className="size-5 text-acento-texto" aria-hidden />
-        </div>
-        <div className="mt-3 flex h-2.5 gap-[3px]" aria-hidden>
-          {Array.from({ length: requeridos }, (_, i) => (
-            <span key={i} className={cn('flex-1 rounded-full', i < tarjeta.sellos_actuales ? 'bg-acento' : 'bg-hundido')} />
-          ))}
-        </div>
-        <p className="mt-3 text-etiqueta text-texto-2">{textoFaltan(faltan, premio)}</p>
-      </section>
-    </>
-  )
-}
-
-// C · Panal: los sellos como protagonistas; el QR se abre en un panel desde abajo.
-function VariantePanal({ tarjeta, requeridos, faltan, premio }: DatosVariante) {
-  const [qrAbierto, setQrAbierto] = useState(false)
-  return (
-    <>
-      <section className="flex flex-col items-center gap-5 rounded-capa border border-borde bg-superficie px-5 pt-7 pb-5 text-center shadow-tarjeta">
-        <p className="flex items-baseline gap-1.5">
-          <span key={tarjeta.sellos_actuales} className="text-[3.5rem] leading-none font-semibold tracking-tight text-texto tabular-nums motion-safe:animate-aparecer">
-            {tarjeta.sellos_actuales}
-          </span>
-          <span className="text-base text-texto-3 tabular-nums">de {requeridos}</span>
-        </p>
-        <div className="flex max-w-80 flex-wrap justify-center gap-1.5" role="img" aria-label={`${tarjeta.sellos_actuales} de ${requeridos} sellos`}>
-          {Array.from({ length: requeridos }, (_, i) => (
-            <Sello key={i} lleno={i < tarjeta.sellos_actuales} className="size-[clamp(2.25rem,13vw,3rem)]" />
-          ))}
-        </div>
-        <p className="text-sm text-texto-2">{textoFaltan(faltan, premio)}</p>
-        <Boton className="w-full" onClick={() => setQrAbierto(true)}>
-          <QrCode />
-          Mostrar mi código
-        </Boton>
-      </section>
-      <PanelInferior abierto={qrAbierto} onAbiertoCambia={setQrAbierto} titulo="Tu código" descripcion="Muéstralo en caja">
-        <div className="mx-auto w-full max-w-72 pb-4">
-          <CodigoQr valor={tarjeta.token_publico} className="p-2" />
-        </div>
-      </PanelInferior>
     </>
   )
 }
