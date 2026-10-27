@@ -6,10 +6,10 @@ import { create } from 'zustand'
 
 export const temas = [
   { id: 'miel', nombre: 'Miel', color: '#f5b301' },
-  { id: 'oceano', nombre: 'Océano', color: '#0ea5e9' },
-  { id: 'bosque', nombre: 'Bosque', color: '#10b981' },
-  { id: 'uva', nombre: 'Uva', color: '#8b5cf6' },
-  { id: 'coral', nombre: 'Coral', color: '#f43f5e' },
+  { id: 'oceano', nombre: 'Océano', color: '#0277b5' },
+  { id: 'bosque', nombre: 'Bosque', color: '#05805c' },
+  { id: 'uva', nombre: 'Uva', color: '#7c3aed' },
+  { id: 'coral', nombre: 'Coral', color: '#d81b45' },
 ] as const
 
 export type IdTema = (typeof temas)[number]['id']

@@ -69,25 +69,43 @@
   --b-sombra: 0 1px 2px rgb(0 0 0 / 0.4);
 }
 
-/* Temas de acento. Miel es el de la marca. */
+/* Temas de acento. Miel es el de la marca.
+   En claro el texto sobre el acento es blanco (≥ 4,5:1); en oscuro el acento
+   se aclara y el texto encima pasa a oscuro, para que brille sin perder contraste. */
 :root,
 :root[data-tema='miel'] {
   --b-acento: #f5b301;
   --b-sobre-acento: #1c1917;
 }
 :root[data-tema='oceano'] {
-  --b-acento: #0ea5e9;
+  --b-acento: #0277b5;
   --b-sobre-acento: #ffffff;
 }
 :root[data-tema='bosque'] {
-  --b-acento: #10b981;
+  --b-acento: #05805c;
   --b-sobre-acento: #ffffff;
 }
 :root[data-tema='uva'] {
-  --b-acento: #8b5cf6;
+  --b-acento: #7c3aed;
   --b-sobre-acento: #ffffff;
 }
 :root[data-tema='coral'] {
-  --b-acento: #f43f5e;
+  --b-acento: #d81b45;
   --b-sobre-acento: #ffffff;
+}
+:root[data-modo='oscuro'][data-tema='oceano'] {
+  --b-acento: #38bdf8;
+  --b-sobre-acento: #0e0d0c;
+}
+:root[data-modo='oscuro'][data-tema='bosque'] {
+  --b-acento: #34d399;
+  --b-sobre-acento: #0e0d0c;
+}
+:root[data-modo='oscuro'][data-tema='uva'] {
+  --b-acento: #a78bfa;
+  --b-sobre-acento: #0e0d0c;
+}
+:root[data-modo='oscuro'][data-tema='coral'] {
+  --b-acento: #fb7185;
+  --b-sobre-acento: #0e0d0c;
 }
