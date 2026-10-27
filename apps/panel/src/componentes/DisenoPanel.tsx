@@ -87,8 +87,8 @@ export function DisenoPanel() {
   )
 }
 
-// Móvil: barra flotante oscura con hasta 3 secciones a un toque y el resto en "Más".
-// En modo claro es del color del texto; en oscuro, un tono elevado con borde. La sección activa va en una píldora del acento.
+// Móvil: barra flotante con hasta 3 secciones a un toque y el resto en "Más".
+// Usa la superficie del tema (clara u oscura) y la sección activa va en una píldora del acento.
 function BarraInferior({ enlaces }: { enlaces: Enlace[] }) {
   const [masAbierto, setMasAbierto] = useState(false)
   const { pathname } = useLocation()
@@ -96,15 +96,14 @@ function BarraInferior({ enlaces }: { enlaces: Enlace[] }) {
   const resto = enlaces.length > 4 ? enlaces.slice(3) : []
   const restoActivo = resto.some((e) => pathname.startsWith(e.a))
   const claseTab =
-    'flex h-14 min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-tarjeta border border-transparent text-[11px] font-medium text-(--barra-texto)/70 transition-colors hover:text-(--barra-texto) focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-(--barra-texto) [&_svg]:size-5'
-  const claseActiva =
-    'border-[color-mix(in_oklab,var(--b-acento)_55%,var(--barra))] bg-[color-mix(in_oklab,var(--b-acento)_30%,var(--barra))] text-(--barra-texto) [&_svg]:text-[color-mix(in_oklab,var(--b-acento)_45%,var(--barra-texto))]'
+    'flex h-14 min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-tarjeta border border-transparent text-[11px] font-medium text-texto-3 transition-colors hover:text-texto focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-foco [&_svg]:size-5'
+  const claseActiva = 'border-acento-borde bg-acento-suave text-texto [&_svg]:text-acento-texto'
 
   if (enlaces.length === 0) return null
   return (
     <nav
       aria-label="Secciones"
-      className="fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-30 flex gap-1 rounded-capa border border-transparent bg-(--barra) p-1.5 shadow-capa [--barra-texto:var(--b-fondo)] [--barra:var(--b-texto)] md:hidden dark:border-borde-fuerte dark:[--barra-texto:var(--b-texto)] dark:[--barra:var(--b-hundido)]"
+      className="fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-30 flex gap-1 rounded-capa border border-borde bg-superficie/90 p-1.5 shadow-capa backdrop-blur-lg md:hidden"
     >
       {visibles.map((e) => (
         <NavLink key={e.a} to={e.a} className={({ isActive }) => cn(claseTab, isActive && claseActiva)}>
