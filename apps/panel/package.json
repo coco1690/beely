@@ -21,6 +21,8 @@
   "dependencies": {
     "@beely/tipos": "workspace:*",
     "@beely/ui": "workspace:*",
+    "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource/geist-mono": "^5.3.0",
     "@hookform/resolvers": "^6.0.1",
     "@supabase/supabase-js": "^2.118.0",
     "lucide-react": "^1.62.0",

@@ -1,3 +1,4 @@
+import { ProveedorConfirmar, Toaster } from '@beely/ui'
 import { StrictMode, useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, Navigate, Outlet, RouterProvider } from 'react-router'
@@ -16,6 +17,10 @@ import { SinNegocio } from './paginas/SinNegocio'
 import { puedeConfigurar, useNegocioActivo, useNegocioStore } from './stores/useNegocioStore'
 import { useSesionStore } from './stores/useSesionStore'
 import './stores/useTemaStore'
+// Fuentes servidas con la app (sin depender de Google Fonts ni parpadeo de fuente).
+import '@fontsource-variable/inter/opsz.css'
+import '@fontsource/geist-mono/400.css'
+import '@fontsource/geist-mono/500.css'
 import './estilos.css'
 
 // Solo con sesión; carga los negocios del usuario una vez por sesión.
@@ -110,7 +115,13 @@ const enrutador = createBrowserRouter([
 function App() {
   const iniciar = useSesionStore((e) => e.iniciar)
   useEffect(() => iniciar(), [iniciar])
-  return <RouterProvider router={enrutador} />
+  return (
+    <ProveedorConfirmar>
+      <RouterProvider router={enrutador} />
+      {/* En móvil los toasts quedan sobre la barra inferior de secciones. */}
+      <Toaster margenInferiorMovil="4rem" />
+    </ProveedorConfirmar>
+  )
 }
 
 const raiz = document.getElementById('raiz')
