@@ -1,6 +1,6 @@
 # Modelo de datos — Beely
 
-Migraciones: `supabase/migrations/20261027000001_nucleo.sql` (núcleo) y `20261027000002_panel.sql` (Sprint 1, panel) · Pruebas: `supabase/tests/0001_nucleo.sql` (recorrido), `0002_nucleo_aserciones.sql` y `0003_panel_aserciones.sql` (aserciones, corren en CI)
+Migraciones: `supabase/migrations/20261027000001_nucleo.sql` (núcleo), `20261027000002_panel.sql` (Sprint 1, panel) y `20261027000005_club.sql` (Sprint 2, club) · Pruebas: `supabase/tests/0001_nucleo.sql` (recorrido), `0002_nucleo_aserciones.sql` y `0003_panel_aserciones.sql` (aserciones, corren en CI)
 
 El Sprint 1 no agrega tablas: agrega funciones, políticas y validaciones sobre las del núcleo.
 
@@ -29,6 +29,7 @@ erDiagram
     tarjetas ||--o{ suscripciones_push : "dispositivos"
     tarjetas ||--o{ pases_wallet : "google/apple"
     negocios ||--o{ llaves_api : "integra POS"
+    negocios ||--o{ intentos_registro : "límite de registro"
 
     negocios {
         uuid id PK
@@ -109,6 +110,7 @@ erDiagram
 | `suscripciones_push` | Endpoints Web Push por dispositivo | `club-push-suscribir` |
 | `pases_wallet` | Pase emitido en Google/Apple por tarjeta | `wallet-google` / `wallet-apple` |
 | `llaves_api` | Llaves del POS (solo hash) | `llaves-api` |
+| `intentos_registro` | Intentos de registro de la última hora (huellas SHA-256 de IP y celular) | Solo `club_registrar()` |
 
 ## Funciones de negocio
 
@@ -152,6 +154,15 @@ Trigger `negocios_zona_horaria`: rechaza zonas horarias que Postgres no conoce (
 - El administrador ve el equipo pero no lo gestiona; el cajero no lo ve.
 - Del equipo solo se puede actualizar la columna `rol`.
 
+### Club (migración 0005)
+
+| Función | Quién | Hace |
+|--------|-------|------|
+| `club_registrar(slug, celular, nombre, fecha_nacimiento, acepta_marketing, huella_ip) → jsonb` | Solo `service_role` (`club-registro`) | Crea cliente + tarjeta con límite de intentos; `{registrado, token}` o `{registrado:false, motivo}` |
+| `privado.tarjeta_club()`, `cliente_club()`, `negocio_club()` | Políticas de `anon` | Resuelven las cabeceras `x-tarjeta-token` / `x-negocio-slug` |
+
+RLS de `anon` (la PWA): ve el negocio del slug o del token, su programa activo, diseño y sedes activas; con token, solo su tarjeta, cliente (nombre), cupones y sellos; escribe `clientes.acepta_marketing` y su `suscripciones_push`. Detalle en [sprint-2.md](sprint-2.md).
+
 ## Checklist de pruebas (Supabase local con Postgres 17)
 
 ### Núcleo (`0002_nucleo_aserciones.sql`)
@@ -188,3 +199,12 @@ Trigger `negocios_zona_horaria`: rechaza zonas horarias que Postgres no conoce (
 - [x] Dueño sube, lista y borra el logo de su negocio y guarda `logo_url`; `logo_url` que no sea http(s) falla
 - [x] Dueño no sube en la carpeta de otro negocio ni fuera de una carpeta de negocio
 - [x] Cajero no sube ni borra logos; el dueño de otro negocio no lista ni borra logos ajenos
+
+### Sprint 2 (`0006_club_aserciones.sql`)
+
+- [x] anon sin cabeceras no ve nada; el slug muestra solo su negocio, programa activo, diseño y sedes activas
+- [x] El token muestra solo su tarjeta, cliente, cupones y sellos; nunca celular, nacimiento, montos ni ids de venta
+- [x] anon solo cambia `acepta_marketing` de su cliente y su suscripción push
+- [x] `club_registrar`: solo service_role, celular repetido no entrega tarjeta, único por negocio, topes por IP y celular
+- [x] El panel no cambia con las cabeceras
+

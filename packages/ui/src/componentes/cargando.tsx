@@ -1,4 +1,4 @@
-import { Spinner } from '@beely/ui'
+import { Spinner } from './spinner'
 
 // Aparece solo si la carga pasa de ~200 ms: las cargas rápidas no parpadean.
 export function Cargando({ texto = 'Cargando…' }: { texto?: string }) {

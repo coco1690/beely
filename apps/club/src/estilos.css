@@ -1,0 +1,6 @@
+@import 'tailwindcss';
+@import '@beely/ui/tema.css';
+@import '@beely/ui/base.css';
+
+/* Los componentes de packages/ui también usan clases de Tailwind. */
+@source '../../../packages/ui/src';

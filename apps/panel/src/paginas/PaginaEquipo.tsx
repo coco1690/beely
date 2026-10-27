@@ -20,7 +20,7 @@ import {
 import { useCallback, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { EncabezadoPagina } from '../componentes/DisenoPanel'
-import { fechaHora, nombresRol } from '../lib/formato'
+import { fechaHora, nombresRol } from '@beely/tipos'
 import { llamarFuncion, mensajeDe } from '../lib/funciones'
 import { supabase } from '../lib/supabase'
 import { puedeGestionarEquipo, useNegocioActivo } from '../stores/useNegocioStore'

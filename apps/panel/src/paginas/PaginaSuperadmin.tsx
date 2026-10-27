@@ -4,7 +4,7 @@ import { Aviso, Boton, Campo, Entrada, Insignia, Selector, Tarjeta, TarjetaConte
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { EncabezadoPagina } from '../componentes/DisenoPanel'
-import { zonasHorarias } from '../lib/formato'
+import { zonasHorarias } from '@beely/tipos'
 import { llamarFuncion, mensajeDe } from '../lib/funciones'
 import { supabase } from '../lib/supabase'
 import { type Negocio, useNegocioStore } from '../stores/useNegocioStore'

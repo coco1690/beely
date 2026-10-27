@@ -1,30 +1,28 @@
-import type { ResultadoSello } from '@beely/tipos'
 import {
   Aviso,
   Boton,
   Campo,
-  cn,
   Entrada,
   EstadoVacio,
   FilaLista,
   Insignia,
   Lista,
   PanelInferior,
-  Sello,
   Selector,
+  SellosTarjeta,
   Tarjeta,
   TarjetaContenido,
   TarjetaEncabezado,
   TarjetaTitulo,
+  useMedia,
 } from '@beely/ui'
 import { Camera, Gift, Info, Search, Stamp } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { EncabezadoPagina } from '../componentes/DisenoPanel'
 import { EscanerQr } from '../componentes/EscanerQr'
-import { celularOculto, extraerToken, fecha, fechaHora, normalizarCelular, numero, pesos } from '../lib/formato'
+import { celularOculto, extraerToken, fecha, fechaHora, normalizarCelular, numero, pesos, type ResultadoSello } from '@beely/tipos'
 import { llamarFuncion, mensajeDe } from '../lib/funciones'
 import { supabase } from '../lib/supabase'
-import { useMedia } from '../lib/useMedia'
 import { useNegocioActivo, useNegocioStore } from '../stores/useNegocioStore'
 
 const consultaTarjeta = `id, token_publico, sellos_actuales, sellos_historicos, premios_ganados, ultima_visita_en, estado,
@@ -421,18 +419,8 @@ function VistaTarjeta({
   )
 }
 
-// Contador grande y la tarjeta de sellos. Hasta 12 sellos se dibujan como celdas de panal;
-// con más, una barra segmentada que no ocupa media pantalla.
+// Contador grande y la tarjeta de sellos (panal hasta 12, barra con más).
 function ProgresoSellos({ actuales, requeridos, premio }: { actuales: number; requeridos: number; premio: string | undefined }) {
-  // Los sellos recién sumados se "estampan"; los que ya estaban no se animan.
-  const previos = useRef(actuales)
-  const desde = Math.min(previos.current, actuales)
-  useEffect(() => {
-    previos.current = actuales
-  }, [actuales])
-  const esNuevo = (i: number) => i >= desde && i < actuales
-  const retraso = (i: number) => ({ animationDelay: `${Math.min((i - desde) * 30, 300)}ms` })
-
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
@@ -449,23 +437,7 @@ function ProgresoSellos({ actuales, requeridos, premio }: { actuales: number; re
           </p>
         ) : null}
       </div>
-      {requeridos <= 12 ? (
-        <div className="flex flex-wrap gap-1" role="img" aria-label={`${actuales} de ${requeridos} sellos`}>
-          {Array.from({ length: requeridos }, (_, i) => (
-            <Sello key={i} lleno={i < actuales} className={cn('size-7 sm:size-9', esNuevo(i) && 'animate-estampar')} style={esNuevo(i) ? retraso(i) : undefined} />
-          ))}
-        </div>
-      ) : (
-        <div className="flex h-2.5 gap-[3px]" role="img" aria-label={`${actuales} de ${requeridos} sellos`}>
-          {Array.from({ length: requeridos }, (_, i) => (
-            <span
-              key={i}
-              className={cn('flex-1 rounded-full', i < actuales ? 'bg-acento' : 'bg-hundido', esNuevo(i) && 'animate-estampar')}
-              style={esNuevo(i) ? retraso(i) : undefined}
-            />
-          ))}
-        </div>
-      )}
+      <SellosTarjeta actuales={actuales} requeridos={requeridos} claseSello="size-7 sm:size-9" />
     </div>
   )
 }

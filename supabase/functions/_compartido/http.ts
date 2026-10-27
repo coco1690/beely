@@ -24,6 +24,7 @@ const estadoPorCodigo: Record<string, number> = {
   tarjeta_no_encontrada: 404,
   sede_no_encontrada: 404,
   cupon_no_encontrado: 404,
+  negocio_no_encontrado: 404,
   sin_permiso: 403,
   tarjeta_bloqueada: 409,
   programa_inactivo: 409,

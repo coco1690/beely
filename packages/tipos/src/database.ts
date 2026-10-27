@@ -185,6 +185,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"intentos_registro": {
+                  Row: {
+                    "creado_en": string,"huella": string,"id": string,"negocio_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "creado_en"?: string,"huella": string,"id"?: string,"negocio_id": string
+                  }
+                  Update: {
+                    "creado_en"?: string,"huella"?: string,"id"?: string,"negocio_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "intentos_registro_negocio_id_fkey"
+      columns: ["negocio_id"]
+isOneToOne: false
+      referencedRelation: "negocios"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"llaves_api": {
                   Row: {
                     "creado_en": string,"creado_por": string | null,"hash": string,"id": string,"negocio_id": string,"nombre": string,"permisos": (string)[],"prefijo": string,"revocada_en": string | null,"ultimo_uso_en": string | null
@@ -405,6 +425,9 @@ isOneToOne: false
           Functions: {
             "canjear_cupon":
 { Args: { "p_canjeado_por"?: string,"p_codigo": string,"p_negocio_id": string,"p_sede_id"?: string,"p_venta_externa_id"?: string }; Returns: Json
+                           },
+"club_registrar":
+{ Args: { "p_acepta_marketing": boolean,"p_celular": string,"p_fecha_nacimiento": string,"p_huella_ip": string,"p_nombre": string,"p_slug": string }; Returns: Json
                            },
 "crear_negocio":
 { Args: { "p_nombre": string,"p_slug": string,"p_zona_horaria"?: string }; Returns: string

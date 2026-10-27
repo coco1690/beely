@@ -100,3 +100,64 @@ export function Campo({
     </Contexto>
   )
 }
+
+// Casilla con su texto al lado; toda la fila es tocable. `children` es la etiqueta.
+export function Casilla({
+  className,
+  children,
+  ref,
+  ...props
+}: Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> & { ref?: Ref<HTMLInputElement>; children: ReactNode }) {
+  const atributos = useAtributosCampo(props)
+  return (
+    <label className={cn('flex cursor-pointer items-start gap-3 text-sm text-texto-2', className)}>
+      <input
+        ref={ref}
+        type="checkbox"
+        className="mt-0.5 size-4 shrink-0 cursor-pointer rounded-sm accent-acento focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foco pointer-coarse:size-5"
+        {...props}
+        {...atributos}
+      />
+      <span className="min-w-0">{children}</span>
+    </label>
+  )
+}
+
+// Interruptor de encendido/apagado (role="switch").
+export function Interruptor({
+  activo,
+  onCambiar,
+  etiqueta,
+  disabled,
+  className,
+}: {
+  activo: boolean
+  onCambiar: (activo: boolean) => void
+  etiqueta: string
+  disabled?: boolean
+  className?: string
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={activo}
+      aria-label={etiqueta}
+      disabled={disabled}
+      onClick={() => onCambiar(!activo)}
+      className={cn(
+        'relative inline-flex h-6 w-10 shrink-0 items-center rounded-full border border-transparent transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foco disabled:cursor-not-allowed disabled:opacity-50',
+        activo ? 'bg-acento' : 'bg-borde-fuerte',
+        className,
+      )}
+    >
+      <span
+        className={cn(
+          'size-5 rounded-full bg-white shadow-boton transition-transform duration-200',
+          activo ? 'translate-x-[1.0625rem]' : 'translate-x-0.5',
+        )}
+        aria-hidden
+      />
+    </button>
+  )
+}

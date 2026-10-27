@@ -22,8 +22,8 @@ beely/
 │   ├── panel/          # Panel web del negocio y del superadmin (app.hibeely.com)
 │   └── club/           # PWA del cliente final, una por negocio ({slug}.hibeely.com)
 ├── packages/
-│   ├── tipos/          # Tipos generados de Supabase + esquemas zod compartidos
-│   └── ui/             # Componentes shadcn/ui compartidos y tema
+│   ├── tipos/          # Tipos de Supabase, esquemas zod, formatos y cliente Supabase (`@beely/tipos/supabase`)
+│   └── ui/             # Componentes shadcn/ui, tema (tokens, store, selector), PWA (`@beely/ui/vite`) y base.css
 ├── supabase/
 │   ├── migrations/     # SQL versionado (nunca editar una migración ya aplicada)
 │   ├── functions/      # Edge Functions (Deno)
@@ -88,9 +88,9 @@ beely/
 
 | Función | Quién la llama | Hace |
 |--------|---------------|------|
-| `club-registro` | PWA (anon) | Valida zod, crea cliente + tarjeta, devuelve token. Rate limit por IP y por celular. |
-| `club-tarjeta` | PWA (anon + token) | Devuelve sellos, cupones vigentes, diseño y links de Wallet. |
-| `club-push-suscribir` | PWA | Guarda/actualiza suscripción Web Push. |
+| `club-registro` | PWA (anon) | Valida zod, crea cliente + tarjeta, devuelve token. Rate limit por IP y por celular. ✅ Sprint 2 |
+| ~~`club-tarjeta`~~ | PWA (anon + token) | Reemplazada por RLS con la cabecera `x-tarjeta-token` (Sprint 2): la PWA lee su tarjeta directo. Los links de Wallet llegan con `wallet-google` (Sprint 4). |
+| ~~`club-push-suscribir`~~ | PWA | Reemplazada por RLS: la PWA guarda/revoca su fila de `suscripciones_push` con la cabecera del token. |
 | `pos-sellos` | POS (llave API) | `POST /v1/sellos` → `registrar_sello`. |
 | `pos-cupones-canjear` | POS (llave API) | `POST /v1/cupones/canjear` → `canjear_cupon`. |
 | `pos-clientes` | POS (llave API) | Buscar tarjeta por token o celular. |
@@ -108,7 +108,8 @@ Contrato de errores de la API: `{ "error": { "codigo": "tarjeta_no_encontrada", 
 - TypeScript `strict`. Sin `any`. Tipos de BD con `supabase gen types` → `packages/tipos`.
 - Estado global con Zustand, un store por dominio (`useSesionStore`, `useNegocioStore`).
 - Formularios con react-hook-form + zod.
-- Componentes de UI desde `packages/ui`; no duplicar shadcn en cada app.
+- Componentes de UI desde `packages/ui`; no duplicar shadcn en cada app. Lo que usen panel y club (tema, barra flotante, jalar para recargar, sellos, PWA, cliente Supabase, formatos) vive en `packages/*`, nunca copiado en una app.
+- La PWA del club no tiene sesión: lee con la anon key y las cabeceras `x-negocio-slug` / `x-tarjeta-token`, que RLS valida (ver `docs/sprint-2.md`).
 - Commits en español, imperativo: `agrega editor de colores de la tarjeta`.
 
 ## Definición de terminado (cada sprint)
@@ -122,7 +123,7 @@ Ningún sprint se cierra sin: SQL completo con migración, especificación de Ed
 VITE_SUPABASE_URL=
 VITE_SUPABASE_ANON_KEY=
 VITE_VAPID_PUBLIC_KEY=
-VITE_CLUB_DOMINIO_BASE=hibeely.com   # solo panel: muestra {slug}.hibeely.com
+VITE_CLUB_DOMINIO_BASE=hibeely.com   # panel: muestra {slug}.hibeely.com · club: saca el slug del subdominio
 
 # Edge Functions (supabase secrets set ...)
 SUPABASE_SERVICE_ROLE_KEY=
@@ -141,7 +142,7 @@ PANEL_URL=https://app.hibeely.com   # destino de las invitaciones al equipo
 |--------|-----------|
 | 0 | Monorepo, Supabase local, migración `0001_nucleo` (hecha), CI con pruebas SQL |
 | 1 | Panel: login del equipo, negocio, sedes, programa de sellos, cajero escanea QR y suma sellos (ver `docs/sprint-1.md`) |
-| 2 | PWA club: registro, tarjeta con QR, cupones, instalación, manifest por negocio |
+| 2 | PWA club: registro, tarjeta con QR, cupones, instalación, manifest por negocio (ver `docs/sprint-2.md`) |
 | 3 | API POS con llaves + integración Angelato |
 | 4 | Google Wallet + editor de tarjeta con vista previa |
 | 5 | Ofertas, cupones manuales y Web Push con campañas manuales/programadas |

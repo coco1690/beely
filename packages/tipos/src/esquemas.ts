@@ -60,6 +60,38 @@ export const esquemaInvitarMiembro = z.object({
 export type InvitarMiembro = z.infer<typeof esquemaInvitarMiembro>
 
 // ---------------------------------------------------------------------
+// Club (PWA del cliente)
+// ---------------------------------------------------------------------
+
+// Edad mínima para registrarse sin autorización de un adulto (Ley 1581, datos de menores).
+export const edadMinimaClub = 14
+
+// AAAA-MM-DD, no futura, desde 1900 y con la edad mínima cumplida.
+export const esquemaFechaNacimiento = z.iso
+  .date('Fecha inválida')
+  .refine((v) => v >= '1900-01-01', 'Fecha inválida')
+  .refine((v) => {
+    const hoy = new Date()
+    const limite = new Date(Date.UTC(hoy.getUTCFullYear() - edadMinimaClub, hoy.getUTCMonth(), hoy.getUTCDate()))
+    return v <= limite.toISOString().slice(0, 10)
+  }, `Debes tener al menos ${edadMinimaClub} años`)
+
+export const esquemaNombreCliente = z.string().trim().min(2, 'Mínimo 2 caracteres').max(80, 'Máximo 80 caracteres')
+
+// POST /functions/v1/club-registro
+export const esquemaClubRegistro = z.object({
+  slug: z.string().trim().toLowerCase().min(3).max(40),
+  nombre: esquemaNombreCliente,
+  celular: esquemaCelular,
+  fecha_nacimiento: esquemaFechaNacimiento,
+  acepta_datos: z.literal(true, 'Necesitamos tu autorización para crear la tarjeta'),
+  acepta_marketing: z.boolean(),
+})
+export type ClubRegistro = z.infer<typeof esquemaClubRegistro>
+
+export const esquemaResultadoRegistro = z.object({ token: z.string() })
+
+// ---------------------------------------------------------------------
 // Formularios del panel
 // ---------------------------------------------------------------------
 
@@ -150,6 +182,9 @@ export const mensajesError: Record<string, string> = {
   slug_en_uso: 'Ese subdominio ya está en uso.',
   zona_horaria_invalida: 'Zona horaria inválida.',
   ya_es_miembro: 'Esa persona ya es parte del equipo.',
+  negocio_no_encontrado: 'No encontramos este club.',
+  celular_ya_registrado: 'Este número ya tiene tarjeta; pide en caja que te la reenvíen o verifica tu número.',
+  demasiados_intentos: 'Demasiados intentos. Espera un rato y vuelve a intentarlo.',
   error_interno: 'Algo salió mal. Intenta de nuevo.',
 }
 

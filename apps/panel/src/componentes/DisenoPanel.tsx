@@ -1,4 +1,7 @@
+import { nombresRol } from '@beely/tipos'
 import {
+  BarraFlotante,
+  clasePestana,
   cn,
   LogoNegocio,
   MenuContenido,
@@ -10,14 +13,14 @@ import {
   MenuRaiz,
   MenuSeparador,
   PanelInferior,
+  temas,
+  useTemaStore,
 } from '@beely/ui'
 import { Building2, ChevronsUpDown, Ellipsis, LogOut, MapPin, Moon, ScanLine, Settings2, Stamp, Sun, Users } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router'
-import { nombresRol } from '../lib/formato'
 import { puedeConfigurar, useNegocioActivo, useNegocioStore } from '../stores/useNegocioStore'
 import { useSesionStore } from '../stores/useSesionStore'
-import { temas, useTemaStore } from '../stores/useTemaStore'
 
 type Enlace = { a: string; texto: string; corto: string; icono: ReactNode }
 
@@ -88,32 +91,25 @@ export function DisenoPanel() {
 }
 
 // Móvil: barra flotante con hasta 3 secciones a un toque y el resto en "Más".
-// Usa la superficie del tema (clara u oscura) y la sección activa va en una píldora del acento.
 function BarraInferior({ enlaces }: { enlaces: Enlace[] }) {
   const [masAbierto, setMasAbierto] = useState(false)
   const { pathname } = useLocation()
   const visibles = enlaces.length > 4 ? enlaces.slice(0, 3) : enlaces
   const resto = enlaces.length > 4 ? enlaces.slice(3) : []
   const restoActivo = resto.some((e) => pathname.startsWith(e.a))
-  const claseTab =
-    'flex h-14 min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-tarjeta border border-transparent text-[11px] font-medium text-texto-3 transition-colors hover:text-texto focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-foco [&_svg]:size-5'
-  const claseActiva = 'border-acento-borde bg-acento-suave text-texto [&_svg]:text-acento-texto'
 
   if (enlaces.length === 0) return null
   return (
-    <nav
-      aria-label="Secciones"
-      className="fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-30 flex gap-1 rounded-capa border border-borde bg-superficie/90 p-1.5 shadow-capa backdrop-blur-lg md:hidden"
-    >
+    <BarraFlotante className="md:hidden">
       {visibles.map((e) => (
-        <NavLink key={e.a} to={e.a} className={({ isActive }) => cn(claseTab, isActive && claseActiva)}>
+        <NavLink key={e.a} to={e.a} className={({ isActive }) => clasePestana(isActive)}>
           {e.icono}
           <span className="max-w-full truncate">{e.corto}</span>
         </NavLink>
       ))}
       {resto.length > 0 ? (
         <>
-          <button type="button" className={cn(claseTab, restoActivo && claseActiva)} onClick={() => setMasAbierto(true)}>
+          <button type="button" className={clasePestana(restoActivo)} onClick={() => setMasAbierto(true)}>
             <Ellipsis />
             Más
           </button>
@@ -139,7 +135,7 @@ function BarraInferior({ enlaces }: { enlaces: Enlace[] }) {
           </PanelInferior>
         </>
       ) : null}
-    </nav>
+    </BarraFlotante>
   )
 }
 
