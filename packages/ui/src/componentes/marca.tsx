@@ -33,3 +33,14 @@ export function Sello({ lleno, className, style }: { lleno: boolean; className?:
     </svg>
   )
 }
+
+// Logo del negocio (marca blanca) sobre un recuadro blanco, que se ve igual en tema claro u oscuro
+// y con logos de fondo transparente o blanco. Sin logo, muestra el de Beely.
+export function LogoNegocio({ url, nombre, className }: { url: string | null | undefined; nombre: string; className?: string }) {
+  if (!url) return <LogoBeely className={className} />
+  return (
+    <span className={cn('inline-flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-[22%] bg-white ring-1 ring-black/8', className)}>
+      <img src={url} alt={`Logo de ${nombre}`} className="size-full object-contain p-[8%]" loading="lazy" decoding="async" />
+    </span>
+  )
+}
