@@ -49,7 +49,7 @@ export function PaginaNegocio() {
     <>
       <EncabezadoPagina titulo="Negocio" descripcion="Marca, datos legales y zona horaria." />
       <div className="flex flex-col gap-6">
-        <dl className="grid gap-px overflow-hidden rounded-tarjeta border border-borde bg-borde sm:grid-cols-[minmax(0,2fr)_1fr_1fr]">
+        <dl className="grid grid-cols-1 gap-px overflow-hidden rounded-tarjeta border border-borde bg-borde sm:grid-cols-[minmax(0,2fr)_1fr_1fr]">
           <div className="flex min-w-0 flex-col gap-1 bg-superficie px-4 py-3">
             <dt className="text-xs text-texto-3">Club</dt>
             <dd className="truncate font-mono text-etiqueta text-texto" title={`${negocio.slug}.${dominioClub}`}>
@@ -75,7 +75,7 @@ export function PaginaNegocio() {
             <TarjetaTitulo>Datos del negocio</TarjetaTitulo>
           </TarjetaEncabezado>
           <TarjetaContenido>
-            <form className="grid gap-4 sm:grid-cols-2" onSubmit={guardar} noValidate>
+            <form className="grid grid-cols-1 gap-4 sm:grid-cols-2" onSubmit={guardar} noValidate>
               <fieldset disabled={!editable} className="contents">
                 <Campo id="nombre" etiqueta="Nombre comercial" error={formState.errors.nombre?.message} className="sm:col-span-2">
                   <Entrada id="nombre" {...register('nombre')} />

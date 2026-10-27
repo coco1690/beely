@@ -77,7 +77,7 @@ export function PaginaPrograma() {
       ) : (
         <Tarjeta>
           <TarjetaContenido sinEncabezado>
-            <form className="grid gap-4 sm:grid-cols-2" onSubmit={guardar} noValidate>
+            <form className="grid grid-cols-1 gap-4 sm:grid-cols-2" onSubmit={guardar} noValidate>
               <fieldset disabled={!editable} className="contents">
                 <Campo id="nombre" etiqueta="Nombre del programa" error={formState.errors.nombre?.message} className="sm:col-span-2">
                   <Entrada id="nombre" {...register('nombre')} />

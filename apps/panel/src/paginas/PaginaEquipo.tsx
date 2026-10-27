@@ -120,7 +120,7 @@ export function PaginaEquipo() {
               <TarjetaTitulo>Invitar a alguien</TarjetaTitulo>
             </TarjetaEncabezado>
             <TarjetaContenido>
-              <form className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_11rem_auto] sm:items-start" onSubmit={invitar} noValidate>
+              <form className="grid grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1fr)_11rem_auto] sm:items-start" onSubmit={invitar} noValidate>
                 <Campo id="email" etiqueta="Correo" error={formState.errors.email?.message}>
                   <Entrada id="email" type="email" autoComplete="off" placeholder="nombre@negocio.com" {...register('email')} />
                 </Campo>

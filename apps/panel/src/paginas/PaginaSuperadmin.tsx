@@ -50,7 +50,7 @@ export function PaginaSuperadmin() {
             <TarjetaTitulo>Nuevo negocio</TarjetaTitulo>
           </TarjetaEncabezado>
           <TarjetaContenido>
-            <form className="grid gap-4 sm:grid-cols-3 sm:items-start" onSubmit={crear} noValidate>
+            <form className="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:items-start" onSubmit={crear} noValidate>
               <Campo id="nombre" etiqueta="Nombre" error={formState.errors.nombre?.message}>
                 <Entrada id="nombre" {...register('nombre')} />
               </Campo>

@@ -84,7 +84,7 @@ export function Campo({
   const idDescripcion = error || ayuda ? `${id}-descripcion` : undefined
   return (
     <Contexto value={{ invalido: Boolean(error), idDescripcion }}>
-      <div className={cn('flex flex-col gap-1.5', className)}>
+      <div className={cn('flex min-w-0 flex-col gap-1.5', className)}>
         <Etiqueta htmlFor={id}>{etiqueta}</Etiqueta>
         {children}
         {error ? (

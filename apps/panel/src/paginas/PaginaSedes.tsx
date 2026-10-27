@@ -114,7 +114,7 @@ function FormularioSede({ negocioId, sede, onListo, enLinea = false }: { negocio
   })
 
   const formulario = (
-        <form className="grid gap-4 sm:grid-cols-2" onSubmit={guardar} noValidate>
+        <form className="grid grid-cols-1 gap-4 sm:grid-cols-2" onSubmit={guardar} noValidate>
           <Campo id="nombre" etiqueta="Nombre" error={formState.errors.nombre?.message}>
             <Entrada id="nombre" {...register('nombre')} />
           </Campo>
