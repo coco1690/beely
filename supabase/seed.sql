@@ -1,7 +1,7 @@
 -- Datos de demostración para Supabase local (`pnpm db:reset` los carga).
 -- NO correr en producción. Todos los usuarios tienen la clave: beely1234
 --
---   plataforma@hibeely.test  admin de plataforma
+--   superadmin@hibeely.test  superadmin de Beely
 --   dueno@hibeely.test       dueño de "Heladería Demo"
 --   cajero@hibeely.test      cajero de "Heladería Demo"
 --
@@ -18,7 +18,7 @@ select '00000000-0000-0000-0000-000000000000', u.id, 'authenticated', 'authentic
        extensions.crypt('beely1234', extensions.gen_salt('bf')), now(),
        '{"provider":"email","providers":["email"]}', '{}', now(), now(), '', '', '', ''
   from (values
-    ('d0000000-0000-0000-0000-000000000001'::uuid, 'plataforma@hibeely.test'),
+    ('d0000000-0000-0000-0000-000000000001'::uuid, 'superadmin@hibeely.test'),
     ('d0000000-0000-0000-0000-000000000002'::uuid, 'dueno@hibeely.test'),
     ('d0000000-0000-0000-0000-000000000003'::uuid, 'cajero@hibeely.test')
   ) as u (id, email);
@@ -27,7 +27,7 @@ insert into auth.identities (id, user_id, provider_id, identity_data, provider, 
 select gen_random_uuid(), id, id::text, jsonb_build_object('sub', id::text, 'email', email), 'email', now(), now()
   from auth.users where email like '%@hibeely.test';
 
-insert into public.administradores_plataforma (usuario_id) values ('d0000000-0000-0000-0000-000000000001');
+insert into public.superadmins (usuario_id) values ('d0000000-0000-0000-0000-000000000001');
 
 insert into public.negocios (id, slug, nombre) values
   ('e0000000-0000-0000-0000-000000000001', 'heladeria-demo', 'Heladería Demo');

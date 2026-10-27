@@ -22,7 +22,7 @@ import { temas, useTemaStore } from '../stores/useTemaStore'
 type Enlace = { a: string; texto: string; corto: string; icono: ReactNode }
 
 function useEnlaces(): Enlace[] {
-  const esAdminPlataforma = useSesionStore((e) => e.esAdminPlataforma)
+  const esSuperadmin = useSesionStore((e) => e.esSuperadmin)
   const activo = useNegocioActivo()
   const rol = activo?.rol
   const enlaces: (Enlace & { visible: boolean })[] = [
@@ -31,7 +31,7 @@ function useEnlaces(): Enlace[] {
     { a: '/sedes', texto: 'Sedes', corto: 'Sedes', icono: <MapPin />, visible: Boolean(activo) },
     { a: '/negocio', texto: 'Negocio', corto: 'Negocio', icono: <Settings2 />, visible: puedeConfigurar(rol) },
     { a: '/equipo', texto: 'Equipo', corto: 'Equipo', icono: <Users />, visible: puedeConfigurar(rol) },
-    { a: '/plataforma', texto: 'Plataforma', corto: 'Plataforma', icono: <Building2 />, visible: esAdminPlataforma },
+    { a: '/superadmin', texto: 'Superadmin', corto: 'Superadmin', icono: <Building2 />, visible: esSuperadmin },
   ]
   return enlaces.filter((e) => e.visible)
 }

@@ -13,7 +13,7 @@ import { useSesionStore } from '../stores/useSesionStore'
 const planes = ['basico', 'pro', 'empresa'] as const
 const estados = ['activo', 'suspendido', 'cancelado'] as const
 
-export function PaginaPlataforma() {
+export function PaginaSuperadmin() {
   const sesion = useSesionStore((e) => e.sesion)
   const membresias = useNegocioStore((e) => e.membresias)
   const cargar = useNegocioStore((e) => e.cargar)
@@ -43,7 +43,7 @@ export function PaginaPlataforma() {
 
   return (
     <>
-      <EncabezadoPagina titulo="Plataforma" descripcion="Alta de negocios, plan y estado. Solo administradores de Beely." />
+      <EncabezadoPagina titulo="Superadmin" descripcion="Alta de negocios, plan y estado. Solo superadmins de Beely." />
       <div className="flex flex-col gap-6">
         <Tarjeta>
           <TarjetaEncabezado>
@@ -93,7 +93,7 @@ function FilaNegocio({ negocio, onCambio }: { negocio: Negocio; onCambio: () => 
   const guardarPlan = async () => {
     setOcupado('plan')
     setError(null)
-    const { error } = await supabase.rpc('plataforma_actualizar_negocio', { p_negocio_id: negocio.id, p_plan: plan, p_estado: estado })
+    const { error } = await supabase.rpc('superadmin_actualizar_negocio', { p_negocio_id: negocio.id, p_plan: plan, p_estado: estado })
     setOcupado(null)
     if (error) setError(mensajeDe(error))
     else {

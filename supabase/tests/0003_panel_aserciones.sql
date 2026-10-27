@@ -38,17 +38,17 @@ end;
 $$;
 grant execute on function pg_temp.igual(anyelement, anyelement, text) to authenticated, anon;
 
--- Usuarios: plataforma, dueño, administrador y cajero de A; dueño de B; nuevo sin negocio
+-- Usuarios: superadmin, dueño, administrador y cajero de A; dueño de B; nuevo sin negocio
 insert into auth.users (id, email) values
- ('a0000000-0000-0000-0000-000000000001', 'plataforma@prueba.co'),
+ ('a0000000-0000-0000-0000-000000000001', 'superadmin@prueba.co'),
  ('a0000000-0000-0000-0000-000000000002', 'dueno@prueba.co'),
  ('a0000000-0000-0000-0000-000000000003', 'admin@prueba.co'),
  ('a0000000-0000-0000-0000-000000000004', 'cajero@prueba.co'),
  ('a0000000-0000-0000-0000-000000000005', 'duenob@prueba.co'),
  ('a0000000-0000-0000-0000-000000000006', 'nuevo@prueba.co');
-insert into public.administradores_plataforma (usuario_id) values ('a0000000-0000-0000-0000-000000000001');
+insert into public.superadmins (usuario_id) values ('a0000000-0000-0000-0000-000000000001');
 
--- 1. Plataforma crea negocio con programa y diseño por defecto
+-- 1. Superadmin crea negocio con programa y diseño por defecto
 set local role authenticated;
 set local request.jwt.claim.sub = 'a0000000-0000-0000-0000-000000000001';
 select set_config('prueba.negocio_a', public.crear_negocio('heladeria-a', 'Heladería A')::text, true);
@@ -62,19 +62,19 @@ select pg_temp.debe_fallar(
 select pg_temp.debe_fallar(
   $q$select public.crear_negocio('zona-mala', 'Zona mala', 'Marte/Olympus')$q$, 'zona_horaria_invalida', 'zona horaria inválida al crear');
 
--- Plataforma crea sedes y asigna dueños
+-- Superadmin crea sedes y asigna dueños
 insert into public.sedes (id, negocio_id, nombre) values
  ('b0000000-0000-0000-0000-000000000001', current_setting('prueba.negocio_a')::uuid, 'Centro'),
  ('b0000000-0000-0000-0000-000000000002', current_setting('prueba.negocio_b')::uuid, 'Norte');
 insert into public.miembros_negocio (negocio_id, usuario_id, rol) values
  (current_setting('prueba.negocio_a')::uuid, 'a0000000-0000-0000-0000-000000000002', 'dueno'),
  (current_setting('prueba.negocio_b')::uuid, 'a0000000-0000-0000-0000-000000000005', 'dueno');
-select pg_temp.igual(count(*), 2::bigint, 'plataforma asigna dueños') from public.miembros_negocio
+select pg_temp.igual(count(*), 2::bigint, 'superadmin asigna dueños') from public.miembros_negocio
   where rol = 'dueno' and negocio_id in (current_setting('prueba.negocio_a')::uuid, current_setting('prueba.negocio_b')::uuid);
 
--- Plataforma cambia plan y estado
-select public.plataforma_actualizar_negocio(current_setting('prueba.negocio_b')::uuid, 'pro', 'activo');
-select pg_temp.igual(plan, 'pro', 'plataforma cambia plan') from public.negocios where slug = 'cafe-b';
+-- Superadmin cambia plan y estado
+select public.superadmin_actualizar_negocio(current_setting('prueba.negocio_b')::uuid, 'pro', 'activo');
+select pg_temp.igual(plan, 'pro', 'superadmin cambia plan') from public.negocios where slug = 'cafe-b';
 
 -- 2. Dueño gestiona su equipo (solo administradores y cajeros)
 set local request.jwt.claim.sub = 'a0000000-0000-0000-0000-000000000002';
@@ -113,7 +113,7 @@ select pg_temp.debe_fallar(
 select pg_temp.debe_fallar(
   $q$select public.crear_negocio('pirata', 'Pirata')$q$, 'sin_permiso', 'dueño no crea negocios');
 select pg_temp.debe_fallar(
-  format($q$select public.plataforma_actualizar_negocio(%L, 'empresa', 'activo')$q$, current_setting('prueba.negocio_a')),
+  format($q$select public.superadmin_actualizar_negocio(%L, 'empresa', 'activo')$q$, current_setting('prueba.negocio_a')),
   'sin_permiso', 'dueño no cambia su plan');
 select pg_temp.debe_fallar(
   $q$select public.usuario_por_email('cajero@prueba.co')$q$, 'permission denied', 'usuario_por_email solo service_role');

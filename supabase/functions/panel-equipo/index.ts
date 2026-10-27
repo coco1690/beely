@@ -1,6 +1,6 @@
 // panel-equipo: invita a una persona al equipo de un negocio.
 //  * El dueño invita administradores y cajeros.
-//  * Solo la plataforma asigna dueños.
+//  * Solo el superadmin asigna dueños.
 // Si el correo no tiene cuenta, Supabase Auth le envía la invitación para
 // definir su clave en {PANEL_URL}/definir-clave. Si ya tiene cuenta (por
 // ejemplo, trabaja en otro negocio), solo se agrega la membresía.
@@ -19,13 +19,13 @@ servir(async (peticion) => {
   if (!datos.success) return responderError('solicitud_invalida', 400)
   const { negocio_id, email, rol } = datos.data
 
-  // Permiso, leído con RLS: la fila de plataforma solo la ve un admin de plataforma,
+  // Permiso, leído con RLS: la fila de superadmins solo la ve un superadmin,
   // y cada usuario ve su propia membresía.
-  const [{ data: plataforma }, { data: membresia }] = await Promise.all([
-    cliente.from('administradores_plataforma').select('usuario_id').eq('usuario_id', usuario.id).maybeSingle(),
+  const [{ data: superadmin }, { data: membresia }] = await Promise.all([
+    cliente.from('superadmins').select('usuario_id').eq('usuario_id', usuario.id).maybeSingle(),
     cliente.from('miembros_negocio').select('rol').eq('negocio_id', negocio_id).eq('usuario_id', usuario.id).maybeSingle(),
   ])
-  const puede = plataforma !== null || (membresia?.rol === 'dueno' && rol !== 'dueno')
+  const puede = superadmin !== null || (membresia?.rol === 'dueno' && rol !== 'dueno')
   if (!puede) throw new ErrorApi('sin_permiso', 403)
 
   const servicio = clienteServicio()

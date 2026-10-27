@@ -15,7 +15,7 @@ const numeroONulo = (v: unknown) => (v === '' || v === null || v === undefined ?
 export function PaginaSedes() {
   const activo = useNegocioActivo()
   const sedes = useNegocioStore((e) => e.sedes)
-  const esAdminPlataforma = useSesionStore((e) => e.esAdminPlataforma)
+  const esSuperadmin = useSesionStore((e) => e.esSuperadmin)
   const [editando, setEditando] = useState<Sede | 'nueva' | null>(null)
   const editable = puedeConfigurar(activo?.rol)
 
@@ -27,14 +27,14 @@ export function PaginaSedes() {
         titulo="Sedes"
         descripcion="Puntos de venta del negocio. Las coordenadas se usan luego en Google y Apple Wallet."
         accion={
-          esAdminPlataforma && editando === null ? (
+          esSuperadmin && editando === null ? (
             <Boton onClick={() => setEditando('nueva')}>
               <Plus className="size-4" /> Nueva sede
             </Boton>
           ) : null
         }
       />
-      {!esAdminPlataforma && editable ? (
+      {!esSuperadmin && editable ? (
         <p className="-mt-3 mb-5 text-etiqueta text-texto-3">Para abrir o cerrar sedes escribe a soporte de Beely; aquí puedes editar sus datos.</p>
       ) : null}
 
