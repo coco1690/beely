@@ -82,7 +82,7 @@ beely/
 - Toda FK lleva índice. Fechas en `timestamptz`, dinero en `numeric(12,2)`, textos en `text` con `check`.
 - `security definer` siempre con `set search_path = ''` y nombres calificados (`public.tabla`).
 - La `service_role` key **solo** en Edge Functions y servicios. Nunca en `apps/*`.
-- Antes de cerrar una migración: aplicar en local (`supabase db reset`), correr `supabase/tests/*.sql` y revisar `get_advisors` (seguridad y rendimiento).
+- Antes de cerrar una migración: aplicar en local (`pnpm db:reset`), correr `pnpm db:probar`, regenerar tipos (`pnpm db:tipos`) y revisar `get_advisors` (seguridad y rendimiento). CI repite migraciones, lint, pruebas y tipos en cada PR.
 
 ## Edge Functions previstas
 

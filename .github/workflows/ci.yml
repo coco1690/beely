@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  base-de-datos:
+    name: Migraciones y pruebas SQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Instalar dependencias
+        run: pnpm install --frozen-lockfile
+
+      - name: Levantar Postgres de Supabase y aplicar migraciones
+        run: pnpm exec supabase db start
+
+      - name: Lint del esquema
+        run: pnpm exec supabase db lint --level warning --fail-on warning
+
+      - name: Pruebas SQL
+        run: pnpm db:probar
+
+      - name: Tipos de BD al día
+        run: |
+          pnpm db:tipos
+          git diff --exit-code packages/tipos/src/database.ts || {
+            echo "::error::packages/tipos/src/database.ts no coincide con las migraciones. Corre 'pnpm db:tipos' y haz commit."
+            exit 1
+          }
+
+      - name: Detener Supabase
+        if: always()
+        run: pnpm exec supabase stop --no-backup
+
+  apps:
+    name: Typecheck y build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Instalar dependencias
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Build
+        run: pnpm build
