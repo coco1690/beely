@@ -10,7 +10,7 @@ export type TemaBeely = typeof temaBeely
 export { cn } from './utilidades'
 export { Boton, variantesBoton, type PropsBoton } from './componentes/boton'
 export { Spinner } from './componentes/spinner'
-export { Campo, Entrada, Etiqueta, Selector } from './componentes/formulario'
+export { Campo, Entrada, EntradaClave, Etiqueta, Selector } from './componentes/formulario'
 export { Tarjeta, TarjetaContenido, TarjetaDescripcion, TarjetaEncabezado, TarjetaTitulo } from './componentes/tarjeta'
 export { Aviso, Insignia } from './componentes/avisos'
 export { Esqueleto, EstadoVacio, FilaLista, Lista } from './componentes/estados'
