@@ -16,8 +16,10 @@ export type OpcionesManifest = {
   nombre: string
   nombreCorto: string
   descripcion: string
-  // Ruta con que abre la app instalada (el club la abre en la tarjeta del cliente).
-  inicio?: string
+  // Ruta con que abre la app instalada. null = la página donde se instaló: el club la
+  // deja así para que la app abra en la tarjeta del cliente (iOS no comparte el
+  // almacenamiento de Safari con la app instalada, así que el token va en la URL).
+  inicio?: string | null
   colorFondo?: string
   colorTema?: string
 }
@@ -37,7 +39,7 @@ export function crearManifest({
     description: descripcion,
     lang: 'es',
     id: '/',
-    start_url: inicio,
+    ...(inicio === null ? {} : { start_url: inicio }),
     scope: '/',
     display: 'standalone',
     background_color: colorFondo,

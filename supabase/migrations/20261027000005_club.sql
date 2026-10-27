@@ -101,7 +101,7 @@ grant select (id, negocio_id, tarjeta_id, origen, descripcion, codigo, estado, v
   on public.cupones to anon;
 grant select (id, negocio_id, tarjeta_id, sede_id, cantidad, origen, creado_en) on public.eventos_sello to anon;
 grant select (id, negocio_id, tarjeta_id, endpoint, revocada_en) on public.suscripciones_push to anon;
-grant insert (negocio_id, tarjeta_id, endpoint, p256dh, auth, agente_usuario) on public.suscripciones_push to anon;
+grant insert (negocio_id, tarjeta_id, endpoint, p256dh, auth, agente_usuario, revocada_en) on public.suscripciones_push to anon;
 grant update (negocio_id, tarjeta_id, p256dh, auth, agente_usuario, revocada_en) on public.suscripciones_push to anon;
 
 -- ---------------------------------------------------------------------

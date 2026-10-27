@@ -1,7 +1,8 @@
 // Plugin de Vite compartido por las apps de Beely: íconos, manifest y <head> de PWA.
 //  * Sirve (dev) y publica (build) los íconos de packages/ui/iconos en la raíz.
-//  * Con `manifest`, publica /manifest.webmanifest fijo (el panel). Sin él, la app
-//    sirve su propio manifest dinámico en esa ruta (el club, uno por negocio).
+//  * Con `manifest`, publica el manifest fijo en /manifest.webmanifest (el panel) o en
+//    `archivoManifest` (el club: es la base que su función /api/manifest completa
+//    con el nombre y los colores de cada negocio).
 //  * Inyecta en <head> los enlaces de íconos y manifest, las metas de iOS y el
 //    script que aplica el tema guardado antes de pintar.
 import { readdirSync, readFileSync } from 'node:fs'
@@ -14,7 +15,15 @@ import { scriptTemaInicial } from './src/tema-inicial.ts'
 const carpetaIconos = fileURLToPath(new URL('./iconos', import.meta.url))
 const tipos: Record<string, string> = { '.png': 'image/png', '.svg': 'image/svg+xml' }
 
-export function pwaBeely({ titulo, manifest }: { titulo: string; manifest?: OpcionesManifest }): Plugin {
+export function pwaBeely({
+  titulo,
+  manifest,
+  archivoManifest = 'manifest.webmanifest',
+}: {
+  titulo: string
+  manifest?: OpcionesManifest
+  archivoManifest?: string
+}): Plugin {
   const iconos = readdirSync(carpetaIconos)
   return {
     name: 'beely-pwa',
@@ -27,7 +36,8 @@ export function pwaBeely({ titulo, manifest }: { titulo: string; manifest?: Opci
           respuesta.end(readFileSync(join(carpetaIconos, archivo)))
           return
         }
-        if (manifest && ruta === '/manifest.webmanifest') {
+        // En dev no corre la función del club: se sirve la base en ambas rutas.
+        if (manifest && (ruta === '/manifest.webmanifest' || ruta === `/${archivoManifest}`)) {
           respuesta.setHeader('Content-Type', 'application/manifest+json')
           respuesta.end(JSON.stringify(crearManifest(manifest)))
           return
@@ -40,7 +50,7 @@ export function pwaBeely({ titulo, manifest }: { titulo: string; manifest?: Opci
         this.emitFile({ type: 'asset', fileName: archivo, source: readFileSync(join(carpetaIconos, archivo)) })
       }
       if (manifest) {
-        this.emitFile({ type: 'asset', fileName: 'manifest.webmanifest', source: JSON.stringify(crearManifest(manifest), null, 2) })
+        this.emitFile({ type: 'asset', fileName: archivoManifest, source: JSON.stringify(crearManifest(manifest), null, 2) })
       }
     },
     transformIndexHtml() {
