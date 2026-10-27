@@ -1,9 +1,24 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { esquemaInvitarMiembro, type RolEquipo } from '@beely/tipos'
-import { Aviso, Boton, Campo, Entrada, Insignia, Selector, Tarjeta, TarjetaContenido, TarjetaEncabezado, TarjetaTitulo } from '@beely/ui'
+import {
+  Aviso,
+  Boton,
+  Campo,
+  Entrada,
+  Esqueleto,
+  FilaLista,
+  Insignia,
+  Lista,
+  Selector,
+  Tarjeta,
+  TarjetaContenido,
+  TarjetaEncabezado,
+  TarjetaTitulo,
+  toast,
+  useConfirmar,
+} from '@beely/ui'
 import { useCallback, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Cargando } from '../componentes/Cargando'
 import { EncabezadoPagina } from '../componentes/DisenoPanel'
 import { fechaHora, nombresRol } from '../lib/formato'
 import { llamarFuncion, mensajeDe } from '../lib/funciones'
@@ -29,7 +44,8 @@ export function PaginaEquipo() {
   const gestiona = puedeGestionarEquipo(activo?.rol)
   const negocioId = activo?.negocio.id
   const [equipo, setEquipo] = useState<Integrante[] | null>(null)
-  const [aviso, setAviso] = useState<{ tono: 'exito' | 'peligro'; texto: string } | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const confirmar = useConfirmar()
   const { register, handleSubmit, reset, formState } = useForm({
     resolver: zodResolver(esquemaFormulario),
     defaultValues: { email: '', rol: 'cajero' as RolEquipo },
@@ -38,7 +54,7 @@ export function PaginaEquipo() {
   const cargar = useCallback(async () => {
     if (!negocioId) return
     const { data, error } = await supabase.rpc('equipo_negocio', { p_negocio_id: negocioId })
-    if (error) setAviso({ tono: 'peligro', texto: mensajeDe(error) })
+    if (error) setError(mensajeDe(error))
     setEquipo(data ?? [])
   }, [negocioId])
 
@@ -49,19 +65,15 @@ export function PaginaEquipo() {
 
   const invitar = handleSubmit(async ({ email, rol }) => {
     if (!negocioId) return
-    setAviso(null)
+    setError(null)
     try {
       const r = await llamarFuncion<{ invitado: boolean }>('panel-equipo', { negocio_id: negocioId, email, rol })
-      setAviso({
-        tono: 'exito',
-        texto: r.invitado
-          ? `Enviamos la invitación a ${email}. Debe abrir el correo para definir su clave.`
-          : `${email} ya tenía cuenta en Beely; ahora también es parte de este negocio.`,
-      })
+      if (r.invitado) toast.success(`Invitación enviada a ${email}`, { description: 'Debe abrir el correo para definir su clave.' })
+      else toast.success(`${email} ya es parte del negocio`, { description: 'Ya tenía cuenta en Beely.' })
       reset({ email: '', rol })
       await cargar()
     } catch (e) {
-      setAviso({ tono: 'peligro', texto: mensajeDe(e) })
+      setError(mensajeDe(e))
     }
   })
 
@@ -72,18 +84,25 @@ export function PaginaEquipo() {
       .update({ rol })
       .eq('negocio_id', negocioId)
       .eq('usuario_id', integrante.usuario_id)
-    if (error) setAviso({ tono: 'peligro', texto: mensajeDe(error) })
+    if (error) setError(mensajeDe(error))
     await cargar()
   }
 
   const quitar = async (integrante: Integrante) => {
-    if (!negocioId || !window.confirm(`¿Quitar a ${integrante.email} del equipo?`)) return
+    if (!negocioId) return
+    const seguro = await confirmar({
+      titulo: '¿Quitar del equipo?',
+      descripcion: `${integrante.email} ya no podrá entrar al panel de este negocio.`,
+      textoConfirmar: 'Quitar',
+      peligro: true,
+    })
+    if (!seguro) return
     const { error } = await supabase
       .from('miembros_negocio')
       .delete()
       .eq('negocio_id', negocioId)
       .eq('usuario_id', integrante.usuario_id)
-    if (error) setAviso({ tono: 'peligro', texto: mensajeDe(error) })
+    if (error) setError(mensajeDe(error))
     await cargar()
   }
 
@@ -98,12 +117,12 @@ export function PaginaEquipo() {
         {gestiona ? (
           <Tarjeta>
             <TarjetaEncabezado>
-              <TarjetaTitulo className="text-base">Invitar a alguien</TarjetaTitulo>
+              <TarjetaTitulo>Invitar a alguien</TarjetaTitulo>
             </TarjetaEncabezado>
             <TarjetaContenido>
-              <form className="grid gap-4 sm:grid-cols-[1fr_12rem_auto] sm:items-end" onSubmit={invitar} noValidate>
+              <form className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_11rem_auto] sm:items-start" onSubmit={invitar} noValidate>
                 <Campo id="email" etiqueta="Correo" error={formState.errors.email?.message}>
-                  <Entrada id="email" type="email" {...register('email')} />
+                  <Entrada id="email" type="email" autoComplete="off" placeholder="nombre@negocio.com" {...register('email')} />
                 </Campo>
                 <Campo id="rol" etiqueta="Rol">
                   <Selector id="rol" {...register('rol')}>
@@ -114,11 +133,11 @@ export function PaginaEquipo() {
                     ))}
                   </Selector>
                 </Campo>
-                <Boton type="submit" disabled={formState.isSubmitting}>
+                <Boton type="submit" className="sm:mt-6" cargando={formState.isSubmitting}>
                   Invitar
                 </Boton>
               </form>
-              <p className="mt-3 text-xs text-texto-3">
+              <p className="mt-3 text-etiqueta text-texto-3">
                 Cajero: escanea y suma sellos. Administrador: además configura negocio, sedes y programa. Solo el dueño gestiona el
                 equipo.
               </p>
@@ -126,27 +145,41 @@ export function PaginaEquipo() {
           </Tarjeta>
         ) : null}
 
-        {aviso ? <Aviso tono={aviso.tono}>{aviso.texto}</Aviso> : null}
+        {error ? <Aviso tono="peligro">{error}</Aviso> : null}
 
         {equipo === null ? (
-          <Cargando />
+          <Tarjeta aria-busy>
+            <Lista>
+              {[0, 1].map((n) => (
+                <FilaLista key={n}>
+                  <div className="flex flex-col gap-2">
+                    <Esqueleto className="h-4 w-48" />
+                    <Esqueleto className="h-3 w-32" />
+                  </div>
+                  <Esqueleto className="h-8 w-36" />
+                </FilaLista>
+              ))}
+            </Lista>
+          </Tarjeta>
         ) : (
           <Tarjeta>
-            <ul className="divide-y divide-borde">
+            <Lista>
               {equipo.map((i) => (
-                <li key={i.usuario_id} className="flex flex-wrap items-center justify-between gap-3 p-4">
-                  <div className="min-w-0">
-                    <p className="flex items-center gap-2 truncate font-medium text-texto">
-                      {i.email}
+                <FilaLista key={i.usuario_id}>
+                  <div className="min-w-0 flex-1 basis-56">
+                    <p className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 font-medium text-texto">
+                      <span className="min-w-0 truncate" title={i.email}>
+                        {i.email}
+                      </span>
                       {i.invitacion_pendiente ? <Insignia>Invitación pendiente</Insignia> : null}
                     </p>
-                    <p className="text-xs text-texto-3">Último ingreso: {fechaHora(i.ultimo_ingreso_en)}</p>
+                    <p className="text-xs text-texto-3 tabular-nums">Último ingreso: {fechaHora(i.ultimo_ingreso_en)}</p>
                   </div>
                   {puedeEditar(i) ? (
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
                       <Selector
                         aria-label={`Rol de ${i.email}`}
-                        className="w-40"
+                        className="w-36"
                         value={i.rol}
                         onChange={(e) => void cambiarRol(i, e.target.value)}
                       >
@@ -163,9 +196,9 @@ export function PaginaEquipo() {
                   ) : (
                     <Insignia tono={i.rol === 'dueno' ? 'miel' : 'neutro'}>{nombresRol[i.rol]}</Insignia>
                   )}
-                </li>
+                </FilaLista>
               ))}
-            </ul>
+            </Lista>
           </Tarjeta>
         )}
       </div>

@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link } from 'react-router'
 import { supabase } from '../lib/supabase'
-import { PantallaAcceso } from './PaginaIngreso'
+import { claseEnlace, PantallaAcceso } from './PaginaIngreso'
 
 const esquemaRecuperar = esquemaIngreso.pick({ email: true })
 
@@ -24,7 +24,7 @@ export function PaginaRecuperar() {
       {enviado ? (
         <div className="flex flex-col gap-4">
           <Aviso tono="exito">Si el correo es del equipo, te llegó un enlace para definir una clave nueva.</Aviso>
-          <Link to="/ingresar" className="text-center text-sm text-texto-3 hover:text-texto">
+          <Link to="/ingresar" className={claseEnlace}>
             Volver a ingresar
           </Link>
         </div>
@@ -33,10 +33,10 @@ export function PaginaRecuperar() {
           <Campo id="email" etiqueta="Correo" error={formState.errors.email?.message}>
             <Entrada id="email" type="email" autoComplete="username" {...register('email')} />
           </Campo>
-          <Boton type="submit" disabled={formState.isSubmitting}>
+          <Boton type="submit" cargando={formState.isSubmitting}>
             Enviar enlace
           </Boton>
-          <Link to="/ingresar" className="text-center text-sm text-texto-3 hover:text-texto">
+          <Link to="/ingresar" className={claseEnlace}>
             Volver a ingresar
           </Link>
         </form>

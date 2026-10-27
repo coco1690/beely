@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { esquemaCrearNegocio } from '@beely/tipos'
-import { Aviso, Boton, Campo, Entrada, Insignia, Selector, Tarjeta, TarjetaContenido, TarjetaEncabezado, TarjetaTitulo } from '@beely/ui'
+import { Aviso, Boton, Campo, Entrada, Insignia, Selector, Tarjeta, TarjetaContenido, TarjetaEncabezado, TarjetaTitulo, toast } from '@beely/ui'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { EncabezadoPagina } from '../componentes/DisenoPanel'
@@ -18,7 +18,7 @@ export function PaginaPlataforma() {
   const membresias = useNegocioStore((e) => e.membresias)
   const cargar = useNegocioStore((e) => e.cargar)
   const elegirNegocio = useNegocioStore((e) => e.elegirNegocio)
-  const [aviso, setAviso] = useState<{ tono: 'exito' | 'peligro'; texto: string } | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const { register, handleSubmit, reset, formState } = useForm({
     resolver: zodResolver(esquemaCrearNegocio),
     defaultValues: { slug: '', nombre: '', zona_horaria: 'America/Bogota' },
@@ -29,16 +29,16 @@ export function PaginaPlataforma() {
   }
 
   const crear = handleSubmit(async ({ slug, nombre, zona_horaria }) => {
-    setAviso(null)
+    setError(null)
     const { data, error } = await supabase.rpc('crear_negocio', { p_slug: slug, p_nombre: nombre, p_zona_horaria: zona_horaria })
     if (error) {
-      setAviso({ tono: 'peligro', texto: mensajeDe(error) })
+      setError(mensajeDe(error))
       return
     }
     reset()
     await recargar()
     await elegirNegocio(data)
-    setAviso({ tono: 'exito', texto: `Negocio ${nombre} creado con su programa de sellos. Ahora crea sus sedes e invita al dueño.` })
+    toast.success(`Negocio ${nombre} creado`, { description: 'Ya tiene su programa de sellos. Ahora crea sus sedes e invita al dueño.' })
   })
 
   return (
@@ -47,10 +47,10 @@ export function PaginaPlataforma() {
       <div className="flex flex-col gap-6">
         <Tarjeta>
           <TarjetaEncabezado>
-            <TarjetaTitulo className="text-base">Nuevo negocio</TarjetaTitulo>
+            <TarjetaTitulo>Nuevo negocio</TarjetaTitulo>
           </TarjetaEncabezado>
           <TarjetaContenido>
-            <form className="grid gap-4 sm:grid-cols-3" onSubmit={crear} noValidate>
+            <form className="grid gap-4 sm:grid-cols-3 sm:items-start" onSubmit={crear} noValidate>
               <Campo id="nombre" etiqueta="Nombre" error={formState.errors.nombre?.message}>
                 <Entrada id="nombre" {...register('nombre')} />
               </Campo>
@@ -66,14 +66,14 @@ export function PaginaPlataforma() {
                   ))}
                 </Selector>
               </Campo>
-              <Boton type="submit" className="sm:justify-self-start" disabled={formState.isSubmitting}>
+              <Boton type="submit" className="sm:justify-self-start" cargando={formState.isSubmitting}>
                 Crear negocio
               </Boton>
             </form>
           </TarjetaContenido>
         </Tarjeta>
 
-        {aviso ? <Aviso tono={aviso.tono}>{aviso.texto}</Aviso> : null}
+        {error ? <Aviso tono="peligro">{error}</Aviso> : null}
 
         {membresias.map(({ negocio }) => (
           <FilaNegocio key={negocio.id} negocio={negocio} onCambio={recargar} />
@@ -87,45 +87,45 @@ function FilaNegocio({ negocio, onCambio }: { negocio: Negocio; onCambio: () => 
   const [plan, setPlan] = useState(negocio.plan)
   const [estado, setEstado] = useState(negocio.estado)
   const [emailDueno, setEmailDueno] = useState('')
-  const [aviso, setAviso] = useState<{ tono: 'exito' | 'peligro'; texto: string } | null>(null)
-  const [ocupado, setOcupado] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [ocupado, setOcupado] = useState<'plan' | 'dueno' | null>(null)
 
   const guardarPlan = async () => {
-    setOcupado(true)
-    setAviso(null)
+    setOcupado('plan')
+    setError(null)
     const { error } = await supabase.rpc('plataforma_actualizar_negocio', { p_negocio_id: negocio.id, p_plan: plan, p_estado: estado })
-    setOcupado(false)
-    if (error) setAviso({ tono: 'peligro', texto: mensajeDe(error) })
+    setOcupado(null)
+    if (error) setError(mensajeDe(error))
     else {
-      setAviso({ tono: 'exito', texto: 'Plan y estado guardados.' })
+      toast.success(`Plan y estado de ${negocio.nombre} guardados`)
       await onCambio()
     }
   }
 
   const invitarDueno = async (evento: React.FormEvent) => {
     evento.preventDefault()
-    setOcupado(true)
-    setAviso(null)
+    setOcupado('dueno')
+    setError(null)
     try {
       await llamarFuncion('panel-equipo', { negocio_id: negocio.id, email: emailDueno, rol: 'dueno' })
-      setAviso({ tono: 'exito', texto: `${emailDueno} es ahora dueño de ${negocio.nombre}.` })
+      toast.success(`${emailDueno} es ahora dueño de ${negocio.nombre}`)
       setEmailDueno('')
     } catch (e) {
-      setAviso({ tono: 'peligro', texto: mensajeDe(e) })
+      setError(mensajeDe(e))
     } finally {
-      setOcupado(false)
+      setOcupado(null)
     }
   }
 
   return (
     <Tarjeta>
       <TarjetaEncabezado>
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <TarjetaTitulo className="text-base">{negocio.nombre}</TarjetaTitulo>
-          <span className="flex items-center gap-2 font-mono text-xs text-texto-3">
-            {negocio.slug}
-            <Insignia tono={negocio.estado === 'activo' ? 'exito' : 'peligro'}>{negocio.estado}</Insignia>
-          </span>
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <TarjetaTitulo className="line-clamp-2 break-words">{negocio.nombre}</TarjetaTitulo>
+            <p className="truncate font-mono text-xs text-texto-3">{negocio.slug}</p>
+          </div>
+          <Insignia tono={negocio.estado === 'activo' ? 'exito' : 'peligro'}>{negocio.estado}</Insignia>
         </div>
       </TarjetaEncabezado>
       <TarjetaContenido className="flex flex-col gap-4">
@@ -144,7 +144,12 @@ function FilaNegocio({ negocio, onCambio }: { negocio: Negocio; onCambio: () => 
               ))}
             </Selector>
           </Campo>
-          <Boton variante="contorno" onClick={() => void guardarPlan()} disabled={ocupado || (plan === negocio.plan && estado === negocio.estado)}>
+          <Boton
+            variante="contorno"
+            onClick={() => void guardarPlan()}
+            cargando={ocupado === 'plan'}
+            disabled={ocupado !== null || (plan === negocio.plan && estado === negocio.estado)}
+          >
             Guardar
           </Boton>
         </div>
@@ -158,11 +163,11 @@ function FilaNegocio({ negocio, onCambio }: { negocio: Negocio; onCambio: () => 
               onChange={(e) => setEmailDueno(e.target.value)}
             />
           </Campo>
-          <Boton type="submit" variante="contorno" disabled={ocupado || !emailDueno}>
+          <Boton type="submit" variante="contorno" cargando={ocupado === 'dueno'} disabled={ocupado !== null || !emailDueno}>
             Invitar dueño
           </Boton>
         </form>
-        {aviso ? <Aviso tono={aviso.tono}>{aviso.texto}</Aviso> : null}
+        {error ? <Aviso tono="peligro">{error}</Aviso> : null}
       </TarjetaContenido>
     </Tarjeta>
   )
