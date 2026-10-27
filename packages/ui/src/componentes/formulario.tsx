@@ -2,7 +2,7 @@ import type { InputHTMLAttributes, LabelHTMLAttributes, ReactNode, Ref, SelectHT
 import { cn } from '../utilidades'
 
 const claseControl =
-  'h-10 w-full rounded-lg border border-colmena-300 bg-white px-3 text-sm text-colmena-900 placeholder:text-colmena-500 focus:border-miel-500 focus:outline-2 focus:outline-miel-200 disabled:bg-colmena-50 aria-invalid:border-red-500'
+  'h-10 w-full rounded-xl border border-borde bg-superficie px-3 text-sm text-texto shadow-suave transition-colors placeholder:text-texto-3 hover:border-borde-fuerte focus:border-acento focus:outline-none focus:ring-4 focus:ring-acento/20 disabled:bg-hundido disabled:shadow-none aria-invalid:border-peligro aria-invalid:ring-peligro/15'
 
 export function Entrada({ className, ref, ...props }: InputHTMLAttributes<HTMLInputElement> & { ref?: Ref<HTMLInputElement> }) {
   return <input ref={ref} className={cn(claseControl, className)} {...props} />
@@ -13,7 +13,7 @@ export function Selector({ className, ref, ...props }: SelectHTMLAttributes<HTML
 }
 
 export function Etiqueta({ className, ...props }: LabelHTMLAttributes<HTMLLabelElement>) {
-  return <label className={cn('text-sm font-medium text-colmena-700', className)} {...props} />
+  return <label className={cn('text-sm font-medium text-texto-2', className)} {...props} />
 }
 
 // Etiqueta + control + ayuda o error, con el id enlazado.
@@ -37,11 +37,11 @@ export function Campo({
       <Etiqueta htmlFor={id}>{etiqueta}</Etiqueta>
       {children}
       {error ? (
-        <p className="text-xs text-red-600" role="alert">
+        <p className="text-xs text-peligro" role="alert">
           {error}
         </p>
       ) : ayuda ? (
-        <p className="text-xs text-colmena-500">{ayuda}</p>
+        <p className="text-xs text-texto-3">{ayuda}</p>
       ) : null}
     </div>
   )

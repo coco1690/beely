@@ -35,7 +35,7 @@ export function PaginaSedes() {
         }
       />
       {!esAdminPlataforma && editable ? (
-        <p className="mb-4 text-sm text-colmena-500">Para abrir o cerrar sedes escribe a soporte de Beely; aquí puedes editar sus datos.</p>
+        <p className="mb-4 text-sm text-texto-3">Para abrir o cerrar sedes escribe a soporte de Beely; aquí puedes editar sus datos.</p>
       ) : null}
 
       <div className="flex flex-col gap-4">
@@ -48,13 +48,13 @@ export function PaginaSedes() {
             <Tarjeta key={sede.id}>
               <TarjetaContenido className="flex flex-wrap items-center justify-between gap-3 pt-5">
                 <div>
-                  <p className="flex items-center gap-2 font-medium text-colmena-900">
+                  <p className="flex items-center gap-2 font-medium text-texto">
                     {sede.nombre}
                     {!sede.activa ? <Insignia tono="peligro">Inactiva</Insignia> : null}
                   </p>
-                  <p className="text-sm text-colmena-500">{sede.direccion ?? 'Sin dirección'}</p>
+                  <p className="text-sm text-texto-3">{sede.direccion ?? 'Sin dirección'}</p>
                   {sede.latitud !== null && sede.longitud !== null ? (
-                    <p className="font-mono text-xs text-colmena-500">
+                    <p className="font-mono text-xs text-texto-3">
                       {sede.latitud}, {sede.longitud}
                     </p>
                   ) : null}
@@ -119,8 +119,8 @@ function FormularioSede({ negocioId, sede, onListo }: { negocioId: string; sede?
           <Campo id="longitud" etiqueta="Longitud" error={formState.errors.longitud?.message}>
             <Entrada id="longitud" type="number" step="any" {...register('longitud', { setValueAs: numeroONulo })} />
           </Campo>
-          <label className="flex items-center gap-2 text-sm text-colmena-700 sm:col-span-2">
-            <input type="checkbox" className="size-4 accent-miel-500" {...register('activa')} /> Sede activa (la caja puede elegirla)
+          <label className="flex items-center gap-2 text-sm text-texto-2 sm:col-span-2">
+            <input type="checkbox" className="size-4 accent-acento" {...register('activa')} /> Sede activa (la caja puede elegirla)
           </label>
           {error ? <Aviso tono="peligro" className="sm:col-span-2">{error}</Aviso> : null}
           <div className="flex gap-2 sm:col-span-2">

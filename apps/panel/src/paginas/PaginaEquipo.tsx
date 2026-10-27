@@ -118,7 +118,7 @@ export function PaginaEquipo() {
                   Invitar
                 </Boton>
               </form>
-              <p className="mt-3 text-xs text-colmena-500">
+              <p className="mt-3 text-xs text-texto-3">
                 Cajero: escanea y suma sellos. Administrador: además configura negocio, sedes y programa. Solo el dueño gestiona el
                 equipo.
               </p>
@@ -132,15 +132,15 @@ export function PaginaEquipo() {
           <Cargando />
         ) : (
           <Tarjeta>
-            <ul className="divide-y divide-colmena-100">
+            <ul className="divide-y divide-borde">
               {equipo.map((i) => (
                 <li key={i.usuario_id} className="flex flex-wrap items-center justify-between gap-3 p-4">
                   <div className="min-w-0">
-                    <p className="flex items-center gap-2 truncate font-medium text-colmena-900">
+                    <p className="flex items-center gap-2 truncate font-medium text-texto">
                       {i.email}
                       {i.invitacion_pendiente ? <Insignia>Invitación pendiente</Insignia> : null}
                     </p>
-                    <p className="text-xs text-colmena-500">Último ingreso: {fechaHora(i.ultimo_ingreso_en)}</p>
+                    <p className="text-xs text-texto-3">Último ingreso: {fechaHora(i.ultimo_ingreso_en)}</p>
                   </div>
                   {puedeEditar(i) ? (
                     <div className="flex items-center gap-2">

@@ -230,14 +230,14 @@ export function PaginaCaja() {
           </TarjetaEncabezado>
           <TarjetaContenido>
             {movimientos.length === 0 ? (
-              <p className="text-sm text-colmena-500">Aún no hay sellos.</p>
+              <p className="text-sm text-texto-3">Aún no hay sellos.</p>
             ) : (
-              <ul className="flex flex-col divide-y divide-colmena-100">
+              <ul className="flex flex-col divide-y divide-borde">
                 {movimientos.map((m) => (
                   <li key={m.id} className="flex items-center justify-between gap-2 py-2 text-sm">
                     <div className="min-w-0">
-                      <p className="truncate font-medium text-colmena-900">{m.tarjetas?.clientes?.nombre ?? 'Cliente'}</p>
-                      <p className="text-xs text-colmena-500">{fechaHora(m.creado_en, zona)}</p>
+                      <p className="truncate font-medium text-texto">{m.tarjetas?.clientes?.nombre ?? 'Cliente'}</p>
+                      <p className="text-xs text-texto-3">{fechaHora(m.creado_en, zona)}</p>
                     </div>
                     {m.origen === 'canje_premio' ? (
                       <Insignia tono="miel">Premio</Insignia>
@@ -300,15 +300,15 @@ function VistaTarjeta({
         <div className="flex items-start justify-between gap-2">
           <div>
             <TarjetaTitulo>{tarjeta.clientes?.nombre}</TarjetaTitulo>
-            <p className="text-sm text-colmena-500">{tarjeta.clientes ? celularOculto(tarjeta.clientes.celular) : null}</p>
+            <p className="text-sm text-texto-3">{tarjeta.clientes ? celularOculto(tarjeta.clientes.celular) : null}</p>
           </div>
           {tarjeta.estado !== 'activa' ? <Insignia tono="peligro">Bloqueada</Insignia> : null}
         </div>
       </TarjetaEncabezado>
       <TarjetaContenido className="flex flex-col gap-5">
         <div>
-          <p className="mb-2 text-sm text-colmena-700">
-            <span className="text-2xl font-semibold text-colmena-900">{tarjeta.sellos_actuales}</span> de {requeridos} sellos ·
+          <p className="mb-2 text-sm text-texto-2">
+            <span className="text-2xl font-semibold text-texto">{tarjeta.sellos_actuales}</span> de {requeridos} sellos ·
             premio: {tarjeta.programas?.premio_descripcion}
           </p>
           <div className="flex flex-wrap gap-2" aria-hidden>
@@ -316,15 +316,15 @@ function VistaTarjeta({
               <span
                 key={i}
                 className={cn(
-                  'flex size-8 items-center justify-center rounded-full border-2 text-sm',
-                  i < tarjeta.sellos_actuales ? 'border-miel-500 bg-miel-500' : 'border-dashed border-colmena-300',
+                  'flex size-9 items-center justify-center rounded-full border-2 text-sm transition-colors',
+                  i < tarjeta.sellos_actuales ? 'border-acento bg-acento' : 'border-dashed border-borde-fuerte bg-hundido',
                 )}
               >
                 {i < tarjeta.sellos_actuales ? '🐝' : ''}
               </span>
             ))}
           </div>
-          <p className="mt-2 text-xs text-colmena-500">
+          <p className="mt-2 text-xs text-texto-3">
             Última visita: {fechaHora(tarjeta.ultima_visita_en, zona)} · {tarjeta.sellos_historicos} sellos en total ·{' '}
             {tarjeta.premios_ganados} premios
           </p>
@@ -334,13 +334,13 @@ function VistaTarjeta({
 
         {vigentes.length > 0 ? (
           <div className="flex flex-col gap-2">
-            <p className="text-sm font-medium text-colmena-700">Cupones por canjear</p>
+            <p className="text-sm font-medium text-texto-2">Cupones por canjear</p>
             {vigentes.map((c) => (
-              <div key={c.id} className="flex items-center justify-between rounded-lg bg-miel-50 px-3 py-2 text-sm">
+              <div key={c.id} className="flex items-center justify-between rounded-xl bg-acento-suave px-3 py-2 text-sm">
                 <span className="flex items-center gap-2">
-                  <Gift className="size-4 text-miel-700" /> {c.descripcion}
+                  <Gift className="size-4 text-acento-texto" /> {c.descripcion}
                 </span>
-                <span className="font-mono text-xs text-colmena-700">
+                <span className="font-mono text-xs text-texto-2">
                   {c.codigo} · vence {fecha(c.vence_en, zona)}
                 </span>
               </div>

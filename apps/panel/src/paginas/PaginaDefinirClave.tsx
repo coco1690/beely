@@ -35,13 +35,13 @@ export function PaginaDefinirClave() {
       {!sesion ? (
         <div className="flex flex-col gap-4">
           <Aviso tono="peligro">El enlace venció o ya se usó. Pide uno nuevo.</Aviso>
-          <Link to="/recuperar" className="text-center text-sm text-colmena-500 hover:text-colmena-900">
+          <Link to="/recuperar" className="text-center text-sm text-texto-3 hover:text-texto">
             Pedir enlace nuevo
           </Link>
         </div>
       ) : (
         <form className="flex flex-col gap-4" onSubmit={guardar} noValidate>
-          <p className="text-sm text-colmena-500">{sesion.user.email}</p>
+          <p className="text-sm text-texto-3">{sesion.user.email}</p>
           <Campo id="clave" etiqueta="Clave nueva" error={formState.errors.clave?.message}>
             <Entrada id="clave" type="password" autoComplete="new-password" {...register('clave')} />
           </Campo>

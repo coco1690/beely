@@ -1,18 +1,93 @@
 /* Tema de Beely para Tailwind v4. Cada app lo importa después de `tailwindcss`
-   y agrega `@source` hacia packages/ui para que se generen las clases. */
-@theme {
-  --color-miel-50: #fff9e6;
-  --color-miel-100: #fdf0c2;
-  --color-miel-200: #fbe08a;
-  --color-miel-400: #f8c63a;
-  --color-miel-500: #f5b301;
-  --color-miel-600: #d49800;
-  --color-miel-700: #a87700;
-  --color-colmena-900: #1f1a17;
-  --color-colmena-700: #3d342e;
-  --color-colmena-500: #6b5d52;
-  --color-colmena-300: #b8aca2;
-  --color-colmena-100: #ece6e0;
-  --color-colmena-50: #f8f5f2;
+   y agrega `@source` hacia packages/ui para que se generen las clases.
+
+   Los colores son semánticos (fondo, superficie, texto, acento…) y salen de
+   variables que cambian según:
+     * data-modo="claro" | "oscuro"  en <html>  → neutros, éxito y peligro.
+     * data-tema="miel" | "oceano" | "bosque" | "uva" | "coral"  en <html>  → acento.
+   Los derivados del acento (suave, borde, texto) se calculan con color-mix,
+   así cada tema solo define su color base y el texto que va encima. */
+
+@custom-variant dark (&:where([data-modo='oscuro'], [data-modo='oscuro'] *));
+
+@theme inline {
+  --color-fondo: var(--b-fondo);
+  --color-superficie: var(--b-superficie);
+  --color-hundido: var(--b-hundido);
+  --color-borde: var(--b-borde);
+  --color-borde-fuerte: var(--b-borde-fuerte);
+  --color-texto: var(--b-texto);
+  --color-texto-2: var(--b-texto-2);
+  --color-texto-3: var(--b-texto-3);
+
+  --color-acento: var(--b-acento);
+  --color-acento-hover: color-mix(in oklab, var(--b-acento) 88%, var(--b-texto));
+  --color-acento-suave: color-mix(in oklab, var(--b-acento) 14%, var(--b-superficie));
+  --color-acento-borde: color-mix(in oklab, var(--b-acento) 40%, var(--b-superficie));
+  --color-acento-texto: color-mix(in oklab, var(--b-acento) 62%, var(--b-texto));
+  --color-sobre-acento: var(--b-sobre-acento);
+
+  --color-exito: var(--b-exito);
+  --color-exito-suave: color-mix(in oklab, var(--b-exito) 12%, var(--b-superficie));
+  --color-exito-borde: color-mix(in oklab, var(--b-exito) 35%, var(--b-superficie));
+  --color-peligro: var(--b-peligro);
+  --color-peligro-suave: color-mix(in oklab, var(--b-peligro) 12%, var(--b-superficie));
+  --color-peligro-borde: color-mix(in oklab, var(--b-peligro) 35%, var(--b-superficie));
+
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --shadow-suave: var(--b-sombra);
+}
+
+/* Modo claro (por defecto). */
+:root {
+  color-scheme: light;
+  --b-fondo: #f7f6f4;
+  --b-superficie: #ffffff;
+  --b-hundido: #f1efec;
+  --b-borde: #e8e4df;
+  --b-borde-fuerte: #d4cdc6;
+  --b-texto: #1c1917;
+  --b-texto-2: #44403c;
+  --b-texto-3: #78716c;
+  --b-exito: #16a34a;
+  --b-peligro: #dc2626;
+  --b-sombra: 0 1px 2px rgb(0 0 0 / 0.04), 0 4px 16px -4px rgb(0 0 0 / 0.06);
+}
+
+:root[data-modo='oscuro'] {
+  color-scheme: dark;
+  --b-fondo: #0e0d0c;
+  --b-superficie: #181614;
+  --b-hundido: #221f1d;
+  --b-borde: #2c2826;
+  --b-borde-fuerte: #3f3a36;
+  --b-texto: #f5f3f1;
+  --b-texto-2: #d6d3d1;
+  --b-texto-3: #a29b95;
+  --b-exito: #4ade80;
+  --b-peligro: #f87171;
+  --b-sombra: 0 1px 2px rgb(0 0 0 / 0.4);
+}
+
+/* Temas de acento. Miel es el de la marca. */
+:root,
+:root[data-tema='miel'] {
+  --b-acento: #f5b301;
+  --b-sobre-acento: #1c1917;
+}
+:root[data-tema='oceano'] {
+  --b-acento: #0ea5e9;
+  --b-sobre-acento: #ffffff;
+}
+:root[data-tema='bosque'] {
+  --b-acento: #10b981;
+  --b-sobre-acento: #ffffff;
+}
+:root[data-tema='uva'] {
+  --b-acento: #8b5cf6;
+  --b-sobre-acento: #ffffff;
+}
+:root[data-tema='coral'] {
+  --b-acento: #f43f5e;
+  --b-sobre-acento: #ffffff;
 }

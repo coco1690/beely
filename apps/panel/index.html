@@ -1,9 +1,22 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" data-tema="miel" data-modo="claro">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Beely · Panel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <script>
+      // Aplica el tema guardado antes de pintar (evita el destello claro en modo oscuro).
+      // Misma llave y valores que src/stores/useTemaStore.ts.
+      try {
+        var t = JSON.parse(localStorage.getItem('beely-panel-tema') || '{}')
+        var r = document.documentElement
+        if (t.tema) r.dataset.tema = t.tema
+        r.dataset.modo = t.modo || (matchMedia('(prefers-color-scheme: dark)').matches ? 'oscuro' : 'claro')
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="raiz"></div>

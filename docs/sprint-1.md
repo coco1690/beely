@@ -16,6 +16,14 @@ Entregable: el equipo de un negocio entra al panel (`app.hibeely.com`), configur
 
 Modelo de datos, funciones SQL nuevas y checklist de pruebas: [modelo-datos.md](modelo-datos.md).
 
+## Temas del panel
+
+Los colores de `packages/ui/src/tema.css` son semánticos: `fondo`, `superficie`, `hundido`, `borde`, `texto`, `texto-2`, `texto-3`, `acento` (+ `-suave`, `-borde`, `-texto`, `sobre-acento`), `exito` y `peligro`. No se usan colores fijos (`bg-white`, `text-red-600`…) en las pantallas.
+
+- **Modo** claro/oscuro: `data-modo` en `<html>` cambia los neutros.
+- **Tema** de acento: `data-tema` = `miel` (marca), `oceano`, `bosque`, `uva` o `coral`. Los tonos suaves salen del acento con `color-mix`.
+- `useTemaStore` guarda la elección en `localStorage` (por navegador) y `index.html` la aplica antes de pintar. Selector de color y botón de modo en la barra lateral y en la pantalla de ingreso.
+
 ## Edge Functions
 
 Ambas exigen la sesión del equipo (`Authorization: Bearer <jwt>`; `verify_jwt` activo), validan el cuerpo con zod y responden errores con el contrato `{ "error": { "codigo", "mensaje" } }`.

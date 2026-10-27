@@ -131,7 +131,7 @@ export function PaginaPrograma() {
                   Guardar programa
                 </Boton>
               ) : (
-                <p className="text-sm text-colmena-500 sm:col-span-2">Solo el dueño o un administrador pueden cambiar el programa.</p>
+                <p className="text-sm text-texto-3 sm:col-span-2">Solo el dueño o un administrador pueden cambiar el programa.</p>
               )}
             </form>
           </TarjetaContenido>

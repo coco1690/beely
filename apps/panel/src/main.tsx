@@ -15,6 +15,7 @@ import { PaginaSedes } from './paginas/PaginaSedes'
 import { SinNegocio } from './paginas/SinNegocio'
 import { puedeConfigurar, useNegocioActivo, useNegocioStore } from './stores/useNegocioStore'
 import { useSesionStore } from './stores/useSesionStore'
+import './stores/useTemaStore'
 import './estilos.css'
 
 // Solo con sesión; carga los negocios del usuario una vez por sesión.
