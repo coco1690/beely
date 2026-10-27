@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, Navigate, Outlet, RouterProvider } from 'react-router'
 import { Cargando } from './componentes/Cargando'
 import { DisenoPanel } from './componentes/DisenoPanel'
+import { JalarParaRecargar } from './componentes/JalarParaRecargar'
 import { PaginaCaja } from './paginas/PaginaCaja'
 import { PaginaDefinirClave } from './paginas/PaginaDefinirClave'
 import { PaginaEquipo } from './paginas/PaginaEquipo'
@@ -120,6 +121,7 @@ function App() {
       <RouterProvider router={enrutador} />
       {/* En móvil los toasts quedan sobre la barra inferior de secciones. */}
       <Toaster margenInferiorMovil="4rem" />
+      <JalarParaRecargar />
     </ProveedorConfirmar>
   )
 }
