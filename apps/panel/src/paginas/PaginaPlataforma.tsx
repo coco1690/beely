@@ -122,7 +122,7 @@ function FilaNegocio({ negocio, onCambio }: { negocio: Negocio; onCambio: () => 
       <TarjetaEncabezado>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <TarjetaTitulo className="text-base">{negocio.nombre}</TarjetaTitulo>
-          <span className="flex items-center gap-2 font-mono text-xs text-colmena-500">
+          <span className="flex items-center gap-2 font-mono text-xs text-texto-3">
             {negocio.slug}
             <Insignia tono={negocio.estado === 'activo' ? 'exito' : 'peligro'}>{negocio.estado}</Insignia>
           </span>

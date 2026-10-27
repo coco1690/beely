@@ -3,20 +3,21 @@ import type { ButtonHTMLAttributes } from 'react'
 import { cn } from '../utilidades'
 
 export const variantesBoton = cva(
-  'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-miel-500 disabled:pointer-events-none disabled:opacity-50',
+  'inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-all duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-acento/25 disabled:pointer-events-none disabled:opacity-50',
   {
     variants: {
       variante: {
-        primario: 'bg-miel-500 text-colmena-900 hover:bg-miel-400',
-        secundario: 'bg-colmena-100 text-colmena-900 hover:bg-colmena-300/60',
-        contorno: 'border border-colmena-300 bg-white text-colmena-900 hover:bg-colmena-50',
-        fantasma: 'text-colmena-700 hover:bg-colmena-100',
-        peligro: 'bg-red-600 text-white hover:bg-red-700',
+        primario: 'bg-acento text-sobre-acento shadow-suave hover:bg-acento-hover',
+        secundario: 'bg-hundido text-texto hover:bg-borde',
+        contorno: 'border border-borde bg-superficie text-texto shadow-suave hover:border-borde-fuerte hover:bg-hundido',
+        fantasma: 'text-texto-2 hover:bg-hundido hover:text-texto',
+        peligro: 'bg-red-600 text-white shadow-suave hover:bg-red-700',
       },
       tamano: {
         sm: 'h-8 px-3 text-sm',
         md: 'h-10 px-4 text-sm',
-        lg: 'h-14 px-6 text-lg',
+        lg: 'h-14 px-6 text-base',
+        icono: 'size-9',
       },
     },
     defaultVariants: { variante: 'primario', tamano: 'md' },

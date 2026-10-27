@@ -5,19 +5,32 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link } from 'react-router'
 import { Marca } from '../componentes/Marca'
+import { BotonModo, SelectorTema } from '../componentes/SelectorTema'
 import { supabase } from '../lib/supabase'
 
 export function PantallaAcceso({ titulo, children }: { titulo: string; children: React.ReactNode }) {
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-colmena-50 p-4">
-      <div className="flex w-full max-w-sm flex-col gap-6">
-        <Marca subtitulo="Panel del negocio" />
+    <main className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-fondo p-4">
+      {/* Halo del color del tema detrás de la tarjeta. */}
+      <div
+        className="pointer-events-none absolute top-1/2 left-1/2 size-[36rem] -translate-x-1/2 -translate-y-2/3 rounded-full bg-acento opacity-15 blur-3xl"
+        aria-hidden
+      />
+      <div className="absolute top-4 right-4 flex items-center gap-2">
+        <SelectorTema />
+        <BotonModo />
+      </div>
+      <div className="relative flex w-full max-w-sm flex-col gap-8">
+        <div className="flex justify-center">
+          <Marca subtitulo="Panel del negocio" />
+        </div>
         <Tarjeta>
-          <TarjetaEncabezado>
-            <TarjetaTitulo>{titulo}</TarjetaTitulo>
+          <TarjetaEncabezado className="pb-2">
+            <TarjetaTitulo className="text-xl">{titulo}</TarjetaTitulo>
           </TarjetaEncabezado>
-          <TarjetaContenido>{children}</TarjetaContenido>
+          <TarjetaContenido className="pt-4">{children}</TarjetaContenido>
         </Tarjeta>
+        <p className="text-center text-xs text-texto-3">Beely · Fidelización para tu negocio</p>
       </div>
     </main>
   )
@@ -47,7 +60,7 @@ export function PaginaIngreso() {
         <Boton type="submit" disabled={formState.isSubmitting}>
           {formState.isSubmitting ? 'Ingresando…' : 'Ingresar'}
         </Boton>
-        <Link to="/recuperar" className="text-center text-sm text-colmena-500 hover:text-colmena-900">
+        <Link to="/recuperar" className="text-center text-sm text-texto-3 hover:text-texto">
           Olvidé mi clave
         </Link>
       </form>

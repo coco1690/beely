@@ -5,5 +5,10 @@
 @source '../../../packages/ui/src';
 
 body {
-  @apply bg-colmena-50 font-sans text-colmena-900 antialiased;
+  @apply bg-fondo font-sans text-texto antialiased transition-colors duration-200;
+  font-feature-settings: 'cv11', 'ss01';
+}
+
+::selection {
+  @apply bg-acento-suave text-texto;
 }

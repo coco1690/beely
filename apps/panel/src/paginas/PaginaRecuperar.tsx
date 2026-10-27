@@ -24,7 +24,7 @@ export function PaginaRecuperar() {
       {enviado ? (
         <div className="flex flex-col gap-4">
           <Aviso tono="exito">Si el correo es del equipo, te llegó un enlace para definir una clave nueva.</Aviso>
-          <Link to="/ingresar" className="text-center text-sm text-colmena-500 hover:text-colmena-900">
+          <Link to="/ingresar" className="text-center text-sm text-texto-3 hover:text-texto">
             Volver a ingresar
           </Link>
         </div>
@@ -36,7 +36,7 @@ export function PaginaRecuperar() {
           <Boton type="submit" disabled={formState.isSubmitting}>
             Enviar enlace
           </Boton>
-          <Link to="/ingresar" className="text-center text-sm text-colmena-500 hover:text-colmena-900">
+          <Link to="/ingresar" className="text-center text-sm text-texto-3 hover:text-texto">
             Volver a ingresar
           </Link>
         </form>
