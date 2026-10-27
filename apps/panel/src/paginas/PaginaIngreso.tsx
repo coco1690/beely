@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { esquemaIngreso } from '@beely/tipos'
-import { Aviso, Boton, Campo, Entrada, LogoBeely, Tarjeta, TarjetaContenido } from '@beely/ui'
+import { Aviso, Boton, Campo, Entrada, EntradaClave, LogoBeely, Tarjeta, TarjetaContenido } from '@beely/ui'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link } from 'react-router'
@@ -56,7 +56,7 @@ export function PaginaIngreso() {
           <Entrada id="email" type="email" autoComplete="username" {...register('email')} />
         </Campo>
         <Campo id="clave" etiqueta="Clave" error={formState.errors.clave?.message}>
-          <Entrada id="clave" type="password" autoComplete="current-password" {...register('clave')} />
+          <EntradaClave id="clave" autoComplete="current-password" {...register('clave')} />
         </Campo>
         {error ? <Aviso tono="peligro">{error}</Aviso> : null}
         <Boton type="submit" cargando={formState.isSubmitting}>

@@ -75,7 +75,7 @@ export function DisenoPanel() {
       </header>
 
       <main className="min-w-0 md:py-2 md:pr-2">
-        <div className="min-h-full px-4 pt-5 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:min-h-[calc(100dvh-1rem)] md:rounded-tarjeta md:border md:border-borde md:bg-superficie md:px-10 md:pt-9 md:pb-12 md:shadow-tarjeta">
+        <div className="min-h-full px-4 pt-5 pb-[calc(7rem+env(safe-area-inset-bottom))] md:min-h-[calc(100dvh-1rem)] md:rounded-tarjeta md:border md:border-borde md:bg-superficie md:px-10 md:pt-9 md:pb-12 md:shadow-tarjeta">
           <div className="mx-auto w-full max-w-4xl">
             <Outlet />
           </div>
@@ -87,7 +87,8 @@ export function DisenoPanel() {
   )
 }
 
-// Móvil: hasta 3 secciones a un toque y el resto en "Más".
+// Móvil: barra flotante oscura con hasta 3 secciones a un toque y el resto en "Más".
+// En modo claro es del color del texto; en oscuro, un tono elevado con borde. La sección activa va en una píldora del acento.
 function BarraInferior({ enlaces }: { enlaces: Enlace[] }) {
   const [masAbierto, setMasAbierto] = useState(false)
   const { pathname } = useLocation()
@@ -95,23 +96,25 @@ function BarraInferior({ enlaces }: { enlaces: Enlace[] }) {
   const resto = enlaces.length > 4 ? enlaces.slice(3) : []
   const restoActivo = resto.some((e) => pathname.startsWith(e.a))
   const claseTab =
-    'flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 pt-2 pb-1.5 text-[11px] font-medium text-texto-3 transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-foco [&_svg]:size-5'
+    'flex h-14 min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-tarjeta border border-transparent text-[11px] font-medium text-(--barra-texto)/70 transition-colors hover:text-(--barra-texto) focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-(--barra-texto) [&_svg]:size-5'
+  const claseActiva =
+    'border-[color-mix(in_oklab,var(--b-acento)_55%,var(--barra))] bg-[color-mix(in_oklab,var(--b-acento)_30%,var(--barra))] text-(--barra-texto) [&_svg]:text-[color-mix(in_oklab,var(--b-acento)_45%,var(--barra-texto))]'
 
   if (enlaces.length === 0) return null
   return (
     <nav
       aria-label="Secciones"
-      className="fixed inset-x-0 bottom-0 z-30 flex border-t border-borde bg-fondo/90 px-1 pb-[env(safe-area-inset-bottom)] backdrop-blur-lg md:hidden"
+      className="fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-30 flex gap-1 rounded-capa border border-transparent bg-(--barra) p-1.5 shadow-capa [--barra-texto:var(--b-fondo)] [--barra:var(--b-texto)] md:hidden dark:border-borde-fuerte dark:[--barra-texto:var(--b-texto)] dark:[--barra:var(--b-hundido)]"
     >
       {visibles.map((e) => (
-        <NavLink key={e.a} to={e.a} className={({ isActive }) => cn(claseTab, isActive && 'text-texto [&_svg]:text-acento-texto')}>
+        <NavLink key={e.a} to={e.a} className={({ isActive }) => cn(claseTab, isActive && claseActiva)}>
           {e.icono}
           <span className="max-w-full truncate">{e.corto}</span>
         </NavLink>
       ))}
       {resto.length > 0 ? (
         <>
-          <button type="button" className={cn(claseTab, restoActivo && 'text-texto [&_svg]:text-acento-texto')} onClick={() => setMasAbierto(true)}>
+          <button type="button" className={cn(claseTab, restoActivo && claseActiva)} onClick={() => setMasAbierto(true)}>
             <Ellipsis />
             Más
           </button>

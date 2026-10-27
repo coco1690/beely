@@ -1,5 +1,5 @@
-import { ChevronsUpDown } from 'lucide-react'
-import { createContext, useContext, type InputHTMLAttributes, type LabelHTMLAttributes, type ReactNode, type Ref, type SelectHTMLAttributes } from 'react'
+import { ChevronsUpDown, Eye, EyeOff } from 'lucide-react'
+import { createContext, useContext, useState, type InputHTMLAttributes, type LabelHTMLAttributes, type ReactNode, type Ref, type SelectHTMLAttributes } from 'react'
 import { cn } from '../utilidades'
 
 // 16px en pantallas táctiles: con menos, iOS hace zoom al enfocar el campo.
@@ -24,6 +24,30 @@ function useAtributosCampo(props: AtributosAria): AtributosAria {
 export function Entrada({ className, ref, ...props }: InputHTMLAttributes<HTMLInputElement> & { ref?: Ref<HTMLInputElement> }) {
   const atributos = useAtributosCampo(props)
   return <input ref={ref} className={cn(claseControl, className)} {...props} {...atributos} />
+}
+
+// Campo de clave con botón para mostrarla u ocultarla. `className` va al contenedor.
+export function EntradaClave({
+  className,
+  ref,
+  ...props
+}: Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> & { ref?: Ref<HTMLInputElement> }) {
+  const atributos = useAtributosCampo(props)
+  const [visible, setVisible] = useState(false)
+  return (
+    <div className={cn('relative w-full min-w-0', className)}>
+      <input ref={ref} type={visible ? 'text' : 'password'} className={cn(claseControl, 'pr-10 pointer-coarse:pr-12')} {...props} {...atributos} />
+      <button
+        type="button"
+        onClick={() => setVisible((v) => !v)}
+        aria-label={visible ? 'Ocultar clave' : 'Mostrar clave'}
+        aria-pressed={visible}
+        className="absolute inset-y-0 right-0 flex w-9 items-center justify-center rounded-r-control text-texto-3 transition-colors hover:text-texto focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-foco pointer-coarse:w-11 [&_svg]:size-4 pointer-coarse:[&_svg]:size-5"
+      >
+        {visible ? <EyeOff /> : <Eye />}
+      </button>
+    </div>
+  )
 }
 
 // `className` va al contenedor (ancho, márgenes); el select ocupa todo y lleva su flecha.

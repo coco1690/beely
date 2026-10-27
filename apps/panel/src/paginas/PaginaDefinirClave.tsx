@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { esquemaNuevaClave } from '@beely/tipos'
-import { Aviso, Boton, Campo, Entrada } from '@beely/ui'
+import { Aviso, Boton, Campo, EntradaClave } from '@beely/ui'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router'
@@ -43,10 +43,10 @@ export function PaginaDefinirClave() {
         <form className="flex flex-col gap-4" onSubmit={guardar} noValidate>
           <p className="truncate text-sm text-texto-3">{sesion.user.email}</p>
           <Campo id="clave" etiqueta="Clave nueva" error={formState.errors.clave?.message}>
-            <Entrada id="clave" type="password" autoComplete="new-password" {...register('clave')} />
+            <EntradaClave id="clave" autoComplete="new-password" {...register('clave')} />
           </Campo>
           <Campo id="confirmacion" etiqueta="Repite la clave" error={formState.errors.confirmacion?.message}>
-            <Entrada id="confirmacion" type="password" autoComplete="new-password" {...register('confirmacion')} />
+            <EntradaClave id="confirmacion" autoComplete="new-password" {...register('confirmacion')} />
           </Campo>
           {error ? <Aviso tono="peligro">{error}</Aviso> : null}
           <Boton type="submit" cargando={formState.isSubmitting}>
