@@ -40,7 +40,7 @@ export function DisenoPanel() {
   const enlaces = useEnlaces()
 
   return (
-    <div className="min-h-dvh bg-fondo md:grid md:grid-cols-[15rem_minmax(0,1fr)]">
+    <div className="min-h-dvh overflow-x-clip bg-fondo md:grid md:grid-cols-[15rem_minmax(0,1fr)]">
       {/* Escritorio: barra lateral del mismo tono que el fondo; el contenido va en un panel elevado. */}
       <aside className="hidden md:sticky md:top-0 md:flex md:h-dvh md:flex-col md:gap-4 md:px-3 md:py-3">
         <MenuNegocio />

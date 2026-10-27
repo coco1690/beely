@@ -19,7 +19,7 @@ export function PanelInferior({
   className?: string
 }) {
   return (
-    <Drawer.Root open={abierto} onOpenChange={onAbiertoCambia}>
+    <Drawer.Root open={abierto} onOpenChange={onAbiertoCambia} noBodyStyles>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40" />
         <Drawer.Content

@@ -185,7 +185,7 @@ export function PaginaCaja() {
     <>
       <EncabezadoPagina titulo="Caja" descripcion="Escanea el QR del cliente y suma su sello." />
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_17rem]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_17rem]">
         <div className="flex min-w-0 flex-col gap-4">
           {sedesActivas.length > 0 ? (
             <Campo id="sede" etiqueta="Sede donde estás" ayuda={faltaSede ? 'Elígela antes de sumar sellos.' : undefined}>
