@@ -2,12 +2,13 @@ import { Toaster as ToasterSonner, toast } from 'sonner'
 
 // Confirmaciones pasajeras ("guardado", "invitación enviada"). Sonner maneja la pila,
 // las interrupciones y prefers-reduced-motion; aquí solo se le pone el tema de Beely.
-export function Toaster() {
+// `margenInferiorMovil`: espacio extra si la app tiene barra inferior en móvil.
+export function Toaster({ margenInferiorMovil = '0px' }: { margenInferiorMovil?: string }) {
   return (
     <ToasterSonner
       position="bottom-right"
       offset={16}
-      mobileOffset={{ bottom: 'calc(16px + env(safe-area-inset-bottom))', left: 16, right: 16 }}
+      mobileOffset={{ bottom: `calc(16px + ${margenInferiorMovil} + env(safe-area-inset-bottom))`, left: 16, right: 16 }}
       gap={8}
       toastOptions={{
         unstyled: true,
