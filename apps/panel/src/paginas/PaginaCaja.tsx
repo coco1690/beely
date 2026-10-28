@@ -17,7 +17,7 @@ import {
   useMedia,
 } from "@beely/ui";
 import { Camera, Gift, Info, Search, Stamp } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { EncabezadoPagina } from "../componentes/DisenoPanel";
 import { EscanerQr } from "../componentes/EscanerQr";
 import {
@@ -77,7 +77,14 @@ export function PaginaCaja() {
   // Una clave por intento: si la red reintenta o se toca dos veces, no se suma doble.
   const [clave, setClave] = useState(() => crypto.randomUUID());
   const [sumando, setSumando] = useState(false);
+  // Candado síncrono: el estado `sumando` tarda un render y un doble toque alcanza a entrar.
+  const enCurso = useRef(false);
   const [resultado, setResultado] = useState<ResultadoSello | null>(null);
+  // Tras sumar, la tarjeta se cierra y aquí queda la confirmación hasta el siguiente cliente.
+  const [ultimo, setUltimo] = useState<{
+    nombre: string;
+    resultado: ResultadoSello;
+  } | null>(null);
   const [movimientos, setMovimientos] = useState<Movimiento[]>([]);
 
   const negocioId = activo?.negocio.id;
@@ -102,6 +109,7 @@ export function PaginaCaja() {
   useEffect(() => {
     setTarjeta(null);
     setResultado(null);
+    setUltimo(null);
     void cargarMovimientos();
   }, [cargarMovimientos]);
 
@@ -110,6 +118,7 @@ export function PaginaCaja() {
     setBuscando(true);
     setError(null);
     setResultado(null);
+    setUltimo(null);
     try {
       const encontrada = await buscarTarjeta(negocioId, token);
       if (!encontrada) setError("No encontramos esa tarjeta en este negocio.");
@@ -151,7 +160,8 @@ export function PaginaCaja() {
     monto_venta?: number;
     unidades?: number;
   }) => {
-    if (!negocioId || !tarjeta) return;
+    if (!negocioId || !tarjeta || enCurso.current) return;
+    enCurso.current = true;
     setSumando(true);
     setError(null);
     try {
@@ -162,14 +172,25 @@ export function PaginaCaja() {
         ...compra,
         clave_idempotencia: clave,
       });
-      setResultado(r);
       setClave(crypto.randomUUID());
-      const actualizada = await buscarTarjeta(negocioId, tarjeta.token_publico);
-      if (actualizada) setTarjeta(actualizada);
+      if (r.detalle === "compra_no_aplica") {
+        // No se sumó nada: la tarjeta sigue abierta para corregir el valor.
+        setResultado(r);
+        return;
+      }
+      // Un sello por escaneo: se cierra la tarjeta y se vuelve a escanear o buscar.
+      setUltimo({
+        nombre: tarjeta.clientes?.nombre ?? "Cliente",
+        resultado: r,
+      });
+      setTarjeta(null);
+      setResultado(null);
+      setBusqueda("");
       void cargarMovimientos();
     } catch (e) {
       setError(mensajeDe(e));
     } finally {
+      enCurso.current = false;
       setSumando(false);
     }
   };
@@ -177,6 +198,7 @@ export function PaginaCaja() {
   const limpiar = () => {
     setTarjeta(null);
     setResultado(null);
+    setUltimo(null);
     setError(null);
     setBusqueda("");
   };
@@ -282,6 +304,13 @@ export function PaginaCaja() {
           ) : null}
 
           {error ? <Aviso tono="peligro">{error}</Aviso> : null}
+
+          {ultimo && !tarjeta ? (
+            <AvisoResultado
+              nombre={ultimo.nombre}
+              resultado={ultimo.resultado}
+            />
+          ) : null}
 
           {tarjeta ? (
             <VistaTarjeta
@@ -562,14 +591,22 @@ function ProgresoSellos({
   );
 }
 
-function AvisoResultado({ resultado }: { resultado: ResultadoSello }) {
+function AvisoResultado({
+  resultado,
+  nombre,
+}: {
+  resultado: ResultadoSello;
+  // Con nombre, el aviso va fuera de la tarjeta (ya cerrada) y dice a quién.
+  nombre?: string;
+}) {
+  const quien = nombre ? `${nombre}: ` : "";
   if (resultado.duplicado)
-    return <Aviso>Ese sello ya estaba registrado.</Aviso>;
+    return <Aviso>{quien}ese sello ya estaba registrado.</Aviso>;
   if (resultado.motivo === "sin_sellos_aplicables") {
     return (
       <Aviso tono="miel">
         {resultado.detalle === "tope_diario"
-          ? "El cliente ya alcanzó el máximo de sellos de hoy."
+          ? `${quien}ya alcanzó el máximo de sellos de hoy.`
           : "Esta compra no alcanza para un sello."}
       </Aviso>
     );
@@ -588,7 +625,7 @@ function AvisoResultado({ resultado }: { resultado: ResultadoSello }) {
         </span>
         <div className="min-w-0">
           <p className="text-sm font-semibold text-texto">
-            ¡Tarjeta completa! Premio emitido
+            ¡Tarjeta completa! Premio emitido{nombre ? ` para ${nombre}` : ""}
           </p>
           <p className="text-etiqueta text-texto-2">
             {resultado.cupon.descripcion} ·{" "}
@@ -601,7 +638,8 @@ function AvisoResultado({ resultado }: { resultado: ResultadoSello }) {
   const sumados = resultado.sellos_sumados ?? 1;
   return (
     <Aviso tono="exito">
-      Listo: +{sumados} {sumados === 1 ? "sello" : "sellos"}.
+      Listo: +{sumados} {sumados === 1 ? "sello" : "sellos"}
+      {nombre ? ` para ${nombre}` : ""}. Escanea el siguiente cliente.
     </Aviso>
   );
 }
