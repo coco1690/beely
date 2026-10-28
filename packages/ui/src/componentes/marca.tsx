@@ -1,21 +1,47 @@
-import { useEffect, useState, type CSSProperties } from 'react'
+import { useEffect, useId, useState, type CSSProperties } from 'react'
 import { analizarLogo, type AnalisisLogo } from './analizar-logo'
 import { cn } from '../utilidades'
+import { LETRA_B, PALABRA } from './trazos-logo'
 
-// Celda de panal: la forma base de la marca y de cada sello.
+// Celda de panal: la forma de cada sello.
 const HEXAGONO = 'M12 1.6c.5 0 1 .13 1.45.39l7.1 4.1c.9.52 1.45 1.48 1.45 2.52v8.2c0 1.04-.55 2-1.45 2.52l-7.1 4.1a2.9 2.9 0 0 1-2.9 0l-7.1-4.1A2.9 2.9 0 0 1 2 16.81v-8.2c0-1.04.55-2 1.45-2.52l7.1-4.1c.45-.26.95-.39 1.45-.39Z'
 
-// Logo de Beely: una abeja dentro de una celda de panal. Toma el color del tema.
-export function LogoBeely({ className }: { className?: string }) {
+// Degradado de la marca Beely: coral a rosa. Es fijo, no sigue el color del tema, y
+// se lee igual sobre fondo claro y oscuro.
+function DegradadoBeely({ id, ancho, alto }: { id: string; ancho: number; alto: number }) {
   return (
-    <svg viewBox="0 0 24 24" className={cn('size-7', className)} aria-hidden>
-      <path d={HEXAGONO} className="fill-acento" />
-      <g className="fill-sobre-acento">
-        <ellipse cx="9.1" cy="8.6" rx="2.3" ry="1.7" transform="rotate(-25 9.1 8.6)" opacity="0.45" />
-        <ellipse cx="14.9" cy="8.6" rx="2.3" ry="1.7" transform="rotate(25 14.9 8.6)" opacity="0.45" />
-        <ellipse cx="12" cy="13.4" rx="3.4" ry="4.6" />
-      </g>
-      <path d="M8.9 12.4h6.2M9.2 15.2h5.6" className="stroke-acento" strokeWidth="1.3" strokeLinecap="round" />
+    <linearGradient id={id} gradientUnits="userSpaceOnUse" x1="0" y1={alto} x2={ancho} y2="0">
+      <stop offset="0" stopColor="#F47B5E" />
+      <stop offset="1" stopColor="#E7577F" />
+    </linearGradient>
+  )
+}
+
+// Logo de Beely: la palabra en cursiva. Para el ingreso y cabeceras con espacio a lo ancho.
+export function LogoBeely({ className }: { className?: string }) {
+  const id = useId()
+  const { ancho, alto, d } = PALABRA
+  return (
+    <svg viewBox={`-4 -4 ${ancho + 8} ${alto + 8}`} className={cn('h-8 w-auto', className)} role="img" aria-label="Beely">
+      <defs>
+        <DegradadoBeely id={id} ancho={ancho} alto={alto} />
+      </defs>
+      <path d={d} fill={`url(#${id})`} />
+    </svg>
+  )
+}
+
+// Marca cuadrada de Beely: la "B" del logo. Para espacios donde no cabe la palabra.
+export function MarcaBeely({ className }: { className?: string }) {
+  const id = useId()
+  const { ancho, alto, d } = LETRA_B
+  const lado = Math.max(ancho, alto) + 16
+  return (
+    <svg viewBox={`${(ancho - lado) / 2} ${(alto - lado) / 2} ${lado} ${lado}`} className={cn('size-7', className)} aria-hidden>
+      <defs>
+        <DegradadoBeely id={id} ancho={ancho} alto={alto} />
+      </defs>
+      <path d={d} fill={`url(#${id})`} />
     </svg>
   )
 }
@@ -38,7 +64,7 @@ export function Sello({ lleno, className, style }: { lleno: boolean; className?:
 // Logo del negocio (marca blanca), sin marco blanco: si el logo es una figura sobre
 // fondo liso se recorta y se muestra la figura sola; si llena el cuadro, va a sangre.
 // Solo los logos de trazos sobre fondo transparente llevan base clara, para leerse en
-// tema oscuro. Sin logo, muestra el de Beely.
+// tema oscuro. Sin logo, muestra la marca de Beely.
 export function LogoNegocio({ url, nombre, className }: { url: string | null | undefined; nombre: string; className?: string }) {
   const [analisis, setAnalisis] = useState<{ url: string; resultado: AnalisisLogo } | null>(null)
 
@@ -51,7 +77,7 @@ export function LogoNegocio({ url, nombre, className }: { url: string | null | u
     }
   }, [url])
 
-  if (!url) return <LogoBeely className={className} />
+  if (!url) return <MarcaBeely className={className} />
   const resultado = analisis?.url === url ? analisis.resultado : null
   const base = 'relative inline-flex size-7 shrink-0 items-center justify-center rounded-[24%]'
   // Filo fino por encima de la imagen: separa el logo del fondo en claro y en oscuro.

@@ -40,7 +40,7 @@ export function PantallaAcceso({
       </div>
       <div className="relative flex w-full max-w-[22rem] flex-col items-center gap-6 motion-safe:animate-aparecer">
         <div className="flex flex-col items-center gap-3 text-center">
-          <LogoBeely className="size-11" />
+          <LogoBeely className="h-14" />
           <div>
             <h1 className="text-titulo text-texto">{titulo}</h1>
             <p className="mt-1 text-sm text-texto-3">
