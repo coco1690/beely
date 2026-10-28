@@ -3,6 +3,7 @@ import { cn, coloresDeNegocio, EstadoVacio, FilaLista, Lista, LogoNegocio, Sello
 import { Gift, Stamp } from 'lucide-react'
 import type { CSSProperties } from 'react'
 import { Link } from 'react-router'
+import { BotonGoogleWallet } from '../componentes/BotonGoogleWallet'
 import { CodigoQr } from '../componentes/CodigoQr'
 import { cuponesVigentes, useClubStore, type NegocioClub, type TarjetaClub } from '../stores/useClubStore'
 
@@ -141,6 +142,8 @@ function Pase({ tarjeta, negocio, requeridos, faltan, premio }: DatosPase) {
           <p className="mt-1 text-etiqueta text-texto-3">Muestra este código en caja para sumar tus sellos y canjear tus premios.</p>
         </div>
       </section>
+
+      {tarjeta.estado === 'activa' ? <BotonGoogleWallet slug={negocio.slug} token={tarjeta.token_publico} /> : null}
     </>
   )
 }

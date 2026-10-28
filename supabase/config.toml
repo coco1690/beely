@@ -421,3 +421,6 @@ enabled = true
 # Pública: la llama la PWA del club sin sesión (el límite de intentos va en club_registrar).
 [functions.club-registro]
 verify_jwt = false
+
+[functions.wallet-google]
+verify_jwt = false

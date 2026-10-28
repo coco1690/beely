@@ -4,7 +4,7 @@ import { mensajeDeError } from '../../../packages/tipos/src/esquemas.ts'
 
 export const cabecerasCors = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-negocio-slug, x-tarjeta-token',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 

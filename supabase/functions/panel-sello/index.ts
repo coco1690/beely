@@ -5,6 +5,7 @@
 //   200 → resultado de registrar_sello (sellos_sumados, sellos_actuales, premio_emitido, cupon?)
 //   4xx → { error: { codigo, mensaje } }
 import { esquemaPanelSello } from '../../../packages/tipos/src/esquemas.ts'
+import { enSegundoPlano, sincronizarPaseGoogle } from '../_compartido/google-wallet.ts'
 import { ErrorApi, leerJson, responderError, responderErrorSql, responderJson, servir } from '../_compartido/http.ts'
 import { clienteServicio, usuarioAutenticado } from '../_compartido/supabase.ts'
 
@@ -31,6 +32,10 @@ servir(async (peticion) => {
     p_creado_por: usuario.id,
   })
   if (errorSello) return responderErrorSql(errorSello)
+
+  // El pase de Google Wallet (si el cliente lo agregó) se pone al día sin demorar la caja.
+  const sello = resultado as { duplicado: boolean; tarjeta_id: string }
+  if (!sello.duplicado) enSegundoPlano(sincronizarPaseGoogle(clienteServicio(), sello.tarjeta_id))
 
   return responderJson(resultado)
 })
