@@ -63,7 +63,7 @@ Los intentos se guardan en `intentos_registro` como `ip:<sha256>` / `celular:<sh
 - **Token**: se guarda en `localStorage` por negocio. El manifest no fija `start_url`, así la app instalada abre en `/t/{token}` (en iOS la app instalada no comparte el almacenamiento de Safari).
 - **Manifest por negocio**: el build publica `manifest-base.webmanifest` (hecho con `crearManifest`); `api/manifest.ts` (Vercel) le pone el nombre del negocio y se sirve en `/manifest.webmanifest`.
 - **Service worker** (`src/sw.ts`, `vite-plugin-pwa` con `injectManifest`): precarga la app con Workbox (abre sin red) y muestra los Web Push (`{ titulo, mensaje, url, etiqueta }`); al tocar el aviso enfoca o abre la app.
-- **Tema**: los 5 temas y claro/oscuro del panel. Arranca con el tema más parecido al color del negocio (`temaMasCercano`) y la persona puede cambiarlo.
+- **Tema**: todos los clubes usan el tema Beely (degradado del logo) y no tienen selector de color; la persona solo elige claro u oscuro.
 - Jalar para recargar (app instalada) vuelve a pedir la tarjeta en vez de recargar la página.
 
 ## Compartido con el panel (sin duplicar)

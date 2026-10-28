@@ -1,5 +1,4 @@
 import { mensajeDe } from '@beely/tipos/supabase'
-import { temaMasCercano, useTemaStore } from '@beely/ui'
 import { create } from 'zustand'
 import { apuntarManifest, guardarToken, olvidarToken, slugActual } from '../lib/club'
 import { clienteClub } from '../lib/supabase'
@@ -78,8 +77,6 @@ export const useClubStore = create<EstadoClub>((set, get) => ({
       apuntarManifest(slug)
       document.title = `${negocio.nombre} · Club`
       document.querySelector('meta[name="apple-mobile-web-app-title"]')?.setAttribute('content', negocio.nombre)
-      // El club arranca con el acento más parecido al color del negocio (la persona puede cambiarlo).
-      useTemaStore.getState().fijarTemaPorDefecto(temaMasCercano(negocio.color_primario))
       set({ negocio, estadoNegocio: 'listo' })
     } catch (error) {
       set({ estadoNegocio: 'error', error: mensajeDe(error) })
