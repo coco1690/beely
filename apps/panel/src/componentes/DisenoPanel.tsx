@@ -17,13 +17,29 @@ import {
   temas,
   useTemaStore,
 } from '@beely/ui'
-import { ArrowLeft, Building2, ChevronsUpDown, Ellipsis, LogOut, MapPin, Moon, ScanLine, Settings2, Stamp, Sun, Users } from 'lucide-react'
+import {
+  ArrowLeft,
+  Building2,
+  ChevronsUpDown,
+  Ellipsis,
+  LayoutDashboard,
+  LogOut,
+  MapPin,
+  Moon,
+  ScanLine,
+  Settings2,
+  ShieldCheck,
+  Stamp,
+  Sun,
+  Users,
+} from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router'
 import { puedeConfigurar, useNegocioActivo, useNegocioStore } from '../stores/useNegocioStore'
 import { useSesionStore } from '../stores/useSesionStore'
 
-type Enlace = { a: string; texto: string; corto: string; icono: ReactNode }
+// `fin`: solo activo en la ruta exacta (el tablero /superadmin no se marca dentro de /superadmin/negocios).
+type Enlace = { a: string; texto: string; corto: string; icono: ReactNode; fin?: boolean }
 
 // "plataforma": panel del superadmin, sin marca de ningún negocio. "negocio": panel de un negocio.
 export type ModoPanel = 'plataforma' | 'negocio'
@@ -32,7 +48,12 @@ function useEnlaces(modo: ModoPanel): Enlace[] {
   const esSuperadmin = useSesionStore((e) => e.esSuperadmin)
   const activo = useNegocioActivo()
   const rol = activo?.rol
-  if (modo === 'plataforma') return [{ a: '/superadmin', texto: 'Negocios', corto: 'Negocios', icono: <Building2 /> }]
+  if (modo === 'plataforma')
+    return [
+      { a: '/superadmin', texto: 'Tablero', corto: 'Tablero', icono: <LayoutDashboard />, fin: true },
+      { a: '/superadmin/negocios', texto: 'Negocios', corto: 'Negocios', icono: <Building2 /> },
+      { a: '/superadmin/equipo', texto: 'Superadmins', corto: 'Superadmins', icono: <ShieldCheck /> },
+    ]
   const enlaces: (Enlace & { visible: boolean })[] = [
     { a: '/caja', texto: 'Caja', corto: 'Caja', icono: <ScanLine />, visible: Boolean(activo) },
     { a: '/programa', texto: 'Programa de sellos', corto: 'Programa', icono: <Stamp />, visible: Boolean(activo) },
@@ -58,6 +79,7 @@ export function DisenoPanel({ modo, children }: { modo: ModoPanel; children?: Re
             <NavLink
               key={e.a}
               to={e.a}
+              end={e.fin}
               className={({ isActive }) =>
                 cn(
                   'flex h-8 items-center gap-2.5 rounded-control px-2 text-sm font-medium text-texto-2 transition-colors hover:bg-texto/5 hover:text-texto focus-visible:outline-2 focus-visible:outline-foco [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-texto-3',
@@ -109,7 +131,7 @@ function BarraInferior({ enlaces }: { enlaces: Enlace[] }) {
   return (
     <BarraFlotante className="md:hidden">
       {visibles.map((e) => (
-        <NavLink key={e.a} to={e.a} className={({ isActive }) => clasePestana(isActive)}>
+        <NavLink key={e.a} to={e.a} end={e.fin} className={({ isActive }) => clasePestana(isActive)}>
           {e.icono}
           <span className="max-w-full truncate">{e.corto}</span>
         </NavLink>

@@ -443,6 +443,28 @@ isOneToOne: false
 "superadmin_actualizar_negocio":
 { Args: { "p_estado": string,"p_negocio_id": string,"p_plan": string }; Returns: undefined
                            },
+"superadmin_agregar":
+{ Args: { "p_email": string }; Returns: string
+                           },
+"superadmin_eliminar_negocio":
+{ Args: { "p_confirmacion": string,"p_negocio_id": string }; Returns: undefined
+                           },
+"superadmin_equipo":
+{ Args: { "p_busqueda"?: string }; Returns: {
+              "creado_en": string,"email": string,"ultimo_ingreso_en": string,"usuario_id": string
+            }[]
+                           },
+"superadmin_negocios":
+{ Args: { "p_dias"?: number }; Returns: {
+              "canjes_periodo": number,"clientes": number,"clientes_nuevos": number,"creado_en": string,"dueno_email": string,"estado": string,"id": string,"logo_url": string,"miembros": number,"nombre": string,"plan": string,"sedes": number,"sellos_periodo": number,"slug": string,"ultimo_sello_en": string,"zona_horaria": string
+            }[]
+                           },
+"superadmin_quitar":
+{ Args: { "p_usuario_id": string }; Returns: undefined
+                           },
+"superadmin_tablero":
+{ Args: { "p_dias"?: number }; Returns: Json
+                           },
 "usuario_por_email":
 { Args: { "p_email": string }; Returns: string
                            }

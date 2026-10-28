@@ -8,11 +8,14 @@ import { PaginaDefinirClave } from './paginas/PaginaDefinirClave'
 import { PaginaEquipo } from './paginas/PaginaEquipo'
 import { PaginaIngreso } from './paginas/PaginaIngreso'
 import { PaginaNegocio } from './paginas/PaginaNegocio'
-import { PaginaSuperadmin } from './paginas/PaginaSuperadmin'
 import { PaginaPrograma } from './paginas/PaginaPrograma'
 import { PaginaRecuperar } from './paginas/PaginaRecuperar'
 import { PaginaSedes } from './paginas/PaginaSedes'
 import { SinNegocio } from './paginas/SinNegocio'
+import { PaginaFichaNegocio } from './paginas/superadmin/PaginaFichaNegocio'
+import { PaginaNegocios } from './paginas/superadmin/PaginaNegocios'
+import { PaginaSuperadmins } from './paginas/superadmin/PaginaSuperadmins'
+import { PaginaTablero } from './paginas/superadmin/PaginaTablero'
 import { puedeConfigurar, useNegocioActivo, useNegocioStore } from './stores/useNegocioStore'
 import { useSesionStore } from './stores/useSesionStore'
 // Fuentes servidas con la app (sin depender de Google Fonts ni parpadeo de fuente).
@@ -99,7 +102,12 @@ const enrutador = createBrowserRouter([
         children: [
           {
             element: <DisenoPanel modo="plataforma" />,
-            children: [{ path: '/superadmin', element: <PaginaSuperadmin /> }],
+            children: [
+              { path: '/superadmin', element: <PaginaTablero /> },
+              { path: '/superadmin/negocios', element: <PaginaNegocios /> },
+              { path: '/superadmin/negocios/:id', element: <PaginaFichaNegocio /> },
+              { path: '/superadmin/equipo', element: <PaginaSuperadmins /> },
+            ],
           },
         ],
       },
