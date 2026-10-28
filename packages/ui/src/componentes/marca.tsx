@@ -1,4 +1,5 @@
-import type { CSSProperties } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
+import { analizarLogo, type AnalisisLogo } from './analizar-logo'
 import { cn } from '../utilidades'
 
 // Celda de panal: la forma base de la marca y de cada sello.
@@ -34,13 +35,49 @@ export function Sello({ lleno, className, style }: { lleno: boolean; className?:
   )
 }
 
-// Logo del negocio (marca blanca) sobre un recuadro blanco, que se ve igual en tema claro u oscuro
-// y con logos de fondo transparente o blanco. Sin logo, muestra el de Beely.
+// Logo del negocio (marca blanca), sin marco blanco: si el logo es una figura sobre
+// fondo liso se recorta y se muestra la figura sola; si llena el cuadro, va a sangre.
+// Solo los logos de trazos sobre fondo transparente llevan base clara, para leerse en
+// tema oscuro. Sin logo, muestra el de Beely.
 export function LogoNegocio({ url, nombre, className }: { url: string | null | undefined; nombre: string; className?: string }) {
+  const [analisis, setAnalisis] = useState<{ url: string; resultado: AnalisisLogo } | null>(null)
+
+  useEffect(() => {
+    if (!url) return
+    let vigente = true
+    void analizarLogo(url).then((resultado) => vigente && setAnalisis({ url, resultado }))
+    return () => {
+      vigente = false
+    }
+  }, [url])
+
   if (!url) return <LogoBeely className={className} />
+  const resultado = analisis?.url === url ? analisis.resultado : null
+  const base = 'relative inline-flex size-7 shrink-0 items-center justify-center rounded-[24%]'
+  // Filo fino por encima de la imagen: separa el logo del fondo en claro y en oscuro.
+  const filo =
+    'overflow-hidden after:pointer-events-none after:absolute after:inset-0 after:rounded-[inherit] after:ring-1 after:ring-inset after:ring-black/8 dark:after:ring-white/10'
+  const alt = `Logo de ${nombre}`
+
+  if (!resultado) return <span className={cn(base, 'animate-pulse bg-hundido', className)} aria-label={alt} role="img" />
+
+  if (resultado.modo === 'forma')
+    return (
+      <span className={cn(base, resultado.baldosa && filo, className)}>
+        <img src={resultado.src} alt={alt} className={cn('size-full', resultado.baldosa ? 'object-cover' : 'object-contain')} />
+      </span>
+    )
+
+  if (resultado.modo === 'claro')
+    return (
+      <span className={cn(base, filo, 'bg-white', className)}>
+        <img src={url} alt={alt} className="size-full object-contain p-[14%]" />
+      </span>
+    )
+
   return (
-    <span className={cn('inline-flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-[22%] bg-white ring-1 ring-black/8', className)}>
-      <img src={url} alt={`Logo de ${nombre}`} className="size-full object-contain p-[8%]" loading="lazy" decoding="async" />
+    <span className={cn(base, filo, 'bg-hundido', className)}>
+      <img src={url} alt={alt} className="size-full object-cover" decoding="async" />
     </span>
   )
 }
