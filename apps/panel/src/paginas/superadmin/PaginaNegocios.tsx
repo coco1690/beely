@@ -1,10 +1,11 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { esquemaCrearNegocio, numero, zonasHorarias } from '@beely/tipos'
+import { esquemaClaveInicial, esquemaCrearNegocio, numero, zonasHorarias } from '@beely/tipos'
 import {
   Aviso,
   Boton,
   Campo,
   Entrada,
+  EntradaClave,
   EstadoVacio,
   Esqueleto,
   FilaLista,
@@ -19,9 +20,11 @@ import {
 } from '@beely/ui'
 import { Plus, Search, Store } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
+import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router'
 import { EncabezadoPagina } from '../../componentes/DisenoPanel'
+import { avisarAlta, type RespuestaEquipo } from '../../componentes/GestionEquipo'
 import {
   dominioClub,
   estados,
@@ -33,7 +36,7 @@ import {
   planes,
   SelectorPeriodo,
 } from '../../componentes/plataforma'
-import { mensajeDe } from '../../lib/funciones'
+import { llamarFuncion, mensajeDe } from '../../lib/funciones'
 import { supabase } from '../../lib/supabase'
 import { useNegocioStore } from '../../stores/useNegocioStore'
 import { usePlataformaStore } from '../../stores/usePlataformaStore'
@@ -187,6 +190,14 @@ function Columna({ etiqueta, valor }: { etiqueta: string; valor: string }) {
   )
 }
 
+// Alta del negocio con su dueño opcional: con contraseña la cuenta queda lista; sin ella, le llega una invitación.
+const esquemaNuevoNegocio = esquemaCrearNegocio
+  .extend({
+    email_dueno: z.union([z.literal(''), z.email('Correo inválido').trim().toLowerCase()]),
+    clave_dueno: esquemaClaveInicial,
+  })
+  .refine((v) => v.clave_dueno === '' || v.email_dueno !== '', { message: 'Escribe el correo del dueño', path: ['email_dueno'] })
+
 function FormularioNuevo({ onCerrar }: { onCerrar: () => void }) {
   const navegar = useNavigate()
   const cargarNegocios = usePlataformaStore((e) => e.cargarNegocios)
@@ -195,19 +206,35 @@ function FormularioNuevo({ onCerrar }: { onCerrar: () => void }) {
   const cargarMembresias = useNegocioStore((e) => e.cargar)
   const [error, setError] = useState<string | null>(null)
   const { register, handleSubmit, formState } = useForm({
-    resolver: zodResolver(esquemaCrearNegocio),
-    defaultValues: { slug: '', nombre: '', zona_horaria: 'America/Bogota' },
+    resolver: zodResolver(esquemaNuevoNegocio),
+    defaultValues: { slug: '', nombre: '', zona_horaria: 'America/Bogota', email_dueno: '', clave_dueno: '' },
   })
 
-  const crear = handleSubmit(async ({ slug, nombre, zona_horaria }) => {
+  const crear = handleSubmit(async ({ slug, nombre, zona_horaria, email_dueno, clave_dueno }) => {
     setError(null)
     const { data, error } = await supabase.rpc('crear_negocio', { p_slug: slug, p_nombre: nombre, p_zona_horaria: zona_horaria })
     if (error) {
       setError(mensajeDe(error))
       return
     }
+    toast.success(`Negocio ${nombre} creado`, {
+      description: email_dueno ? 'Ya tiene su programa de sellos.' : 'Ya tiene su programa de sellos. Ahora agrega al dueño.',
+    })
+    if (email_dueno) {
+      try {
+        const r = await llamarFuncion<RespuestaEquipo>('panel-equipo', {
+          negocio_id: data,
+          email: email_dueno,
+          rol: 'dueno',
+          clave: clave_dueno || undefined,
+        })
+        avisarAlta(email_dueno, r.cuenta)
+      } catch (e) {
+        // El negocio ya existe: el dueño se puede agregar luego desde su ficha.
+        toast.error('No se pudo agregar al dueño', { description: mensajeDe(e) })
+      }
+    }
     await Promise.all([cargarNegocios(), cargarTablero(), usuarioId ? cargarMembresias(usuarioId, true) : null])
-    toast.success(`Negocio ${nombre} creado`, { description: 'Ya tiene su programa de sellos. Ahora invita al dueño.' })
     void navegar(`/superadmin/negocios/${data}`)
   })
 
@@ -232,6 +259,23 @@ function FormularioNuevo({ onCerrar }: { onCerrar: () => void }) {
                 </option>
               ))}
             </Selector>
+          </Campo>
+          <Campo
+            id="email_dueno"
+            etiqueta="Correo del dueño"
+            ayuda="Opcional; también puedes agregarlo luego."
+            error={formState.errors.email_dueno?.message}
+            className="sm:col-span-2"
+          >
+            <Entrada id="email_dueno" type="email" autoComplete="off" placeholder="dueno@negocio.com" {...register('email_dueno')} />
+          </Campo>
+          <Campo
+            id="clave_dueno"
+            etiqueta="Contraseña del dueño"
+            ayuda="Opcional. Sin contraseña le llega una invitación por correo."
+            error={formState.errors.clave_dueno?.message}
+          >
+            <EntradaClave id="clave_dueno" autoComplete="new-password" {...register('clave_dueno')} />
           </Campo>
           <div className="flex gap-2 sm:col-span-3">
             <Boton type="submit" cargando={formState.isSubmitting}>

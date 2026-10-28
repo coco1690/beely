@@ -1,4 +1,5 @@
 import * as AlertDialog from '@radix-ui/react-alert-dialog'
+import * as Dialog from '@radix-ui/react-dialog'
 import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from 'react'
 import { Boton } from './boton'
 
@@ -70,4 +71,38 @@ export function useConfirmar(): Confirmar {
   const confirmar = useContext(Contexto)
   if (!confirmar) throw new Error('useConfirmar necesita <ProveedorConfirmar>')
   return confirmar
+}
+
+// Diálogo con contenido propio (formularios cortos). Para preguntar sí/no, usar useConfirmar.
+export function Dialogo({
+  abierto,
+  onAbiertoCambia,
+  titulo,
+  descripcion,
+  children,
+}: {
+  abierto: boolean
+  onAbiertoCambia: (abierto: boolean) => void
+  titulo: string
+  descripcion?: ReactNode
+  children: ReactNode
+}) {
+  return (
+    <Dialog.Root open={abierto} onOpenChange={onAbiertoCambia}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40 data-[state=closed]:animate-[desvanecer_120ms_ease-out_both_reverse] data-[state=open]:animate-[desvanecer_180ms_ease-out_both]" />
+        <Dialog.Content className="fixed top-1/2 left-1/2 z-50 flex max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 flex-col gap-4 overflow-y-auto rounded-capa bg-superficie p-5 shadow-capa focus:outline-none data-[state=closed]:animate-[salir-capa_120ms_ease-out_both] data-[state=open]:animate-[entrar-capa_180ms_var(--ease-out)_both]">
+          <div className="flex flex-col gap-1.5">
+            <Dialog.Title className="text-seccion text-texto">{titulo}</Dialog.Title>
+            {descripcion ? (
+              <Dialog.Description className="text-sm text-texto-3">{descripcion}</Dialog.Description>
+            ) : (
+              <Dialog.Description className="sr-only">{titulo}</Dialog.Description>
+            )}
+          </div>
+          {children}
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
+  )
 }

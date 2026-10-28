@@ -95,7 +95,7 @@ beely/
 | `pos-cupones-canjear` | POS (llave API) | `POST /v1/cupones/canjear` → `canjear_cupon`. |
 | `pos-clientes` | POS (llave API) | Buscar tarjeta por token o celular. |
 | `panel-sello` | Panel (cajero autenticado) | Igual que `pos-sellos` pero con sesión del cajero. ✅ Sprint 1 |
-| `panel-equipo` | Panel (dueño o superadmin) | Invita al equipo por correo y crea la membresía. ✅ Sprint 1 |
+| `panel-equipo` | Panel (dueño o superadmin) | Suma a alguien al equipo: con clave crea la cuenta lista, sin clave invita por correo; crea la membresía. ✅ Sprint 1 |
 | `wallet-google` | Interno | Crea/actualiza LoyaltyClass y LoyaltyObject, genera JWT de guardado. |
 | `campanas-motor` | pg_cron | Evalúa disparadores, aplica topes y envía push/Wallet. |
 | `llaves-api` | Panel (dueño) | Genera llave, guarda hash, la muestra una vez. |
