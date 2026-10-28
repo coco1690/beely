@@ -1,15 +1,32 @@
-import { zodResolver } from '@hookform/resolvers/zod'
-import { esquemaIngreso } from '@beely/tipos'
-import { Aviso, Boton, BotonModo, Campo, Entrada, EntradaClave, LogoBeely, SelectorTema, Tarjeta, TarjetaContenido } from '@beely/ui'
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { Link } from 'react-router'
-import { supabase } from '../lib/supabase'
+import { zodResolver } from "@hookform/resolvers/zod";
+import { esquemaIngreso } from "@beely/tipos";
+import {
+  Aviso,
+  Boton,
+  BotonModo,
+  Campo,
+  Entrada,
+  EntradaClave,
+  LogoBeely,
+  SelectorTema,
+  Tarjeta,
+  TarjetaContenido,
+} from "@beely/ui";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { Link } from "react-router";
+import { supabase } from "../lib/supabase";
 
 export const claseEnlace =
-  'self-center rounded-sm text-etiqueta text-texto-3 transition-colors hover:text-texto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foco'
+  "self-center rounded-sm text-etiqueta text-texto-3 transition-colors hover:text-texto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foco";
 
-export function PantallaAcceso({ titulo, children }: { titulo: string; children: React.ReactNode }) {
+export function PantallaAcceso({
+  titulo,
+  children,
+}: {
+  titulo: string;
+  children: React.ReactNode;
+}) {
   return (
     <main className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden bg-fondo px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))]">
       {/* Un resplandor tenue del color del tema detrás del formulario. */}
@@ -26,7 +43,9 @@ export function PantallaAcceso({ titulo, children }: { titulo: string; children:
           <LogoBeely className="size-11" />
           <div>
             <h1 className="text-titulo text-texto">{titulo}</h1>
-            <p className="mt-1 text-sm text-texto-3">Panel de fidelización de tu negocio</p>
+            <p className="mt-1 text-sm text-texto-3">
+              Panel de fidelización de tu negocio
+            </p>
           </div>
         </div>
         <Tarjeta className="w-full">
@@ -34,28 +53,50 @@ export function PantallaAcceso({ titulo, children }: { titulo: string; children:
         </Tarjeta>
       </div>
     </main>
-  )
+  );
 }
 
 export function PaginaIngreso() {
-  const [error, setError] = useState<string | null>(null)
-  const { register, handleSubmit, formState } = useForm({ resolver: zodResolver(esquemaIngreso) })
+  const [error, setError] = useState<string | null>(null);
+  const { register, handleSubmit, formState } = useForm({
+    resolver: zodResolver(esquemaIngreso),
+  });
 
   const ingresar = handleSubmit(async ({ email, clave }) => {
-    setError(null)
-    const { error } = await supabase.auth.signInWithPassword({ email, password: clave })
+    setError(null);
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password: clave,
+    });
     // Mensaje genérico: no revela si el correo existe.
-    if (error) setError('Correo o clave incorrectos.')
-  })
+    if (error) setError("Correo o clave incorrectos.");
+  });
 
   return (
     <PantallaAcceso titulo="Ingresa a Beely">
       <form className="flex flex-col gap-4" onSubmit={ingresar} noValidate>
-        <Campo id="email" etiqueta="Correo" error={formState.errors.email?.message}>
-          <Entrada id="email" type="email" autoComplete="username" {...register('email')} />
+        <Campo
+          id="email"
+          etiqueta="Correo"
+          error={formState.errors.email?.message}
+        >
+          <Entrada
+            id="email"
+            type="email"
+            autoComplete="username"
+            {...register("email")}
+          />
         </Campo>
-        <Campo id="clave" etiqueta="Clave" error={formState.errors.clave?.message}>
-          <EntradaClave id="clave" autoComplete="current-password" {...register('clave')} />
+        <Campo
+          id="clave"
+          etiqueta="Clave"
+          error={formState.errors.clave?.message}
+        >
+          <EntradaClave
+            id="clave"
+            autoComplete="current-password"
+            {...register("clave")}
+          />
         </Campo>
         {error ? <Aviso tono="peligro">{error}</Aviso> : null}
         <Boton type="submit" cargando={formState.isSubmitting}>
@@ -66,5 +107,5 @@ export function PaginaIngreso() {
         </Link>
       </form>
     </PantallaAcceso>
-  )
+  );
 }
