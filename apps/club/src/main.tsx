@@ -1,4 +1,4 @@
-import { Cargando, EstadoVacio, ProveedorConfirmar, Toaster } from '@beely/ui'
+import { Cargando, EstadoVacio, ProveedorConfirmar, Toaster, useTemaStore } from '@beely/ui'
 import { SearchX } from 'lucide-react'
 import { StrictMode, useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
@@ -15,6 +15,10 @@ import '@fontsource-variable/inter/opsz.css'
 import '@fontsource/geist-mono/400.css'
 import '@fontsource/geist-mono/500.css'
 import './estilos.css'
+
+// Todos los clubes usan el tema de Beely; se guarda para que el script inicial lo
+// pinte desde el primer cuadro y reemplaza cualquier tema elegido antes.
+if (useTemaStore.getState().tema !== 'beely') useTemaStore.getState().elegirTema('beely')
 
 // Todo el club cuelga del negocio del subdominio: sin él no hay nada que mostrar.
 function ConNegocio() {

@@ -1,5 +1,5 @@
 import { mensajeDe } from '@beely/tipos/supabase'
-import { Boton, BotonModo, Interruptor, SelectorTema, toast, useConfirmar } from '@beely/ui'
+import { Boton, BotonModo, Interruptor, toast, useConfirmar } from '@beely/ui'
 import { LogOut, Share, SquarePlus } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router'
@@ -83,14 +83,11 @@ export function PaginaPerfil() {
         >
           <Interruptor activo={acepta} disabled={guardando} etiqueta="Promociones y avisos" onCambiar={(v) => void alternarMensajes(v)} />
         </Fila>
-        <Fila titulo="Apariencia" descripcion="Color y modo de la app en este teléfono.">
+        <Fila titulo="Apariencia" descripcion="Modo claro u oscuro en este teléfono.">
           <div className="flex items-center">
             <BotonModo />
           </div>
         </Fila>
-        <div className="px-3 pb-3">
-          <SelectorTema className="justify-between" />
-        </div>
       </section>
 
       {forma === 'dialogo' || forma === 'ios' ? <Instalar forma={forma} instalar={instalar} /> : null}
