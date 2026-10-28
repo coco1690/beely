@@ -127,6 +127,11 @@ export const esquemaCrearNegocio = z.object({
   zona_horaria: z.string().min(1),
 })
 
+// Superadmin: agregar a otro superadmin por correo.
+export const esquemaAgregarSuperadmin = z.object({
+  email: z.email('Correo inválido').trim().toLowerCase(),
+})
+
 export const esquemaMarcaNegocio = z.object({
   nombre: z.string().trim().min(2, 'Mínimo 2 caracteres').max(80),
   razon_social: textoOpcional(120),
@@ -185,6 +190,10 @@ export const mensajesError: Record<string, string> = {
   negocio_no_encontrado: 'No encontramos este club.',
   celular_ya_registrado: 'Este número ya tiene tarjeta; pide en caja que te la reenvíen o verifica tu número.',
   demasiados_intentos: 'Demasiados intentos. Espera un rato y vuelve a intentarlo.',
+  confirmacion_incorrecta: 'Escribe el subdominio exacto del negocio para confirmar.',
+  usuario_no_encontrado: 'No hay una cuenta de Beely con ese correo. Primero debe ingresar o ser invitada a un negocio.',
+  ya_es_superadmin: 'Esa persona ya es superadmin.',
+  no_puedes_quitarte: 'No puedes quitarte a ti mismo; pídeselo a otro superadmin.',
   error_interno: 'Algo salió mal. Intenta de nuevo.',
 }
 

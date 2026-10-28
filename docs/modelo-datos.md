@@ -94,7 +94,7 @@ erDiagram
 
 | Tabla | Para qué | Escribe |
 |-------|---------|---------|
-| `superadmins` | Usuarios con control total de Beely | Manual / SQL |
+| `superadmins` | Usuarios con control total de Beely | Superadmin desde el panel (`superadmin_agregar` / `superadmin_quitar`) o SQL para el primero |
 | `negocios` | Cada empresa cliente de Beely (marca, plan, límites de envío) | Superadmin crea; dueño/admin editan columnas de marca |
 | `miembros_negocio` | Equipo del negocio con rol | Dueño (administradores y cajeros) · Superadmin (dueños) · Edge Function `panel-equipo` |
 | `sedes` | Puntos de venta con coordenadas (para Wallet) | Superadmin crea; dueño/admin editan |
@@ -163,6 +163,19 @@ Trigger `negocios_zona_horaria`: rechaza zonas horarias que Postgres no conoce (
 
 RLS de `anon` (la PWA): ve el negocio del slug o del token, su programa activo, diseño y sedes activas; con token, solo su tarjeta, cliente (nombre), cupones y sellos; escribe `clientes.acepta_marketing` y su `suscripciones_push`. Detalle en [sprint-2.md](sprint-2.md).
 
+### Panel del superadmin (migración 0006)
+
+| Función | Quién | Hace | Errores |
+|--------|-------|------|---------|
+| `superadmin_tablero(dias = 30) → jsonb` | Superadmin | Totales de la plataforma (negocios por estado y plan, clientes, sellos, cupones) y serie diaria de sellos y clientes nuevos, con días cortados en hora de Colombia | `sin_permiso`, `solicitud_invalida` |
+| `superadmin_negocios(dias = 30) → setof` | Superadmin | Cada negocio con sedes, miembros, correo del dueño, clientes, sellos y canjes de la ventana y último sello | `sin_permiso`, `solicitud_invalida` |
+| `superadmin_eliminar_negocio(negocio_id, confirmacion)` | Superadmin | Borra el negocio y todo lo suyo; exige el subdominio exacto. El panel borra antes su carpeta de `logos` | `sin_permiso`, `negocio_no_encontrado`, `confirmacion_incorrecta` |
+| `superadmin_equipo(busqueda?) → setof` | Superadmin | Lista superadmins con correo y último ingreso | `sin_permiso` |
+| `superadmin_agregar(email) → uuid` | Superadmin | Hace superadmin a una cuenta existente | `sin_permiso`, `usuario_no_encontrado`, `ya_es_superadmin` |
+| `superadmin_quitar(usuario_id)` | Superadmin | Quita a otro superadmin; nadie se quita a sí mismo, así siempre queda uno | `sin_permiso`, `no_puedes_quitarte`, `usuario_no_encontrado` |
+
+"Sellos" en las métricas son los de venta (`origen in ('api_pos', 'panel')`, cantidad positiva); no cuentan ajustes ni el descuento al emitir premio. El panel de plataforma vive en `/superadmin` (tablero), `/superadmin/negocios`, `/superadmin/negocios/:id` y `/superadmin/equipo`.
+
 ## Checklist de pruebas (Supabase local con Postgres 17)
 
 ### Núcleo (`0002_nucleo_aserciones.sql`)
@@ -208,3 +221,10 @@ RLS de `anon` (la PWA): ve el negocio del slug o del token, su programa activo, 
 - [x] `club_registrar`: solo service_role, celular repetido no entrega tarjeta, único por negocio, topes por IP y celular
 - [x] El panel no cambia con las cabeceras
 
+### Panel del superadmin (`0007_superadmin_panel_aserciones.sql`)
+
+- [x] `superadmin_negocios` cuenta clientes, sedes, equipo y dueño; los sellos del periodo excluyen canjes, ajustes y lo que queda fuera de la ventana
+- [x] `superadmin_tablero` suma lo mismo que la serie diaria y trae un punto por día
+- [x] Agregar superadmin exige cuenta existente y no duplica; nadie se quita a sí mismo
+- [x] Dueño y anon no llaman ninguna de estas funciones
+- [x] Eliminar exige el subdominio y borra clientes, tarjetas y equipo del negocio sin tocar los demás
