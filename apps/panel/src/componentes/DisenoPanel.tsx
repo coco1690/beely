@@ -3,6 +3,7 @@ import {
   BarraFlotante,
   clasePestana,
   cn,
+  LogoBeely,
   LogoNegocio,
   MenuContenido,
   MenuDisparador,
@@ -16,37 +17,42 @@ import {
   temas,
   useTemaStore,
 } from '@beely/ui'
-import { Building2, ChevronsUpDown, Ellipsis, LogOut, MapPin, Moon, ScanLine, Settings2, Stamp, Sun, Users } from 'lucide-react'
+import { ArrowLeft, Building2, ChevronsUpDown, Ellipsis, LogOut, MapPin, Moon, ScanLine, Settings2, Stamp, Sun, Users } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
-import { NavLink, Outlet, useLocation } from 'react-router'
+import { Link, NavLink, Outlet, useLocation } from 'react-router'
 import { puedeConfigurar, useNegocioActivo, useNegocioStore } from '../stores/useNegocioStore'
 import { useSesionStore } from '../stores/useSesionStore'
 
 type Enlace = { a: string; texto: string; corto: string; icono: ReactNode }
 
-function useEnlaces(): Enlace[] {
+// "plataforma": panel del superadmin, sin marca de ningún negocio. "negocio": panel de un negocio.
+export type ModoPanel = 'plataforma' | 'negocio'
+
+function useEnlaces(modo: ModoPanel): Enlace[] {
   const esSuperadmin = useSesionStore((e) => e.esSuperadmin)
   const activo = useNegocioActivo()
   const rol = activo?.rol
+  if (modo === 'plataforma') return [{ a: '/superadmin', texto: 'Negocios', corto: 'Negocios', icono: <Building2 /> }]
   const enlaces: (Enlace & { visible: boolean })[] = [
     { a: '/caja', texto: 'Caja', corto: 'Caja', icono: <ScanLine />, visible: Boolean(activo) },
     { a: '/programa', texto: 'Programa de sellos', corto: 'Programa', icono: <Stamp />, visible: Boolean(activo) },
     { a: '/sedes', texto: 'Sedes', corto: 'Sedes', icono: <MapPin />, visible: Boolean(activo) },
     { a: '/negocio', texto: 'Negocio', corto: 'Negocio', icono: <Settings2 />, visible: puedeConfigurar(rol) },
     { a: '/equipo', texto: 'Equipo', corto: 'Equipo', icono: <Users />, visible: puedeConfigurar(rol) },
-    { a: '/superadmin', texto: 'Superadmin', corto: 'Superadmin', icono: <Building2 />, visible: esSuperadmin },
+    { a: '/superadmin', texto: 'Volver a la plataforma', corto: 'Plataforma', icono: <ArrowLeft />, visible: esSuperadmin },
   ]
   return enlaces.filter((e) => e.visible)
 }
 
-export function DisenoPanel() {
-  const enlaces = useEnlaces()
+export function DisenoPanel({ modo, children }: { modo: ModoPanel; children?: ReactNode }) {
+  const enlaces = useEnlaces(modo)
+  const cabecera = modo === 'plataforma' ? <MarcaPlataforma /> : <MenuNegocio />
 
   return (
     <div className="min-h-dvh overflow-x-clip bg-fondo md:grid md:grid-cols-[15rem_minmax(0,1fr)]">
       {/* Escritorio: barra lateral del mismo tono que el fondo; el contenido va en un panel elevado. */}
       <aside className="hidden md:sticky md:top-0 md:flex md:h-dvh md:flex-col md:gap-4 md:px-3 md:py-3">
-        <MenuNegocio />
+        {cabecera}
         <nav className="flex flex-col gap-0.5" aria-label="Secciones">
           {enlaces.map((e) => (
             <NavLink
@@ -72,7 +78,7 @@ export function DisenoPanel() {
       {/* Móvil: barra superior con negocio y cuenta. */}
       <header className="sticky top-0 z-30 flex items-center justify-between gap-2 border-b border-borde bg-fondo/85 px-2 pt-[env(safe-area-inset-top)] backdrop-blur-lg md:hidden">
         <div className="min-w-0 flex-1 py-1.5">
-          <MenuNegocio />
+          {cabecera}
         </div>
         <MenuCuenta compacto />
       </header>
@@ -80,7 +86,8 @@ export function DisenoPanel() {
       <main className="min-w-0 md:py-2 md:pr-2">
         <div className="min-h-full px-4 pt-5 pb-[calc(7rem+env(safe-area-inset-bottom))] md:min-h-[calc(100dvh-1rem)] md:rounded-tarjeta md:border md:border-borde md:bg-superficie md:px-10 md:pt-9 md:pb-12 md:shadow-tarjeta">
           <div className="mx-auto w-full max-w-4xl">
-            <Outlet />
+            {modo === 'negocio' ? <AvisoVistaSuperadmin /> : null}
+            {children ?? <Outlet />}
           </div>
         </div>
       </main>
@@ -98,7 +105,7 @@ function BarraInferior({ enlaces }: { enlaces: Enlace[] }) {
   const resto = enlaces.length > 4 ? enlaces.slice(3) : []
   const restoActivo = resto.some((e) => pathname.startsWith(e.a))
 
-  if (enlaces.length === 0) return null
+  if (enlaces.length < 2) return null
   return (
     <BarraFlotante className="md:hidden">
       {visibles.map((e) => (
@@ -136,6 +143,39 @@ function BarraInferior({ enlaces }: { enlaces: Enlace[] }) {
         </>
       ) : null}
     </BarraFlotante>
+  )
+}
+
+// Cabecera del panel de plataforma: marca de Beely, nunca la de un negocio.
+function MarcaPlataforma() {
+  return (
+    <div className="flex min-w-0 items-center gap-2.5 px-1.5 py-1">
+      <LogoBeely className="size-7 shrink-0" />
+      <span className="flex min-w-0 flex-1 flex-col text-left leading-tight">
+        <span className="truncate text-sm font-semibold text-texto">Beely</span>
+        <span className="truncate text-xs text-texto-3">Superadmin</span>
+      </span>
+    </div>
+  )
+}
+
+// El superadmin sin membresía real ve el panel de un negocio solo porque lo abrió; se le recuerda.
+function AvisoVistaSuperadmin() {
+  const activo = useNegocioActivo()
+  if (activo?.rol !== 'superadmin') return null
+  return (
+    <div className="mb-6 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-control border border-borde bg-hundido px-3 py-2 text-sm text-texto-2">
+      <span className="min-w-0">
+        Estás viendo el panel de <span className="font-medium text-texto">{activo.negocio.nombre}</span> como superadmin.
+      </span>
+      <Link
+        to="/superadmin"
+        className="inline-flex items-center gap-1.5 font-medium text-acento-texto hover:underline focus-visible:outline-2 focus-visible:outline-foco [&_svg]:size-4"
+      >
+        <ArrowLeft />
+        Volver a la plataforma
+      </Link>
+    </div>
   )
 }
 

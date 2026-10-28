@@ -1,8 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { esquemaCrearNegocio } from '@beely/tipos'
 import { Aviso, Boton, Campo, Entrada, Insignia, Selector, Tarjeta, TarjetaContenido, TarjetaEncabezado, TarjetaTitulo, toast } from '@beely/ui'
+import { ArrowUpRight } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { useNavigate } from 'react-router'
 import { EncabezadoPagina } from '../componentes/DisenoPanel'
 import { zonasHorarias } from '@beely/tipos'
 import { llamarFuncion, mensajeDe } from '../lib/funciones'
@@ -17,7 +19,7 @@ export function PaginaSuperadmin() {
   const sesion = useSesionStore((e) => e.sesion)
   const membresias = useNegocioStore((e) => e.membresias)
   const cargar = useNegocioStore((e) => e.cargar)
-  const elegirNegocio = useNegocioStore((e) => e.elegirNegocio)
+  const abrirPanel = useAbrirPanel()
   const [error, setError] = useState<string | null>(null)
   const { register, handleSubmit, reset, formState } = useForm({
     resolver: zodResolver(esquemaCrearNegocio),
@@ -37,13 +39,15 @@ export function PaginaSuperadmin() {
     }
     reset()
     await recargar()
-    await elegirNegocio(data)
-    toast.success(`Negocio ${nombre} creado`, { description: 'Ya tiene su programa de sellos. Ahora crea sus sedes e invita al dueño.' })
+    toast.success(`Negocio ${nombre} creado`, {
+      description: 'Ya tiene su programa de sellos. Invita al dueño aquí o abre su panel para crear las sedes.',
+      action: { label: 'Abrir panel', onClick: () => void abrirPanel(data, '/sedes') },
+    })
   })
 
   return (
     <>
-      <EncabezadoPagina titulo="Superadmin" descripcion="Alta de negocios, plan y estado. Solo superadmins de Beely." />
+      <EncabezadoPagina titulo="Negocios" descripcion="Alta de negocios, plan y estado de toda la plataforma." />
       <div className="flex flex-col gap-6">
         <Tarjeta>
           <TarjetaEncabezado>
@@ -83,12 +87,23 @@ export function PaginaSuperadmin() {
   )
 }
 
+// Entra al panel de un negocio a propósito; desde ahí se vuelve con "Volver a la plataforma".
+function useAbrirPanel() {
+  const elegirNegocio = useNegocioStore((e) => e.elegirNegocio)
+  const navegar = useNavigate()
+  return async (negocioId: string, ruta = '/negocio') => {
+    await elegirNegocio(negocioId)
+    void navegar(ruta)
+  }
+}
+
 function FilaNegocio({ negocio, onCambio }: { negocio: Negocio; onCambio: () => Promise<void> }) {
   const [plan, setPlan] = useState(negocio.plan)
   const [estado, setEstado] = useState(negocio.estado)
   const [emailDueno, setEmailDueno] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [ocupado, setOcupado] = useState<'plan' | 'dueno' | null>(null)
+  const abrirPanel = useAbrirPanel()
 
   const guardarPlan = async () => {
     setOcupado('plan')
@@ -125,7 +140,13 @@ function FilaNegocio({ negocio, onCambio }: { negocio: Negocio; onCambio: () => 
             <TarjetaTitulo className="line-clamp-2 break-words">{negocio.nombre}</TarjetaTitulo>
             <p className="truncate font-mono text-xs text-texto-3">{negocio.slug}</p>
           </div>
-          <Insignia tono={negocio.estado === 'activo' ? 'exito' : 'peligro'}>{negocio.estado}</Insignia>
+          <div className="flex shrink-0 items-center gap-2">
+            <Insignia tono={negocio.estado === 'activo' ? 'exito' : 'peligro'}>{negocio.estado}</Insignia>
+            <Boton variante="contorno" tamano="sm" onClick={() => void abrirPanel(negocio.id)}>
+              Abrir panel
+              <ArrowUpRight />
+            </Boton>
+          </div>
         </div>
       </TarjetaEncabezado>
       <TarjetaContenido className="flex flex-col gap-4">
