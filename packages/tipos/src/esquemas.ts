@@ -93,6 +93,12 @@ export type ClubRegistro = z.infer<typeof esquemaClubRegistro>
 
 export const esquemaResultadoRegistro = z.object({ token: z.string() })
 
+// POST /functions/v1/wallet-google: enlace para guardar la tarjeta en Google Wallet.
+export const esquemaWalletGoogle = z.object({
+  slug: z.string().trim().toLowerCase().min(3).max(40),
+  token: esquemaTokenTarjeta,
+})
+
 // ---------------------------------------------------------------------
 // Formularios del panel
 // ---------------------------------------------------------------------
@@ -224,6 +230,8 @@ export const mensajesError: Record<string, string> = {
   ya_es_superadmin: 'Esa persona ya es superadmin.',
   clave_actual_incorrecta: 'Tu clave actual no es correcta.',
   no_puedes_quitarte: 'No puedes quitarte a ti mismo; pídeselo a otro superadmin.',
+  wallet_no_configurado: 'Google Wallet aún no está disponible para este club.',
+  wallet_fallo: 'Google Wallet no respondió. Intenta de nuevo en un momento.',
   error_interno: 'Algo salió mal. Intenta de nuevo.',
 }
 

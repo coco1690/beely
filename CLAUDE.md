@@ -97,7 +97,7 @@ beely/
 | `panel-sello` | Panel (cajero autenticado) | Igual que `pos-sellos` pero con sesión del cajero. ✅ Sprint 1 |
 | `panel-equipo` | Panel (dueño o superadmin) | Suma a alguien al equipo: con clave crea la cuenta lista, sin clave invita por correo; crea la membresía. ✅ Sprint 1 |
 | `club-dominio` | Panel (superadmin) | Conecta `{slug}.hibeely.com`: dominio en el proyecto Vercel del club + CNAME en Hostinger. Se llama al crear el negocio y desde su ficha. |
-| `wallet-google` | Interno | Crea/actualiza LoyaltyClass y LoyaltyObject, genera JWT de guardado. |
+| `wallet-google` | PWA (anon + token) | Crea/actualiza LoyaltyClass y LoyaltyObject, genera el enlace firmado "Agregar a Google Wallet". `panel-sello` actualiza el pase al sumar sellos. ✅ (ver `docs/google-wallet.md`) |
 | `campanas-motor` | pg_cron | Evalúa disparadores, aplica topes y envía push/Wallet. |
 | `llaves-api` | Panel (dueño) | Genera llave, guarda hash, la muestra una vez. |
 
