@@ -31,7 +31,7 @@ export function PantallaAcceso({
     <main className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden bg-fondo px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))]">
       {/* Un resplandor tenue del color del tema detrás del formulario. */}
       <div
-        className="pointer-events-none absolute top-0 left-1/2 h-[28rem] w-[44rem] max-w-[160vw] -translate-x-1/2 -translate-y-1/2 rounded-full bg-acento opacity-[0.12] blur-[100px]"
+        className="pointer-events-none absolute top-0 left-1/2 h-[28rem] w-[44rem] max-w-[160vw] -translate-x-1/2 -translate-y-1/2 rounded-full bg-acento bg-degradado opacity-[0.12] blur-[100px]"
         aria-hidden
       />
       <div className="absolute top-[max(0.75rem,env(safe-area-inset-top))] right-3 flex items-center gap-1">

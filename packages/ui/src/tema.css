@@ -4,7 +4,9 @@
    Todas las decisiones visuales viven aquí como tokens:
      * Color: semántico (fondo, superficie, texto, acento…) y cambia según
          data-modo="claro" | "oscuro"  en <html>  → neutros, éxito, peligro y sombras.
-         data-tema="miel" | "oceano" | "bosque" | "uva" | "coral"  en <html>  → acento.
+         data-tema="beely" | "miel" | "oceano" | "bosque" | "uva" | "coral"  en <html>  → acento.
+       Cada tema define dos tonos (--b-acento y --b-acento-2) para el degradado de los
+       rellenos (bg-degradado); en los temas planos los dos son iguales.
        Los derivados del acento (suave, borde, texto, foco) salen de color-mix,
        así cada tema solo define su color base y el texto que va encima.
      * Tipografía: text-titulo, text-seccion, text-sm, text-etiqueta, text-xs.
@@ -25,6 +27,7 @@
   --color-texto-3: var(--b-texto-3);
 
   --color-acento: var(--b-acento);
+  --color-acento-2: var(--b-acento-2);
   --color-acento-hover: color-mix(in oklab, var(--b-acento) 88%, var(--b-texto));
   --color-acento-suave: color-mix(in oklab, var(--b-acento) 14%, var(--b-superficie));
   --color-acento-borde: color-mix(in oklab, var(--b-acento) 40%, var(--b-superficie));
@@ -147,45 +150,79 @@
   --b-sombra-boton: inset 0 1px 0 rgb(255 255 255 / 0.2);
 }
 
-/* Temas de acento. Miel es el de la marca.
-   En claro el texto sobre el acento es blanco (≥ 4,5:1); en oscuro el acento
-   se aclara y el texto encima pasa a oscuro, para que brille sin perder contraste. */
+/* Temas de acento. Beely es el de la marca: el degradado coral a rosa del logo.
+   En claro el texto sobre el acento es blanco; en oscuro el acento se aclara y el
+   texto encima pasa a oscuro, para que brille sin perder contraste.
+   Beely en claro usa el degradado del logo un poco más hondo para que el texto
+   blanco se lea (≥ 4:1); en oscuro usa los colores exactos del logo. */
 :root,
+:root[data-tema='beely'] {
+  --b-acento: #dd4f3a;
+  --b-acento-2: #d03568;
+  --b-sobre-acento: #ffffff;
+}
+:root[data-modo='oscuro']:not([data-tema]),
+:root[data-modo='oscuro'][data-tema='beely'] {
+  --b-acento: #f47b5e;
+  --b-acento-2: #e7577f;
+  --b-sobre-acento: #0e0d0c;
+}
 :root[data-tema='miel'] {
   --b-acento: #f5b301;
+  --b-acento-2: #f5b301;
   --b-sobre-acento: #1c1917;
 }
 :root[data-tema='oceano'] {
   --b-acento: #0277b5;
+  --b-acento-2: #0277b5;
   --b-sobre-acento: #ffffff;
 }
 :root[data-tema='bosque'] {
   --b-acento: #05805c;
+  --b-acento-2: #05805c;
   --b-sobre-acento: #ffffff;
 }
 :root[data-tema='uva'] {
   --b-acento: #7c3aed;
+  --b-acento-2: #7c3aed;
   --b-sobre-acento: #ffffff;
 }
 :root[data-tema='coral'] {
   --b-acento: #d81b45;
+  --b-acento-2: #d81b45;
   --b-sobre-acento: #ffffff;
 }
 :root[data-modo='oscuro'][data-tema='oceano'] {
   --b-acento: #38bdf8;
+  --b-acento-2: #38bdf8;
   --b-sobre-acento: #0e0d0c;
 }
 :root[data-modo='oscuro'][data-tema='bosque'] {
   --b-acento: #34d399;
+  --b-acento-2: #34d399;
   --b-sobre-acento: #0e0d0c;
 }
 :root[data-modo='oscuro'][data-tema='uva'] {
   --b-acento: #a78bfa;
+  --b-acento-2: #a78bfa;
   --b-sobre-acento: #0e0d0c;
 }
 :root[data-modo='oscuro'][data-tema='coral'] {
   --b-acento: #fb7185;
+  --b-acento-2: #fb7185;
   --b-sobre-acento: #0e0d0c;
+}
+
+/* Relleno del acento en degradado. Sobre bg-acento: si no hay degradado, queda el color plano. */
+@utility bg-degradado {
+  background-image: linear-gradient(135deg, var(--b-acento), var(--b-acento-2));
+}
+@utility bg-degradado-hover {
+  background-image: linear-gradient(
+    135deg,
+    color-mix(in oklab, var(--b-acento) 88%, var(--b-texto)),
+    color-mix(in oklab, var(--b-acento-2) 88%, var(--b-texto))
+  );
 }
 
 /* Capas flotantes: entran desde su origen con escala corta y salen más rápido.

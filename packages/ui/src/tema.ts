@@ -5,7 +5,9 @@ import { create } from 'zustand'
 // la suya) y se aplica como data-tema / data-modo en <html>. El plugin de Vite
 // `pwaBeely` inyecta en index.html el mismo código para aplicarlo antes de pintar.
 
+// `degradado`: el segundo tono, solo en los temas que rellenan con degradado.
 export const temas = [
+  { id: 'beely', nombre: 'Beely', color: '#f47b5e', degradado: '#e7577f' },
   { id: 'miel', nombre: 'Miel', color: '#f5b301' },
   { id: 'oceano', nombre: 'Océano', color: '#0277b5' },
   { id: 'bosque', nombre: 'Bosque', color: '#05805c' },
@@ -54,8 +56,8 @@ export function temaMasCercano(color: string): IdTema {
     return (h * 60 + 360) % 360
   }
   const objetivo = /^#[0-9a-f]{6}$/i.test(color) ? tono(color) : null
-  if (objetivo === null) return 'miel'
-  let mejor: IdTema = 'miel'
+  if (objetivo === null) return 'beely'
+  let mejor: IdTema = 'beely'
   let distancia = Infinity
   for (const t of temas) {
     const h = tono(t.color) ?? 0
@@ -100,7 +102,7 @@ type EstadoTema = {
 
 export const useTemaStore = create<EstadoTema>((set, get) => {
   const elegido = leer()
-  const inicial = { tema: elegido.tema ?? elegido.porDefecto ?? 'miel', modo: elegido.modo ?? modoDelSistema() }
+  const inicial = { tema: elegido.tema ?? elegido.porDefecto ?? 'beely', modo: elegido.modo ?? modoDelSistema() }
   aplicar(inicial.tema, inicial.modo)
   return {
     ...inicial,

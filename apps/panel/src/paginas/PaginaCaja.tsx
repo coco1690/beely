@@ -581,7 +581,7 @@ function AvisoResultado({ resultado }: { resultado: ResultadoSello }) {
         className="flex items-center gap-3 rounded-control border border-acento-borde bg-acento-suave p-3 motion-safe:animate-estampar"
       >
         <span
-          className="flex size-10 shrink-0 items-center justify-center rounded-full bg-acento text-sobre-acento"
+          className="flex size-10 shrink-0 items-center justify-center rounded-full bg-acento bg-degradado text-sobre-acento"
           aria-hidden
         >
           <Gift className="size-5" />

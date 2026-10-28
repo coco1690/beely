@@ -70,7 +70,7 @@ export function DisenoClub() {
           <span className="relative">
             <Ticket />
             {cupones > 0 ? (
-              <span className="absolute -top-1.5 -right-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-acento px-1 text-[10px] font-semibold text-sobre-acento tabular-nums">
+              <span className="absolute -top-1.5 -right-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-acento bg-degradado px-1 text-[10px] font-semibold text-sobre-acento tabular-nums">
                 {cupones}
               </span>
             ) : null}

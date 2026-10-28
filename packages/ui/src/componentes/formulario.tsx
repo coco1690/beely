@@ -147,7 +147,7 @@ export function Interruptor({
       onClick={() => onCambiar(!activo)}
       className={cn(
         'relative inline-flex h-6 w-10 shrink-0 items-center rounded-full border border-transparent transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foco disabled:cursor-not-allowed disabled:opacity-50',
-        activo ? 'bg-acento' : 'bg-borde-fuerte',
+        activo ? 'bg-acento bg-degradado' : 'bg-borde-fuerte',
         className,
       )}
     >

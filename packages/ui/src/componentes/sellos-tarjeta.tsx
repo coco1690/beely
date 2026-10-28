@@ -47,7 +47,7 @@ export function SellosTarjeta({
       {Array.from({ length: requeridos }, (_, i) => (
         <span
           key={i}
-          className={cn('flex-1 rounded-full', i < actuales ? 'bg-acento' : 'bg-hundido', esNuevo(i) && 'animate-estampar')}
+          className={cn('flex-1 rounded-full', i < actuales ? 'bg-acento bg-degradado' : 'bg-hundido', esNuevo(i) && 'animate-estampar')}
           style={esNuevo(i) ? retraso(i) : undefined}
         />
       ))}

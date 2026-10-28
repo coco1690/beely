@@ -17,6 +17,7 @@ function estiloPase(d: Diseno | null): CSSProperties {
     backgroundColor: fondo,
     color: texto,
     ['--b-acento' as string]: texto,
+    ['--b-acento-2' as string]: texto,
     ['--b-sobre-acento' as string]: fondo,
     ['--b-hundido' as string]: `color-mix(in oklab, ${texto} 9%, transparent)`,
     ['--b-borde-fuerte' as string]: `color-mix(in oklab, ${texto} 38%, transparent)`,
@@ -48,7 +49,7 @@ export function PaginaTarjeta() {
           to="cupones"
           className="flex items-center gap-3 rounded-tarjeta border border-acento-borde bg-acento-suave p-3.5 transition-colors hover:bg-acento-suave/70 motion-safe:animate-estampar"
         >
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-acento text-sobre-acento" aria-hidden>
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-acento bg-degradado text-sobre-acento" aria-hidden>
             <Gift className="size-5" />
           </span>
           <span className="min-w-0">
