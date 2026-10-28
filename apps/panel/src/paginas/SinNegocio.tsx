@@ -1,5 +1,5 @@
-import { EstadoVacio, Tarjeta } from '@beely/ui'
-import { Store } from 'lucide-react'
+import { EstadoVacio, Tarjeta } from "@beely/ui";
+import { Store } from "lucide-react";
 
 export function SinNegocio() {
   return (
@@ -10,5 +10,5 @@ export function SinNegocio() {
         descripcion="Pide al dueño de tu negocio que te invite desde la sección Equipo."
       />
     </Tarjeta>
-  )
+  );
 }

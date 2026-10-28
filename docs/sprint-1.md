@@ -75,8 +75,8 @@ React + Vite + TypeScript estricto + Zustand + Tailwind v4 + react-hook-form/zod
 |------|------|---------|
 | `/ingresar` | Sin sesión | Correo + clave (`signInWithPassword`). Mensaje genérico si falla. |
 | `/recuperar` | Sin sesión | Envía enlace para nueva clave; mismo mensaje exista o no el correo. |
-| `/definir-clave` | Enlace de invitación o recuperación | Fija la clave y entra al panel. |
-| Menú de la cuenta → Cambiar contraseña | Cualquiera con sesión | Pide la clave actual (se valida volviendo a ingresar) y guarda la nueva con `updateUser`. |
+| `/definir-clave` | Enlace de invitación o recuperación | Fija la clave y entra al panel. Si Supabase devuelve el enlace a otra ruta (el `redirectTo` no está en las URLs permitidas), el panel ve `type=invite` o `type=recovery` en el hash y lo lleva aquí. |
+| `/perfil` (menú de la cuenta → Perfil y contraseña) | Cualquiera con sesión | Muestra la cuenta y sus negocios. Si la cuenta ya tiene clave (marca `clave_definida` en `user_metadata` o sesión abierta con `password` en el `amr`), pide la actual (se valida volviendo a ingresar) y guarda la nueva; si no, la define sin pedir la actual. |
 | `/caja` | Todo el equipo | Elegir sede (se recuerda por negocio), escanear QR con la cámara trasera (`qr-scanner`) o buscar por celular / código. Muestra nombre, celular oculto, sellos, cupones por canjear; pide monto o unidades según la regla; suma el sello y avisa si se emitió el premio o si llegó al tope del día. Lista de últimos movimientos. |
 | `/programa` | Todo el equipo (edita dueño/admin) | Sellos requeridos, regla, monto mínimo o por sello, tope diario, premio y vigencia. |
 | `/sedes` | Todo el equipo (edita dueño/admin; crea superadmin) | Nombre, dirección, coordenadas y si está activa. |
