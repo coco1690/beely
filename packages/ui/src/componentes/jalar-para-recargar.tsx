@@ -11,8 +11,9 @@ const MAXIMO = 120
 // al soltar pasado el umbral, recarga (y así también toma la versión nueva publicada).
 // La app instalada no tiene el "jalar para recargar" del navegador: lo hacemos nosotros.
 // `alRecargar`: en vez de recargar la página, vuelve a pedir los datos (el club refresca la tarjeta).
-export function JalarParaRecargar({ alRecargar }: { alRecargar?: () => Promise<unknown> } = {}) {
-  const [activo] = useState(esAppInstalada)
+// `siempre`: también en el navegador (el club se abre en navegadores dentro de otras apps, sin el gesto nativo).
+export function JalarParaRecargar({ alRecargar, siempre = false }: { alRecargar?: () => Promise<unknown>; siempre?: boolean } = {}) {
+  const [activo] = useState(() => siempre || esAppInstalada())
   const [recargando, setRecargando] = useState(false)
   const indicador = useRef<HTMLDivElement>(null)
   const flecha = useRef<HTMLDivElement>(null)

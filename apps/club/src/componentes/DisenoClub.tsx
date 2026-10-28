@@ -82,7 +82,7 @@ export function DisenoClub() {
           Perfil
         </NavLink>
       </BarraFlotante>
-      <JalarParaRecargar alRecargar={refrescar} />
+      <JalarParaRecargar alRecargar={refrescar} siempre />
     </div>
   )
 }
@@ -128,5 +128,11 @@ export function Inicio({ children }: { children: ReactNode }) {
   const token = useClubStore((e) => e.token)
   const guardado = slug ? tokenGuardado(slug) : null
   const destino = token ?? guardado
-  return destino ? <Navigate to={`/t/${destino}`} replace /> : <>{children}</>
+  if (destino) return <Navigate to={`/t/${destino}`} replace />
+  return (
+    <>
+      <JalarParaRecargar siempre />
+      {children}
+    </>
+  )
 }

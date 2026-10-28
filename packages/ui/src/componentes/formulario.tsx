@@ -23,7 +23,9 @@ function useAtributosCampo(props: AtributosAria): AtributosAria {
 
 export function Entrada({ className, ref, ...props }: InputHTMLAttributes<HTMLInputElement> & { ref?: Ref<HTMLInputElement> }) {
   const atributos = useAtributosCampo(props)
-  return <input ref={ref} className={cn(claseControl, className)} {...props} {...atributos} />
+  // En iOS el campo de fecha trae ancho propio y se sale del contenedor; se fuerza al ancho del campo.
+  const fecha = props.type === 'date' && 'min-w-0 appearance-none text-left [&::-webkit-date-and-time-value]:text-left'
+  return <input ref={ref} className={cn(claseControl, fecha, className)} {...props} {...atributos} />
 }
 
 // Campo de clave con botón para mostrarla u ocultarla. `className` va al contenedor.
