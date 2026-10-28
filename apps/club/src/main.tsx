@@ -16,8 +16,8 @@ import '@fontsource/geist-mono/400.css'
 import '@fontsource/geist-mono/500.css'
 import './estilos.css'
 
-// Todos los clubes usan el tema de Beely; se guarda para que el script inicial lo
-// pinte desde el primer cuadro y reemplaza cualquier tema elegido antes.
+// Base del club: el tema de Beely (reemplaza cualquier tema elegido antes). Encima van los
+// colores del negocio (useClubStore); sin colores válidos queda el degradado de Beely.
 if (useTemaStore.getState().tema !== 'beely') useTemaStore.getState().elegirTema('beely')
 
 // Todo el club cuelga del negocio del subdominio: sin él no hay nada que mostrar.

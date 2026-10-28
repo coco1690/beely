@@ -1,4 +1,5 @@
 import { mensajeDe } from '@beely/tipos/supabase'
+import { coloresDeNegocio, useTemaStore } from '@beely/ui'
 import { create } from 'zustand'
 import { apuntarManifest, guardarToken, olvidarToken, slugActual } from '../lib/club'
 import { clienteClub } from '../lib/supabase'
@@ -8,7 +9,7 @@ async function consultarNegocio(slug: string) {
   const { data, error } = await clienteClub(slug)
     .from('negocios')
     .select(
-      `id, slug, nombre, logo_url, color_primario, version_politica_datos,
+      `id, slug, nombre, logo_url, color_primario, color_secundario, version_politica_datos,
        programas ( nombre, sellos_requeridos, premio_descripcion, regla_sello, monto_minimo, monto_por_sello, max_sellos_dia ),
        sedes ( id, nombre, direccion )`,
     )
@@ -77,6 +78,8 @@ export const useClubStore = create<EstadoClub>((set, get) => ({
       apuntarManifest(slug)
       document.title = `${negocio.nombre} · Club`
       document.querySelector('meta[name="apple-mobile-web-app-title"]')?.setAttribute('content', negocio.nombre)
+      // El acento y el degradado del club salen de los colores del negocio.
+      useTemaStore.getState().fijarColores(coloresDeNegocio(negocio.color_primario, negocio.color_secundario))
       set({ negocio, estadoNegocio: 'listo' })
     } catch (error) {
       set({ estadoNegocio: 'error', error: mensajeDe(error) })
