@@ -1,28 +1,43 @@
 import { fecha } from '@beely/tipos'
-import { cn, EstadoVacio, FilaLista, Lista, LogoNegocio, SellosTarjeta } from '@beely/ui'
+import { cn, coloresDeNegocio, EstadoVacio, FilaLista, Lista, LogoNegocio, SellosTarjeta, type ColoresMarca } from '@beely/ui'
 import { Gift, Stamp } from 'lucide-react'
 import type { CSSProperties } from 'react'
 import { Link } from 'react-router'
 import { CodigoQr } from '../componentes/CodigoQr'
-import { cuponesVigentes, useClubStore, type TarjetaClub } from '../stores/useClubStore'
+import { cuponesVigentes, useClubStore, type NegocioClub, type TarjetaClub } from '../stores/useClubStore'
 
 type Diseno = NonNullable<NonNullable<TarjetaClub['programas']>['disenos_tarjeta']>
 
-// Dentro del pase los tokens del tema toman los colores del diseño de la tarjeta
-// (los mismos que irán a Google/Apple Wallet), así Sello y SellosTarjeta se pintan solos.
-function estiloPase(d: Diseno | null): CSSProperties {
-  const fondo = d?.color_fondo ?? '#F5B301'
-  const texto = d?.color_texto ?? '#1F1A17'
+// El diseño que trae la tarjeta por defecto (migración núcleo): mientras el negocio no lo
+// cambie en el editor de tarjeta, el pase se pinta con los colores del negocio.
+const FONDO_INICIAL = '#f5b301'
+const TEXTO_INICIAL = '#1f1a17'
+// Sin colores de negocio válidos: el degradado de Beely (el de modo claro).
+const COLORES_BEELY: ColoresMarca = { acento: '#dd4f3a', acento2: '#d03568', sobre: '#ffffff' }
+
+const disenoPropio = (d: Diseno | null): d is Diseno =>
+  !!d && (d.color_fondo.toLowerCase() !== FONDO_INICIAL || d.color_texto.toLowerCase() !== TEXTO_INICIAL)
+
+// Dentro del pase los tokens del tema toman los colores de la tarjeta, así Sello y
+// SellosTarjeta se pintan solos: el fondo es el degradado del negocio (o el diseño propio
+// de la tarjeta, el mismo que irá a Google/Apple Wallet) y los sellos van en el color del texto.
+function estiloPase(d: Diseno | null, negocio: NegocioClub): CSSProperties {
+  const propio = disenoPropio(d)
+  const marca = coloresDeNegocio(negocio.color_primario, negocio.color_secundario) ?? COLORES_BEELY
+  const texto = propio ? d.color_texto : marca.sobre
   return {
-    backgroundColor: fondo,
+    background: propio ? d.color_fondo : `linear-gradient(135deg, ${marca.acento}, ${marca.acento2})`,
     color: texto,
     ['--b-acento' as string]: texto,
     ['--b-acento-2' as string]: texto,
-    ['--b-sobre-acento' as string]: fondo,
+    ['--b-sobre-acento' as string]: propio ? d.color_fondo : marca.acento,
     ['--b-hundido' as string]: `color-mix(in oklab, ${texto} 9%, transparent)`,
     ['--b-borde-fuerte' as string]: `color-mix(in oklab, ${texto} 38%, transparent)`,
   }
 }
+
+// Etiquetas del pase: las del diseño propio o el texto un poco más tenue.
+const colorEtiquetas = (d: Diseno | null) => (disenoPropio(d) ? d.color_etiquetas : 'color-mix(in oklab, currentColor 78%, transparent)')
 
 export function PaginaTarjeta() {
   const tarjeta = useClubStore((e) => e.tarjeta)
@@ -70,7 +85,7 @@ export function PaginaTarjeta() {
 
 type DatosPase = {
   tarjeta: TarjetaClub
-  negocio: { nombre: string; logo_url: string | null }
+  negocio: NegocioClub
   requeridos: number
   faltan: number
   premio: string
@@ -81,13 +96,13 @@ function Pase({ tarjeta, negocio, requeridos, faltan, premio }: DatosPase) {
   const diseno = tarjeta.programas?.disenos_tarjeta ?? null
   return (
     <>
-      <section className="relative overflow-hidden rounded-[1.25rem] p-5 shadow-capa" style={estiloPase(diseno)} aria-label="Tu tarjeta de sellos">
+      <section className="relative overflow-hidden rounded-[1.25rem] p-5 shadow-capa" style={estiloPase(diseno, negocio)} aria-label="Tu tarjeta de sellos">
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-2.5">
             <LogoNegocio url={diseno?.logo_url ?? negocio.logo_url} nombre={negocio.nombre} className="size-9" />
             <div className="min-w-0 leading-tight">
               <p className="truncate font-semibold">{negocio.nombre}</p>
-              <p className="truncate text-xs" style={{ color: diseno?.color_etiquetas }}>
+              <p className="truncate text-xs" style={{ color: colorEtiquetas(diseno) }}>
                 {diseno?.titulo ?? 'Tarjeta de sellos'}
               </p>
             </div>
@@ -103,16 +118,17 @@ function Pase({ tarjeta, negocio, requeridos, faltan, premio }: DatosPase) {
           actuales={tarjeta.sellos_actuales}
           requeridos={requeridos}
           columnas={requeridos <= 6 ? requeridos : Math.ceil(requeridos / 2)}
+          logo={diseno?.logo_url ?? negocio.logo_url}
           className="mt-5 gap-2"
         />
         <div className="mt-5 flex items-end justify-between gap-3 text-sm">
           <div className="min-w-0">
-            <p className="text-xs" style={{ color: diseno?.color_etiquetas }}>
+            <p className="text-xs" style={{ color: colorEtiquetas(diseno) }}>
               Premio
             </p>
             <p className="line-clamp-2 font-medium">{premio}</p>
           </div>
-          <p className="shrink-0 text-xs tabular-nums" style={{ color: diseno?.color_etiquetas }}>
+          <p className="shrink-0 text-xs tabular-nums" style={{ color: colorEtiquetas(diseno) }}>
             {faltan === 0 ? '¡Completa!' : `Faltan ${faltan}`}
           </p>
         </div>

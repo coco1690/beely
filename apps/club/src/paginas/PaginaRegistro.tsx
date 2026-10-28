@@ -79,7 +79,7 @@ export function PaginaRegistro() {
             Junta <strong className="font-semibold">{programa.sellos_requeridos} sellos</strong> y gana{' '}
             <strong className="font-semibold">{programa.premio_descripcion.toLowerCase()}</strong>.
           </p>
-          <SellosTarjeta actuales={0} requeridos={programa.sellos_requeridos} claseSello="size-7" />
+          <SellosTarjeta actuales={0} requeridos={programa.sellos_requeridos} claseSello="size-7" logo={negocio.logo_url} />
           <p className="text-etiqueta text-texto-3">{comoSeGana(programa)}.</p>
         </section>
       ) : null}

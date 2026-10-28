@@ -10,6 +10,7 @@ export function SellosTarjeta({
   requeridos,
   claseSello = 'size-8',
   columnas,
+  logo,
   className,
 }: {
   actuales: number
@@ -17,6 +18,8 @@ export function SellosTarjeta({
   claseSello?: string
   // Con columnas, los sellos se reparten en una cuadrícula que llena el ancho (el pase del club).
   columnas?: number
+  // Logo del negocio: cada celda del panal lo lleva (en la barra de más de 12 no cabe).
+  logo?: string | null
   className?: string
 }) {
   const previos = useRef(actuales)
@@ -37,7 +40,7 @@ export function SellosTarjeta({
         aria-label={etiqueta}
       >
         {Array.from({ length: requeridos }, (_, i) => (
-          <Sello key={i} lleno={i < actuales} className={cn(columnas ? 'size-auto w-full' : claseSello, esNuevo(i) && 'animate-estampar')} style={esNuevo(i) ? retraso(i) : undefined} />
+          <Sello key={i} lleno={i < actuales} logo={logo} className={cn(columnas ? 'size-auto w-full' : claseSello, esNuevo(i) && 'animate-estampar')} style={esNuevo(i) ? retraso(i) : undefined} />
         ))}
       </div>
     )
