@@ -9,9 +9,12 @@ export default defineConfig({
     react(),
     tailwindcss(),
     // Íconos, metas de iOS y tema inicial. El manifest de cada negocio lo arma
-    // api/manifest.ts sobre esta base (nombre y colores del negocio).
+    // api/manifest.ts sobre esta base (nombre y colores del negocio). El club abre
+    // siempre en claro (los colores del negocio lucen sobre blanco), aunque el teléfono
+    // esté en oscuro; el cliente puede pasarse a oscuro en Perfil.
     pwaBeely({
       titulo: 'Club',
+      modo: 'claro',
       archivoManifest: 'manifest-base.webmanifest',
       manifest: { nombre: 'Club Beely', nombreCorto: 'Club', descripcion: 'Tu tarjeta de sellos', inicio: null },
     }),

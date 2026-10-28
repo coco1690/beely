@@ -10,7 +10,7 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { HtmlTagDescriptor, Plugin } from 'vite'
 import { crearManifest, type OpcionesManifest } from './src/pwa.ts'
-import { scriptTemaInicial } from './src/tema-inicial.ts'
+import { scriptTemaInicial, type ModoPorDefecto } from './src/tema-inicial.ts'
 
 const carpetaIconos = fileURLToPath(new URL('./iconos', import.meta.url))
 const tipos: Record<string, string> = { '.png': 'image/png', '.svg': 'image/svg+xml' }
@@ -19,8 +19,11 @@ export function pwaBeely({
   titulo,
   manifest,
   archivoManifest = 'manifest.webmanifest',
+  modo = 'sistema',
 }: {
   titulo: string
+  // Modo de quien no ha elegido uno: el del teléfono o siempre claro.
+  modo?: ModoPorDefecto
   manifest?: OpcionesManifest
   archivoManifest?: string
 }): Plugin {
@@ -61,7 +64,7 @@ export function pwaBeely({
         injectTo: 'head',
       })
       return [
-        { tag: 'script', children: scriptTemaInicial, injectTo: 'head-prepend' },
+        { tag: 'script', children: scriptTemaInicial(modo), injectTo: 'head-prepend' },
         meta('theme-color', '#f7f6f4'),
         enlace('icon', '/favicon.svg', { type: 'image/svg+xml' }),
         enlace('apple-touch-icon', '/apple-touch-icon.png'),

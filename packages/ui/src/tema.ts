@@ -106,7 +106,12 @@ function leer(): Guardado {
   }
 }
 
-const modoDelSistema = (): Modo => (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'oscuro' : 'claro')
+// Sin elección guardada: claro si la app lo pide (data-modo-por-defecto, lo pone el script
+// inicial); si no, el modo del teléfono.
+const modoPorDefecto = (): Modo =>
+  document.documentElement.dataset.modoPorDefecto === 'claro' || !window.matchMedia('(prefers-color-scheme: dark)').matches
+    ? 'claro'
+    : 'oscuro'
 
 function aplicar(tema: IdTema, modo: Modo) {
   const raiz = document.documentElement
@@ -154,7 +159,7 @@ type EstadoTema = {
 
 export const useTemaStore = create<EstadoTema>((set, get) => {
   const elegido = leer()
-  const inicial = { tema: elegido.tema ?? elegido.porDefecto ?? 'beely', modo: elegido.modo ?? modoDelSistema() }
+  const inicial = { tema: elegido.tema ?? elegido.porDefecto ?? 'beely', modo: elegido.modo ?? modoPorDefecto() }
   aplicar(inicial.tema, inicial.modo)
   aplicarColores(elegido.colores)
   return {
