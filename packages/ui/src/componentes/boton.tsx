@@ -4,7 +4,7 @@ import { cn } from '../utilidades'
 import { Spinner } from './spinner'
 
 const apagadoRelleno =
-  '[&:disabled:not([data-cargando])]:bg-hundido [&:disabled:not([data-cargando])]:text-texto-3 [&:disabled:not([data-cargando])]:shadow-none'
+  '[&:disabled:not([data-cargando])]:bg-hundido [&:disabled:not([data-cargando])]:bg-none [&:disabled:not([data-cargando])]:text-texto-3 [&:disabled:not([data-cargando])]:shadow-none'
 const apagadoTenue = '[&:disabled:not([data-cargando])]:opacity-45'
 
 // Solo se animan color, borde, sombra y transform: nunca `transition-all`.
@@ -15,7 +15,7 @@ export const variantesBoton = cva(
     variants: {
       variante: {
         // Deshabilitados (y no cargando): los rellenos pasan a gris neutro en vez de un acento lavado.
-        primario: `bg-acento text-sobre-acento shadow-boton hover:bg-acento-hover ${apagadoRelleno}`,
+        primario: `bg-acento bg-degradado text-sobre-acento shadow-boton hover:bg-degradado-hover ${apagadoRelleno}`,
         secundario: `bg-hundido text-texto hover:bg-borde ${apagadoTenue}`,
         contorno: `border border-borde bg-superficie text-texto shadow-tarjeta hover:border-borde-fuerte hover:bg-hundido ${apagadoTenue}`,
         fantasma: `text-texto-2 hover:bg-hundido hover:text-texto ${apagadoTenue}`,

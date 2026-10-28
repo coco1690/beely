@@ -46,13 +46,23 @@ export function MarcaBeely({ className }: { className?: string }) {
   )
 }
 
-// Un sello de la tarjeta: celda llena o vacía.
+// Un sello de la tarjeta: celda llena (en el degradado del tema) o vacía.
 export function Sello({ lleno, className, style }: { lleno: boolean; className?: string; style?: CSSProperties }) {
+  const id = useId()
   return (
     <svg viewBox="0 0 24 24" className={cn('size-8', className)} style={style} aria-hidden>
+      {lleno ? (
+        <defs>
+          <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" style={{ stopColor: 'var(--b-acento)' }} />
+            <stop offset="1" style={{ stopColor: 'var(--b-acento-2)' }} />
+          </linearGradient>
+        </defs>
+      ) : null}
       <path
         d={HEXAGONO}
-        className={lleno ? 'fill-acento' : 'fill-hundido stroke-borde-fuerte'}
+        fill={lleno ? `url(#${id})` : undefined}
+        className={lleno ? undefined : 'fill-hundido stroke-borde-fuerte'}
         strokeWidth={lleno ? 0 : 1.2}
         strokeDasharray={lleno ? undefined : '2.4 2.2'}
       />

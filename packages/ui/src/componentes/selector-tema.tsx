@@ -47,7 +47,7 @@ export function SelectorTema({ className }: { className?: string }) {
                 'flex size-[18px] items-center justify-center rounded-full ring-offset-2 ring-offset-superficie transition-shadow',
                 activo ? 'ring-2 ring-texto/70' : 'group-hover:ring-2 group-hover:ring-borde-fuerte',
               )}
-              style={{ backgroundColor: t.color }}
+              style={{ background: 'degradado' in t ? `linear-gradient(135deg, ${t.color}, ${t.degradado})` : t.color }}
             >
               {activo ? <Check className={cn('size-3', t.id === 'miel' ? 'text-texto' : 'text-white')} strokeWidth={3} /> : null}
             </span>
