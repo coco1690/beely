@@ -69,8 +69,9 @@ export const useNegocioStore = create<EstadoNegocio>()((set, get) => ({
     })
     set({ membresias, cargando: false })
 
+    // El superadmin arranca en la plataforma: solo retoma un negocio que abrió antes a propósito.
     const actual = get().negocioId ?? leer(CLAVE_NEGOCIO)
-    const inicial = membresias.find((m) => m.negocio.id === actual) ?? membresias[0]
+    const inicial = membresias.find((m) => m.negocio.id === actual) ?? (esSuperadmin ? undefined : membresias[0])
     if (inicial) await get().elegirNegocio(inicial.negocio.id)
     else set({ negocioId: null, sedes: [], sedeCajaId: null })
   },

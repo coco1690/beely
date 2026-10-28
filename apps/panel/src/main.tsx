@@ -54,13 +54,26 @@ function SinSesion() {
 function ConNegocio() {
   const activo = useNegocioActivo()
   const esSuperadmin = useSesionStore((e) => e.esSuperadmin)
-  if (!activo) return esSuperadmin ? <Navigate to="/superadmin" replace /> : <SinNegocio />
+  if (!activo)
+    return esSuperadmin ? (
+      <Navigate to="/superadmin" replace />
+    ) : (
+      <DisenoPanel modo="negocio">
+        <SinNegocio />
+      </DisenoPanel>
+    )
   return <Outlet />
 }
 
 function SoloConfiguracion() {
   const activo = useNegocioActivo()
   return puedeConfigurar(activo?.rol) ? <Outlet /> : <Navigate to="/caja" replace />
+}
+
+// Entrada del panel: el superadmin aterriza en la plataforma; el equipo, en la caja de su negocio.
+function Inicio() {
+  const esSuperadmin = useSesionStore((e) => e.esSuperadmin)
+  return <Navigate to={esSuperadmin ? '/superadmin' : '/caja'} replace />
 }
 
 function SoloSuperadmin() {
@@ -80,17 +93,22 @@ const enrutador = createBrowserRouter([
   {
     element: <ConSesion />,
     children: [
+      { index: true, element: <Inicio /> },
       {
-        element: <DisenoPanel />,
+        element: <SoloSuperadmin />,
         children: [
           {
-            element: <SoloSuperadmin />,
+            element: <DisenoPanel modo="plataforma" />,
             children: [{ path: '/superadmin', element: <PaginaSuperadmin /> }],
           },
+        ],
+      },
+      {
+        element: <ConNegocio />,
+        children: [
           {
-            element: <ConNegocio />,
+            element: <DisenoPanel modo="negocio" />,
             children: [
-              { index: true, element: <Navigate to="/caja" replace /> },
               { path: '/caja', element: <PaginaCaja /> },
               { path: '/programa', element: <PaginaPrograma /> },
               { path: '/sedes', element: <PaginaSedes /> },
