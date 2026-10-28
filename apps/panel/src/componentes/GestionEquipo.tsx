@@ -49,7 +49,12 @@ export type RespuestaEquipo = {
 };
 
 // Mensaje tras sumar a alguien al equipo, según cómo quedó su cuenta.
-export function avisarAlta(email: string, cuenta: RespuestaEquipo["cuenta"]) {
+// `conClave`: se escribió una contraseña inicial. Si la cuenta ya existía no se usa, y se avisa.
+export function avisarAlta(
+  email: string,
+  cuenta: RespuestaEquipo["cuenta"],
+  conClave: boolean,
+) {
   if (cuenta === "creada")
     toast.success(`Cuenta creada para ${email}`, {
       description: "Ya puede ingresar con la contraseña que le pusiste.",
@@ -57,6 +62,11 @@ export function avisarAlta(email: string, cuenta: RespuestaEquipo["cuenta"]) {
   else if (cuenta === "invitada")
     toast.success(`Invitación enviada a ${email}`, {
       description: "Debe abrir el correo para definir su clave.",
+    });
+  else if (conClave)
+    toast.warning(`${email} ya tenía cuenta en Beely`, {
+      description:
+        "Se agregó al negocio, pero la contraseña que escribiste no se usó: entra con su clave de siempre o con «Olvidé mi clave».",
     });
   else
     toast.success(`${email} ya es parte del negocio`, {
@@ -106,7 +116,7 @@ export function GestionEquipo({
         rol,
         clave: clave || undefined,
       });
-      avisarAlta(email, r.cuenta);
+      avisarAlta(email, r.cuenta, Boolean(clave));
       reset({ email: "", rol, clave: "" });
       await cargar();
     } catch (e) {
