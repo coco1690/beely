@@ -172,11 +172,8 @@ function BarraInferior({ enlaces }: { enlaces: Enlace[] }) {
 function MarcaPlataforma() {
   return (
     <div className="flex min-w-0 items-center gap-2.5 px-1.5 py-1">
-      <LogoBeely className="size-7 shrink-0" />
-      <span className="flex min-w-0 flex-1 flex-col text-left leading-tight">
-        <span className="truncate text-sm font-semibold text-texto">Beely</span>
-        <span className="truncate text-xs text-texto-3">Superadmin</span>
-      </span>
+      <LogoBeely className="h-8 shrink-0" />
+      <span className="truncate pt-1.5 text-xs text-texto-3">Superadmin</span>
     </div>
   )
 }
