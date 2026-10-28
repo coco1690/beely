@@ -58,14 +58,14 @@ Respuesta 200: el JSON de `registrar_sello` (`sellos_sumados`, `sellos_actuales`
 ### `POST /functions/v1/panel-equipo`
 
 ```json
-{ "negocio_id": "uuid", "email": "persona@negocio.com", "rol": "dueno | administrador | cajero" }
+{ "negocio_id": "uuid", "email": "persona@negocio.com", "rol": "dueno | administrador | cajero", "clave": "opcional, 8 a 72 caracteres" }
 ```
 
 1. Permiso: el dueño invita administradores y cajeros; solo el superadmin asigna dueños. Si no → `403 sin_permiso`.
-2. Si el correo no tiene cuenta, `auth.admin.inviteUserByEmail` envía la invitación con destino `{PANEL_URL}/definir-clave`. Si ya tiene cuenta (trabaja en otro negocio), solo se crea la membresía.
+2. Si el correo no tiene cuenta: con `clave`, `auth.admin.createUser` la crea ya confirmada con esa clave (no depende del correo); sin `clave`, `auth.admin.inviteUserByEmail` envía la invitación con destino `{PANEL_URL}/definir-clave`. Si ya tiene cuenta (trabaja en otro negocio), solo se crea la membresía y su clave no se toca.
 3. La membresía se inserta con el cliente del usuario, así RLS vuelve a validar el permiso.
 
-Respuesta 201: `{ usuario_id, email, rol, invitado }`. Errores: `no_autenticado` 401, `solicitud_invalida` 400, `sin_permiso` 403, `ya_es_miembro` 409.
+Respuesta 201: `{ usuario_id, email, rol, cuenta: 'creada' | 'invitada' | 'existente', invitado }`. Errores: `no_autenticado` 401, `solicitud_invalida` 400, `sin_permiso` 403, `ya_es_miembro` 409.
 
 ## Frontend (`apps/panel`)
 
@@ -76,6 +76,7 @@ React + Vite + TypeScript estricto + Zustand + Tailwind v4 + react-hook-form/zod
 | `/ingresar` | Sin sesión | Correo + clave (`signInWithPassword`). Mensaje genérico si falla. |
 | `/recuperar` | Sin sesión | Envía enlace para nueva clave; mismo mensaje exista o no el correo. |
 | `/definir-clave` | Enlace de invitación o recuperación | Fija la clave y entra al panel. |
+| Menú de la cuenta → Cambiar contraseña | Cualquiera con sesión | Pide la clave actual (se valida volviendo a ingresar) y guarda la nueva con `updateUser`. |
 | `/caja` | Todo el equipo | Elegir sede (se recuerda por negocio), escanear QR con la cámara trasera (`qr-scanner`) o buscar por celular / código. Muestra nombre, celular oculto, sellos, cupones por canjear; pide monto o unidades según la regla; suma el sello y avisa si se emitió el premio o si llegó al tope del día. Lista de últimos movimientos. |
 | `/programa` | Todo el equipo (edita dueño/admin) | Sellos requeridos, regla, monto mínimo o por sello, tope diario, premio y vigencia. |
 | `/sedes` | Todo el equipo (edita dueño/admin; crea superadmin) | Nombre, dirección, coordenadas y si está activa. |

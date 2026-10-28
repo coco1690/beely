@@ -15,7 +15,7 @@ export { Tarjeta, TarjetaContenido, TarjetaDescripcion, TarjetaEncabezado, Tarje
 export { Aviso, Insignia } from './componentes/avisos'
 export { Esqueleto, EstadoVacio, FilaLista, Lista } from './componentes/estados'
 export { Toaster, toast } from './componentes/toasts'
-export { ProveedorConfirmar, useConfirmar } from './componentes/dialogos'
+export { Dialogo, ProveedorConfirmar, useConfirmar } from './componentes/dialogos'
 export {
   MenuContenido,
   MenuDisparador,

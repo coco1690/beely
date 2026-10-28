@@ -1,10 +1,11 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { esquemaInvitarMiembro, type RolEquipo } from '@beely/tipos'
+import { esquemaClaveInicial, esquemaInvitarMiembro, type RolEquipo } from '@beely/tipos'
 import {
   Aviso,
   Boton,
   Campo,
   Entrada,
+  EntradaClave,
   Esqueleto,
   FilaLista,
   Insignia,
@@ -34,7 +35,19 @@ type Integrante = {
   invitacion_pendiente: boolean
 }
 
-const esquemaFormulario = esquemaInvitarMiembro.omit({ negocio_id: true })
+const esquemaFormulario = esquemaInvitarMiembro.omit({ negocio_id: true }).extend({ clave: esquemaClaveInicial })
+
+export type RespuestaEquipo = { usuario_id: string; cuenta: 'creada' | 'invitada' | 'existente' }
+
+// Mensaje tras sumar a alguien al equipo, según cómo quedó su cuenta.
+export function avisarAlta(email: string, cuenta: RespuestaEquipo['cuenta']) {
+  if (cuenta === 'creada')
+    toast.success(`Cuenta creada para ${email}`, { description: 'Ya puede ingresar con la contraseña que le pusiste.' })
+  else if (cuenta === 'invitada')
+    toast.success(`Invitación enviada a ${email}`, { description: 'Debe abrir el correo para definir su clave.' })
+  else
+    toast.success(`${email} ya es parte del negocio`, { description: 'Ya tenía cuenta en Beely; entra con su clave de siempre.' })
+}
 
 // Equipo de un negocio: invitar, cambiar rol y quitar. Lo usan la página Equipo del negocio
 // y la ficha del negocio en el panel del superadmin.
@@ -47,7 +60,7 @@ export function GestionEquipo({ negocioId, rolPanel }: { negocioId: string; rolP
   const confirmar = useConfirmar()
   const { register, handleSubmit, reset, formState } = useForm({
     resolver: zodResolver(esquemaFormulario),
-    defaultValues: { email: '', rol: 'cajero' as RolEquipo },
+    defaultValues: { email: '', rol: 'cajero' as RolEquipo, clave: '' },
   })
 
   const cargar = useCallback(async () => {
@@ -61,14 +74,17 @@ export function GestionEquipo({ negocioId, rolPanel }: { negocioId: string; rolP
     void cargar()
   }, [cargar])
 
-  const invitar = handleSubmit(async ({ email, rol }) => {
+  const invitar = handleSubmit(async ({ email, rol, clave }) => {
     setError(null)
     try {
-      const r = await llamarFuncion<{ invitado: boolean }>('panel-equipo', { negocio_id: negocioId, email, rol })
-      if (r.invitado)
-        toast.success(`Invitación enviada a ${email}`, { description: 'Debe abrir el correo para definir su clave.' })
-      else toast.success(`${email} ya es parte del negocio`, { description: 'Ya tenía cuenta en Beely.' })
-      reset({ email: '', rol })
+      const r = await llamarFuncion<RespuestaEquipo>('panel-equipo', {
+        negocio_id: negocioId,
+        email,
+        rol,
+        clave: clave || undefined,
+      })
+      avisarAlta(email, r.cuenta)
+      reset({ email: '', rol, clave: '' })
       await cargar()
     } catch (e) {
       setError(mensajeDe(e))
@@ -111,16 +127,24 @@ export function GestionEquipo({ negocioId, rolPanel }: { negocioId: string; rolP
       {gestiona ? (
         <Tarjeta>
           <TarjetaEncabezado>
-            <TarjetaTitulo>Invitar a alguien</TarjetaTitulo>
+            <TarjetaTitulo>Agregar a alguien</TarjetaTitulo>
           </TarjetaEncabezado>
           <TarjetaContenido>
             <form
-              className="grid grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1fr)_11rem_auto] sm:items-start"
+              className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:items-start lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_10rem_auto]"
               onSubmit={invitar}
               noValidate
             >
               <Campo id="email" etiqueta="Correo" error={formState.errors.email?.message}>
                 <Entrada id="email" type="email" autoComplete="off" placeholder="nombre@negocio.com" {...register('email')} />
+              </Campo>
+              <Campo
+                id="clave"
+                etiqueta="Contraseña inicial"
+                ayuda="Opcional. Sin contraseña le llega una invitación por correo."
+                error={formState.errors.clave?.message}
+              >
+                <EntradaClave id="clave" autoComplete="new-password" {...register('clave')} />
               </Campo>
               <Campo id="rol" etiqueta="Rol">
                 <Selector id="rol" {...register('rol')}>
@@ -132,7 +156,7 @@ export function GestionEquipo({ negocioId, rolPanel }: { negocioId: string; rolP
                 </Selector>
               </Campo>
               <Boton type="submit" className="sm:mt-6" cargando={formState.isSubmitting}>
-                Invitar
+                Agregar
               </Boton>
             </form>
             <p className="mt-3 text-etiqueta text-texto-3">

@@ -21,6 +21,7 @@ import {
   ArrowLeft,
   Building2,
   ChevronsUpDown,
+  KeyRound,
   Ellipsis,
   LayoutDashboard,
   LogOut,
@@ -35,6 +36,7 @@ import {
 } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router'
+import { DialogoClave } from './DialogoClave'
 import { puedeConfigurar, useNegocioActivo, useNegocioStore } from '../stores/useNegocioStore'
 import { useSesionStore } from '../stores/useSesionStore'
 
@@ -99,9 +101,7 @@ export function DisenoPanel({ modo, children }: { modo: ModoPanel; children?: Re
 
       {/* Móvil: barra superior con negocio y cuenta. */}
       <header className="sticky top-0 z-30 flex items-center justify-between gap-2 border-b border-borde bg-fondo/85 px-2 pt-[env(safe-area-inset-top)] backdrop-blur-lg md:hidden">
-        <div className="min-w-0 flex-1 py-1.5">
-          {cabecera}
-        </div>
+        <div className="min-w-0 flex-1 py-1.5">{cabecera}</div>
         <MenuCuenta compacto />
       </header>
 
@@ -255,47 +255,58 @@ function MenuCuenta({ compacto = false }: { compacto?: boolean }) {
   const elegirTema = useTemaStore((e) => e.elegirTema)
   const modo = useTemaStore((e) => e.modo)
   const alternarModo = useTemaStore((e) => e.alternarModo)
+  const [claveAbierta, setClaveAbierta] = useState(false)
   const inicial = (
-    <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-acento-suave text-xs font-semibold text-acento-texto uppercase" aria-hidden>
+    <span
+      className="flex size-7 shrink-0 items-center justify-center rounded-full bg-acento-suave text-xs font-semibold text-acento-texto uppercase"
+      aria-hidden
+    >
       {email.slice(0, 1)}
     </span>
   )
 
   return (
-    <MenuRaiz>
-      <MenuDisparador
-        aria-label="Cuenta y apariencia"
-        className={cn(
-          'flex min-w-0 items-center gap-2.5 rounded-control transition-colors hover:bg-texto/5 focus-visible:outline-2 focus-visible:outline-foco data-[state=open]:bg-texto/7',
-          compacto ? 'size-11 shrink-0 justify-center' : 'w-full px-1.5 py-1.5',
-        )}
-      >
-        {inicial}
-        {compacto ? null : <span className="min-w-0 flex-1 truncate text-left text-etiqueta text-texto-2">{email}</span>}
-      </MenuDisparador>
-      <MenuContenido align={compacto ? 'end' : 'start'} side={compacto ? 'bottom' : 'top'} className="w-64">
-        <MenuEtiqueta className="truncate">{email}</MenuEtiqueta>
-        <MenuSeparador />
-        <MenuEtiqueta>Color</MenuEtiqueta>
-        <MenuGrupoRadio value={tema} onValueChange={(t) => elegirTema(t as (typeof temas)[number]['id'])}>
-          {temas.map((t) => (
-            <MenuItemRadio key={t.id} value={t.id} onSelect={(e) => e.preventDefault()}>
-              <span className="size-3 rounded-full" style={{ backgroundColor: t.color }} aria-hidden />
-              {t.nombre}
-            </MenuItemRadio>
-          ))}
-        </MenuGrupoRadio>
-        <MenuSeparador />
-        <MenuItem onSelect={(e) => (e.preventDefault(), alternarModo())}>
-          {modo === 'oscuro' ? <Sun /> : <Moon />}
-          {modo === 'oscuro' ? 'Modo claro' : 'Modo oscuro'}
-        </MenuItem>
-        <MenuItem onSelect={() => void salir()}>
-          <LogOut />
-          Salir
-        </MenuItem>
-      </MenuContenido>
-    </MenuRaiz>
+    <>
+      <MenuRaiz>
+        <MenuDisparador
+          aria-label="Cuenta y apariencia"
+          className={cn(
+            'flex min-w-0 items-center gap-2.5 rounded-control transition-colors hover:bg-texto/5 focus-visible:outline-2 focus-visible:outline-foco data-[state=open]:bg-texto/7',
+            compacto ? 'size-11 shrink-0 justify-center' : 'w-full px-1.5 py-1.5',
+          )}
+        >
+          {inicial}
+          {compacto ? null : <span className="min-w-0 flex-1 truncate text-left text-etiqueta text-texto-2">{email}</span>}
+        </MenuDisparador>
+        <MenuContenido align={compacto ? 'end' : 'start'} side={compacto ? 'bottom' : 'top'} className="w-64">
+          <MenuEtiqueta className="truncate">{email}</MenuEtiqueta>
+          <MenuSeparador />
+          <MenuEtiqueta>Color</MenuEtiqueta>
+          <MenuGrupoRadio value={tema} onValueChange={(t) => elegirTema(t as (typeof temas)[number]['id'])}>
+            {temas.map((t) => (
+              <MenuItemRadio key={t.id} value={t.id} onSelect={(e) => e.preventDefault()}>
+                <span className="size-3 rounded-full" style={{ backgroundColor: t.color }} aria-hidden />
+                {t.nombre}
+              </MenuItemRadio>
+            ))}
+          </MenuGrupoRadio>
+          <MenuSeparador />
+          <MenuItem onSelect={(e) => (e.preventDefault(), alternarModo())}>
+            {modo === 'oscuro' ? <Sun /> : <Moon />}
+            {modo === 'oscuro' ? 'Modo claro' : 'Modo oscuro'}
+          </MenuItem>
+          <MenuItem onSelect={() => setClaveAbierta(true)}>
+            <KeyRound />
+            Cambiar contraseña
+          </MenuItem>
+          <MenuItem onSelect={() => void salir()}>
+            <LogOut />
+            Salir
+          </MenuItem>
+        </MenuContenido>
+      </MenuRaiz>
+      <DialogoClave abierto={claveAbierta} onAbiertoCambia={setClaveAbierta} />
+    </>
   )
 }
 

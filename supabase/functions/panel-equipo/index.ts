@@ -1,12 +1,15 @@
 // panel-equipo: invita a una persona al equipo de un negocio.
 //  * El dueño invita administradores y cajeros.
 //  * Solo el superadmin asigna dueños.
-// Si el correo no tiene cuenta, Supabase Auth le envía la invitación para
-// definir su clave en {PANEL_URL}/definir-clave. Si ya tiene cuenta (por
-// ejemplo, trabaja en otro negocio), solo se agrega la membresía.
+// Si el correo no tiene cuenta:
+//  * con `clave`, se crea la cuenta ya confirmada con esa clave (no depende del correo);
+//  * sin `clave`, Supabase Auth le envía la invitación para definir su clave
+//    en {PANEL_URL}/definir-clave.
+// Si ya tiene cuenta (por ejemplo, trabaja en otro negocio), solo se agrega la
+// membresía y su clave no se toca.
 //
-// POST { negocio_id, email, rol }
-//   201 → { usuario_id, email, rol, invitado: boolean }
+// POST { negocio_id, email, rol, clave? }
+//   201 → { usuario_id, email, rol, cuenta: 'creada' | 'invitada' | 'existente', invitado: boolean }
 //   4xx → { error: { codigo, mensaje } }
 import { esquemaInvitarMiembro } from '../../../packages/tipos/src/esquemas.ts'
 import { ErrorApi, leerJson, responderError, responderJson, servir } from '../_compartido/http.ts'
@@ -17,7 +20,7 @@ servir(async (peticion) => {
 
   const datos = esquemaInvitarMiembro.safeParse(await leerJson(peticion))
   if (!datos.success) return responderError('solicitud_invalida', 400)
-  const { negocio_id, email, rol } = datos.data
+  const { negocio_id, email, rol, clave } = datos.data
 
   // Permiso, leído con RLS: la fila de superadmins solo la ve un superadmin,
   // y cada usuario ve su propia membresía.
@@ -33,7 +36,16 @@ servir(async (peticion) => {
   if (errorBusqueda) throw errorBusqueda
 
   let usuarioId = existente
-  if (!usuarioId) {
+  let cuenta: 'creada' | 'invitada' | 'existente' = 'existente'
+  if (!usuarioId && clave) {
+    const { data: creado, error: errorCreacion } = await servicio.auth.admin.createUser({ email, password: clave, email_confirm: true })
+    if (errorCreacion || !creado.user) {
+      console.error('No se pudo crear la cuenta', errorCreacion)
+      return responderError('error_interno', 502, 'No se pudo crear la cuenta.')
+    }
+    usuarioId = creado.user.id
+    cuenta = 'creada'
+  } else if (!usuarioId) {
     const panelUrl = Deno.env.get('PANEL_URL') ?? 'http://127.0.0.1:5173'
     const { data: invitado, error: errorInvitacion } = await servicio.auth.admin.inviteUserByEmail(email, {
       redirectTo: `${panelUrl}/definir-clave`,
@@ -43,6 +55,7 @@ servir(async (peticion) => {
       return responderError('error_interno', 502, 'No se pudo enviar la invitación.')
     }
     usuarioId = invitado.user.id
+    cuenta = 'invitada'
   }
 
   // Se inserta con el cliente del usuario: RLS vuelve a validar el permiso.
@@ -55,5 +68,5 @@ servir(async (peticion) => {
     throw errorMiembro
   }
 
-  return responderJson({ usuario_id: usuarioId, email, rol, invitado: !existente }, 201)
+  return responderJson({ usuario_id: usuarioId, email, rol, cuenta, invitado: cuenta === 'invitada' }, 201)
 })

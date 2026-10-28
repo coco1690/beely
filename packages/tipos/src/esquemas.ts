@@ -56,6 +56,8 @@ export const esquemaInvitarMiembro = z.object({
   negocio_id: esquemaUuid,
   email: z.email('Correo inválido').trim().toLowerCase(),
   rol: esquemaRol,
+  // Opcional: si llega y el correo no tiene cuenta, se crea con esta clave y sin correo de invitación.
+  clave: z.string().min(8, 'Mínimo 8 caracteres').max(72, 'Máximo 72 caracteres').optional(),
 })
 export type InvitarMiembro = z.infer<typeof esquemaInvitarMiembro>
 
@@ -106,6 +108,22 @@ export const esquemaNuevaClave = z
     confirmacion: z.string(),
   })
   .refine((v) => v.clave === v.confirmacion, { message: 'Las claves no coinciden', path: ['confirmacion'] })
+
+// Contraseña inicial opcional en los formularios del panel: vacía = invitación por correo.
+export const esquemaClaveInicial = z
+  .string()
+  .max(72, 'Máximo 72 caracteres')
+  .refine((v) => v === '' || v.length >= 8, 'Mínimo 8 caracteres')
+
+// Cambiar la clave desde el panel: se confirma la actual antes de guardar la nueva.
+export const esquemaCambiarClave = z
+  .object({
+    actual: z.string().min(1, 'Escribe tu clave actual'),
+    clave: z.string().min(8, 'Mínimo 8 caracteres').max(72, 'Máximo 72 caracteres'),
+    confirmacion: z.string(),
+  })
+  .refine((v) => v.clave === v.confirmacion, { message: 'Las claves no coinciden', path: ['confirmacion'] })
+  .refine((v) => v.clave !== v.actual, { message: 'La clave nueva debe ser distinta', path: ['clave'] })
 
 const textoOpcional = (max: number) =>
   z
@@ -193,6 +211,7 @@ export const mensajesError: Record<string, string> = {
   confirmacion_incorrecta: 'Escribe el subdominio exacto del negocio para confirmar.',
   usuario_no_encontrado: 'No hay una cuenta de Beely con ese correo. Primero debe ingresar o ser invitada a un negocio.',
   ya_es_superadmin: 'Esa persona ya es superadmin.',
+  clave_actual_incorrecta: 'Tu clave actual no es correcta.',
   no_puedes_quitarte: 'No puedes quitarte a ti mismo; pídeselo a otro superadmin.',
   error_interno: 'Algo salió mal. Intenta de nuevo.',
 }
