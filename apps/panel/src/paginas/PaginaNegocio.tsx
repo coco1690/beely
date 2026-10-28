@@ -24,10 +24,11 @@ import {
   toast,
   useConfirmar,
 } from "@beely/ui";
-import { ImageUp, Trash2 } from "lucide-react";
+import { ArrowUpRight, ImageUp, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { EncabezadoPagina } from "../componentes/DisenoPanel";
+import { dominioClub } from "../componentes/plataforma";
 import { zonasHorarias } from "@beely/tipos";
 import { mensajeDe } from "../lib/funciones";
 import { supabase } from "../lib/supabase";
@@ -36,8 +37,6 @@ import {
   useNegocioActivo,
   useNegocioStore,
 } from "../stores/useNegocioStore";
-
-const dominioClub = import.meta.env.VITE_CLUB_DOMINIO_BASE ?? "hibeely.com";
 
 export function PaginaNegocio() {
   const activo = useNegocioActivo();
@@ -88,11 +87,19 @@ export function PaginaNegocio() {
         <dl className="grid grid-cols-1 gap-px overflow-hidden rounded-tarjeta border border-borde bg-borde sm:grid-cols-[minmax(0,2fr)_1fr_1fr]">
           <div className="flex min-w-0 flex-col gap-1 bg-superficie px-4 py-3">
             <dt className="text-xs text-texto-3">Club</dt>
-            <dd
-              className="truncate font-mono text-etiqueta text-texto"
-              title={`${negocio.slug}.${dominioClub}`}
-            >
-              {negocio.slug}.{dominioClub}
+            <dd className="min-w-0">
+              <a
+                href={`https://${negocio.slug}.${dominioClub}`}
+                target="_blank"
+                rel="noreferrer"
+                title="Abrir el club en otra pestaña"
+                className="inline-flex max-w-full items-center gap-1 font-mono text-etiqueta text-texto hover:text-acento-texto hover:underline focus-visible:outline-2 focus-visible:outline-foco [&_svg]:size-3.5 [&_svg]:shrink-0"
+              >
+                <span className="truncate">
+                  {negocio.slug}.{dominioClub}
+                </span>
+                <ArrowUpRight />
+              </a>
             </dd>
           </div>
           <div className="flex flex-col items-start gap-1 bg-superficie px-4 py-3">

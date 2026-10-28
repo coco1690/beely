@@ -44,7 +44,11 @@ import {
   planes,
   SelectorPeriodo,
 } from "../../componentes/plataforma";
-import { llamarFuncion, mensajeDe } from "../../lib/funciones";
+import {
+  conectarDominioClub,
+  llamarFuncion,
+  mensajeDe,
+} from "../../lib/funciones";
 import { supabase } from "../../lib/supabase";
 import { useNegocioStore } from "../../stores/useNegocioStore";
 import { usePlataformaStore } from "../../stores/usePlataformaStore";
@@ -297,6 +301,14 @@ function FormularioNuevo({ onCerrar }: { onCerrar: () => void }) {
           ? "Ya tiene su programa de sellos."
           : "Ya tiene su programa de sellos. Ahora agrega al dueño.",
       });
+      try {
+        await conectarDominioClub(data);
+      } catch (e) {
+        // El negocio ya existe: el subdominio se reintenta desde su ficha.
+        toast.error(`${slug}.${dominioClub} quedó sin conectar`, {
+          description: mensajeDe(e),
+        });
+      }
       if (email_dueno) {
         try {
           const r = await llamarFuncion<RespuestaEquipo>("panel-equipo", {

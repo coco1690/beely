@@ -46,7 +46,9 @@ export function PaginaRegistro() {
   const [politicaAbierta, setPoliticaAbierta] = useState(false)
   const { register, handleSubmit, formState } = useForm({
     resolver: zodResolver(esquemaFormulario),
-    defaultValues: { nombre: '', celular: '', fecha_nacimiento: '', acepta_datos: false, acepta_marketing: true },
+    // Con el botón desactivado no hay envío que muestre errores: se muestran al salir de cada campo.
+    mode: 'onTouched',
+    defaultValues: { nombre: '', celular: '', fecha_nacimiento: '', acepta_datos: false, acepta_marketing: false },
   })
   if (!negocio || !slug) return null
   const programa = negocio.programas[0]
@@ -119,7 +121,7 @@ export function PaginaRegistro() {
         </div>
 
         {error ? <Aviso tono="peligro">{error}</Aviso> : null}
-        <Boton type="submit" tamano="lg" cargando={formState.isSubmitting}>
+        <Boton type="submit" tamano="lg" cargando={formState.isSubmitting} disabled={!formState.isValid}>
           Crear mi tarjeta
         </Boton>
       </form>

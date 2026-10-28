@@ -133,17 +133,25 @@ const textoOpcional = (max: number) =>
     .transform((v) => (v === '' ? null : v))
     .nullable()
 
+// Subdominios de hibeely.com que no pueden ser el club de un negocio.
+export const slugsReservados = ['app', 'www', 'api', 'admin', 'panel', 'club', 'mail', 'correo', 'soporte', 'ayuda', 'docs', 'blog', 'status'] as const
+export const esSlugReservado = (slug: string): boolean => (slugsReservados as readonly string[]).includes(slug)
+
 export const esquemaSlug = z
   .string()
   .trim()
   .toLowerCase()
   .regex(/^[a-z0-9]([a-z0-9-]{1,38}[a-z0-9])$/, 'Solo minúsculas, números y guiones (3 a 40)')
+  .refine((slug) => !esSlugReservado(slug), 'Ese subdominio está reservado')
 
 export const esquemaCrearNegocio = z.object({
   slug: esquemaSlug,
   nombre: z.string().trim().min(2, 'Mínimo 2 caracteres').max(80),
   zona_horaria: z.string().min(1),
 })
+
+// POST /functions/v1/club-dominio (superadmin): conecta {slug}.hibeely.com al club.
+export const esquemaClubDominio = z.object({ negocio_id: esquemaUuid })
 
 // Superadmin: agregar a otro superadmin por correo.
 export const esquemaAgregarSuperadmin = z.object({
@@ -203,6 +211,9 @@ export const mensajesError: Record<string, string> = {
   no_autenticado: 'Tu sesión expiró. Vuelve a ingresar.',
   solicitud_invalida: 'Revisa los datos enviados.',
   slug_en_uso: 'Ese subdominio ya está en uso.',
+  slug_reservado: 'Ese subdominio está reservado.',
+  dominio_no_configurado: 'Falta configurar las llaves de Vercel y Hostinger para crear subdominios.',
+  dominio_fallo: 'No se pudo conectar el subdominio del club. Intenta de nuevo desde la ficha del negocio.',
   zona_horaria_invalida: 'Zona horaria inválida.',
   ya_es_miembro: 'Esa persona ya es parte del equipo.',
   negocio_no_encontrado: 'No encontramos este club.',
