@@ -46,9 +46,52 @@ export function MarcaBeely({ className }: { className?: string }) {
   )
 }
 
-// Un sello de la tarjeta: celda llena (en el degradado del tema) o vacía.
-export function Sello({ lleno, className, style }: { lleno: boolean; className?: string; style?: CSSProperties }) {
+// Un sello de la tarjeta: celda de panal. Con `logo`, la celda lleva el logo del negocio:
+// a todo color cuando está llena y apagado (gris, tenue) cuando falta.
+export function Sello({
+  lleno,
+  logo,
+  className,
+  style,
+}: {
+  lleno: boolean
+  logo?: string | null
+  className?: string
+  style?: CSSProperties
+}) {
   const id = useId()
+  const imagen = useLogoAnalizado(logo)
+  if (logo && imagen) {
+    const claro = imagen.modo === 'claro'
+    return (
+      <svg viewBox="0 0 24 24" className={cn('size-8', className)} style={style} aria-hidden>
+        <defs>
+          <clipPath id={id}>
+            <path d={HEXAGONO} />
+          </clipPath>
+        </defs>
+        <g clipPath={`url(#${id})`} opacity={lleno ? 1 : 0.3} style={lleno ? undefined : { filter: 'grayscale(1)' }}>
+          {claro ? <path d={HEXAGONO} fill="#fff" /> : null}
+          <image
+            href={imagen.src}
+            x={claro ? 5 : 2}
+            y={claro ? 5 : 1.6}
+            width={claro ? 14 : 20}
+            height={claro ? 14 : 20.8}
+            preserveAspectRatio={claro ? 'xMidYMid meet' : 'xMidYMid slice'}
+          />
+        </g>
+        <path
+          d={HEXAGONO}
+          fill="none"
+          className="stroke-acento"
+          strokeOpacity={lleno ? 1 : 0.5}
+          strokeWidth={lleno ? 1 : 1.2}
+          strokeDasharray={lleno ? undefined : '2.4 2.2'}
+        />
+      </svg>
+    )
+  }
   return (
     <svg viewBox="0 0 24 24" className={cn('size-8', className)} style={style} aria-hidden>
       {lleno ? (
@@ -69,6 +112,23 @@ export function Sello({ lleno, className, style }: { lleno: boolean; className?:
       {lleno ? <path d="m8.3 12.3 2.4 2.4 5-5" fill="none" className="stroke-sobre-acento" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /> : null}
     </svg>
   )
+}
+
+// La imagen del logo lista para pintarse: el recorte si es una figura sobre fondo liso;
+// si no, el archivo original. null mientras se analiza o sin logo.
+function useLogoAnalizado(url: string | null | undefined): { src: string; modo: AnalisisLogo['modo'] } | null {
+  const [analisis, setAnalisis] = useState<{ url: string; resultado: AnalisisLogo } | null>(null)
+  useEffect(() => {
+    if (!url) return
+    let vigente = true
+    void analizarLogo(url).then((resultado) => vigente && setAnalisis({ url, resultado }))
+    return () => {
+      vigente = false
+    }
+  }, [url])
+  if (!url || analisis?.url !== url) return null
+  const { resultado } = analisis
+  return { src: resultado.modo === 'forma' ? resultado.src : url, modo: resultado.modo }
 }
 
 // Logo del negocio (marca blanca), sin marco blanco: si el logo es una figura sobre

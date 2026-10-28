@@ -55,7 +55,7 @@ Los intentos se guardan en `intentos_registro` como `ip:<sha256>` / `celular:<sh
 | Ruta | Qué hace |
 |------|---------|
 | `/` | Si este teléfono ya tiene la tarjeta, la abre. Si no: marca del negocio, el programa ("junta 10 sellos y gana…", cómo se gana) y el registro (nombre, celular, nacimiento, autorización de datos con su política, promociones opcional). |
-| `/t/{token}` | Tarjeta: el pase con los colores del diseño del negocio y el QR (solo el token, negro sobre blanco), aviso de premio listo y últimos sellos. Se refresca cada 6 s mientras está a la vista: el sello que suma la caja aparece solo con un aviso. |
+| `/t/{token}` | Tarjeta: el pase con el degradado de los colores del negocio (o su diseño de tarjeta, cuando lo cambie en el editor) y cada sello con el logo del negocio, y el QR (solo el token, negro sobre blanco), aviso de premio listo y últimos sellos. Se refresca cada 6 s mientras está a la vista: el sello que suma la caja aparece solo con un aviso. |
 | `/t/{token}/cupones` | Cupones vigentes con su código y vencimiento; historial de canjeados y vencidos. |
 | `/t/{token}/perfil` | Promociones y avisos (un interruptor: `acepta_marketing` + Web Push), color y modo, instalar la app (Android: diálogo; iOS: pasos) y quitar la tarjeta de este teléfono. |
 
