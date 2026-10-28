@@ -305,7 +305,7 @@ function FormularioNuevo({ onCerrar }: { onCerrar: () => void }) {
             rol: "dueno",
             clave: clave_dueno || undefined,
           });
-          avisarAlta(email_dueno, r.cuenta);
+          avisarAlta(email_dueno, r.cuenta, Boolean(clave_dueno));
         } catch (e) {
           // El negocio ya existe: el dueño se puede agregar luego desde su ficha.
           toast.error("No se pudo agregar al dueño", {
