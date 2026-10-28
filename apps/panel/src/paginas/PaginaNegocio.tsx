@@ -208,7 +208,7 @@ function TarjetaLogo({ negocio, editable, onCambio }: { negocio: Tabla<'negocios
       </TarjetaEncabezado>
       <TarjetaContenido className="flex flex-col gap-4">
         <div className="flex flex-wrap items-center gap-4">
-          <LogoNegocio url={negocio.logo_url} nombre={negocio.nombre} className="size-20 rounded-tarjeta" />
+          <LogoNegocio url={negocio.logo_url} nombre={negocio.nombre} className="size-20" />
           {editable ? (
             <div className="flex flex-wrap gap-2">
               <input
