@@ -23,7 +23,7 @@ import {
   TarjetaTitulo,
   toast,
 } from "@beely/ui";
-import { ArrowLeft, ArrowUpRight, SearchX, Trash2 } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Globe, SearchX, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate, useParams } from "react-router";
@@ -40,7 +40,7 @@ import {
   nombresPlan,
   planes,
 } from "../../componentes/plataforma";
-import { mensajeDe } from "../../lib/funciones";
+import { conectarDominioClub, mensajeDe } from "../../lib/funciones";
 import { supabase } from "../../lib/supabase";
 import { useNegocioStore } from "../../stores/useNegocioStore";
 import { usePlataformaStore } from "../../stores/usePlataformaStore";
@@ -97,6 +97,21 @@ export function PaginaFichaNegocio() {
   const abrirPanel = async (ruta: string) => {
     await elegirNegocio(id);
     void navegar(ruta);
+  };
+
+  const [conectando, setConectando] = useState(false);
+  const conectarDominio = async () => {
+    setConectando(true);
+    try {
+      const { dominio } = await conectarDominioClub(id);
+      toast.success(`${dominio} conectado`, {
+        description: "Puede tardar unos minutos en abrir mientras se emite el certificado.",
+      });
+    } catch (e) {
+      toast.error("No se pudo conectar el subdominio", { description: mensajeDe(e) });
+    } finally {
+      setConectando(false);
+    }
   };
 
   if (negocio === undefined) {
@@ -160,10 +175,21 @@ export function PaginaFichaNegocio() {
             </a>
           </div>
         </div>
-        <Boton variante="contorno" onClick={() => void abrirPanel("/caja")}>
-          Abrir panel del negocio
-          <ArrowUpRight />
-        </Boton>
+        <div className="flex flex-wrap gap-2">
+          <Boton
+            variante="fantasma"
+            disabled={conectando}
+            title="Crea o repara el registro DNS y el dominio en Vercel"
+            onClick={() => void conectarDominio()}
+          >
+            <Globe />
+            {conectando ? "Conectando…" : "Conectar subdominio"}
+          </Boton>
+          <Boton variante="contorno" onClick={() => void abrirPanel("/caja")}>
+            Abrir panel del negocio
+            <ArrowUpRight />
+          </Boton>
+        </div>
       </header>
 
       <div className="flex flex-col gap-6">

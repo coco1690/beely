@@ -12,3 +12,7 @@ export const llamarFuncion = <T>(
   nombre: string,
   cuerpo: Record<string, unknown>,
 ) => invocarFuncion<T>(supabase, nombre, cuerpo);
+
+// Conecta {slug}.hibeely.com al club: dominio en Vercel + CNAME en Hostinger (solo superadmin).
+export const conectarDominioClub = (negocioId: string) =>
+  llamarFuncion<{ dominio: string }>("club-dominio", { negocio_id: negocioId });

@@ -96,6 +96,7 @@ beely/
 | `pos-clientes` | POS (llave API) | Buscar tarjeta por token o celular. |
 | `panel-sello` | Panel (cajero autenticado) | Igual que `pos-sellos` pero con sesión del cajero. ✅ Sprint 1 |
 | `panel-equipo` | Panel (dueño o superadmin) | Suma a alguien al equipo: con clave crea la cuenta lista, sin clave invita por correo; crea la membresía. ✅ Sprint 1 |
+| `club-dominio` | Panel (superadmin) | Conecta `{slug}.hibeely.com`: dominio en el proyecto Vercel del club + CNAME en Hostinger. Se llama al crear el negocio y desde su ficha. |
 | `wallet-google` | Interno | Crea/actualiza LoyaltyClass y LoyaltyObject, genera JWT de guardado. |
 | `campanas-motor` | pg_cron | Evalúa disparadores, aplica topes y envía push/Wallet. |
 | `llaves-api` | Panel (dueño) | Genera llave, guarda hash, la muestra una vez. |
@@ -133,6 +134,11 @@ VAPID_SUBJECT=mailto:soporte@hibeely.com
 GOOGLE_WALLET_ISSUER_ID=
 GOOGLE_WALLET_SERVICE_ACCOUNT_JSON=
 CLUB_DOMINIO_BASE=hibeely.com
+VERCEL_TOKEN=                        # club-dominio: token de Vercel con acceso al equipo
+VERCEL_EQUIPO_ID=                    # team_… del equipo de Vercel
+VERCEL_PROYECTO_CLUB=                # prj_… del proyecto beely-club
+HOSTINGER_API_TOKEN=                 # club-dominio: token de la API de Hostinger (DNS de hibeely.com)
+CLUB_CNAME_DESTINO=                  # destino del CNAME que da Vercel (…vercel-dns-017.com)
 PANEL_URL=https://app.hibeely.com   # destino de las invitaciones al equipo
 ```
 

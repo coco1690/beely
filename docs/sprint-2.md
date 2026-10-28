@@ -98,8 +98,8 @@ Tarjetas de la semilla: `http://127.0.0.1:5174/t/demo-laura-00000000000000000000
 
 1. **Supabase Cloud**: aplicar `20261027000005_club.sql`; `supabase functions deploy club-registro --no-verify-jwt`.
 2. **Vercel**: proyecto nuevo `beely-club` con raíz `apps/club`, variables `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_CLUB_DOMINIO_BASE=hibeely.com` y `VITE_VAPID_PUBLIC_KEY` (cuando haya llaves VAPID).
-3. **Dominio comodín** `*.hibeely.com` en `beely-club`: Vercel lo exige con sus nameservers, así que hay que mover los DNS de `hibeely.com` desde Hostinger (y recrear los registros que existan, como el correo).
-4. Hasta entonces se puede probar en `beely-club.vercel.app/?negocio={slug}`.
+3. **Dominio por negocio** (decisión 2026-10-28: los DNS siguen en Hostinger, sin comodín). La Edge Function `club-dominio` (solo superadmin) agrega `{slug}.hibeely.com` al proyecto `beely-club` en Vercel y luego crea el CNAME `{slug}` en Hostinger. El panel la llama al crear el negocio, y la ficha del negocio tiene **Conectar subdominio** para reintentar. Es idempotente. Secretos: `VERCEL_TOKEN`, `VERCEL_EQUIPO_ID`, `VERCEL_PROYECTO_CLUB`, `HOSTINGER_API_TOKEN`, `CLUB_CNAME_DESTINO`. Los slugs reservados (`app`, `www`, `api`…) no se pueden usar (`slugsReservados`).
+4. Sin subdominio se puede probar en `beely-club.vercel.app/?negocio={slug}`.
 
 ## Checklist de pruebas
 
@@ -114,4 +114,5 @@ Tarjetas de la semilla: `http://127.0.0.1:5174/t/demo-laura-00000000000000000000
 - [x] Panel: ingreso, caja y manifest siguen funcionando tras mover lo compartido
 - [x] `api/manifest.ts`: nombre del negocio por subdominio y por `?negocio=`; slug inexistente devuelve la base
 - [ ] Web Push real en Android e iOS instalada (faltan llaves VAPID y el motor de envío del Sprint 5)
-- [ ] Subdominio comodín en producción (pendiente del cambio de DNS)
+- [x] `angelato.hibeely.com` conectado a mano (CNAME + dominio en Vercel)
+- [ ] `club-dominio` en producción (faltan los tokens de Vercel y Hostinger como secretos)
