@@ -25,6 +25,7 @@ import { PaginaEquipo } from "./paginas/PaginaEquipo";
 import { PaginaIngreso } from "./paginas/PaginaIngreso";
 import { PaginaNegocio } from "./paginas/PaginaNegocio";
 import { PaginaPerfil } from "./paginas/PaginaPerfil";
+import { PaginaDemoLoader } from "./paginas/PaginaDemoLoader";
 import { PaginaPrograma } from "./paginas/PaginaPrograma";
 import { PaginaRecuperar } from "./paginas/PaginaRecuperar";
 import { PaginaSedes } from "./paginas/PaginaSedes";
@@ -200,6 +201,10 @@ const enrutador = createBrowserRouter([
       },
     ],
   },
+  // Vitrina del loader, solo en desarrollo.
+  ...(import.meta.env.DEV
+    ? [{ path: "/demo/loader", element: <PaginaDemoLoader /> }]
+    : []),
   { path: "*", element: <Navigate to="/" replace /> },
 ]);
 

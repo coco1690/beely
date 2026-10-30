@@ -30,6 +30,7 @@ export { PanelInferior } from './componentes/panel-inferior'
 export { LogoBeely, LogoNegocio, MarcaBeely, Sello } from './componentes/marca'
 export { BarraFlotante, clasePestana } from './componentes/barra-flotante'
 export { Cargando } from './componentes/cargando'
+export { BeelyLoader, useCargaSinParpadeo, type PropsBeelyLoader } from './componentes/beely-loader'
 export { JalarParaRecargar } from './componentes/jalar-para-recargar'
 export {
   ErrorDeApp,

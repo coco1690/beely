@@ -1,0 +1,120 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 1536 1024"
+  role="img"
+  aria-labelledby="beely-title"
+>
+  <title id="beely-title">Beely</title>
+
+  <defs>
+    <linearGradient
+      id="beely-gradient"
+      gradientUnits="userSpaceOnUse"
+      x1="160"
+      y1="0"
+      x2="1360"
+      y2="0"
+    >
+      <stop offset="0" stop-color="#F77369" />
+      <stop offset="0.5" stop-color="#F1687E" />
+      <stop offset="1" stop-color="#ED5687" />
+    </linearGradient>
+  </defs>
+
+  <g
+    fill="none"
+    stroke="url(#beely-gradient)"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <!-- 1. B: palo descendente -->
+    <path
+      id="B-stem"
+      data-order="1"
+      pathLength="1"
+      stroke-width="47.55"
+      d="
+        M 376.83 360.4
+        C 335.37 435.41 307.34 509.18 273.53 571.21
+      "
+    />
+
+    <!-- 2. B: curva superior y bucle -->
+    <path
+      id="B-loop"
+      data-order="2"
+      pathLength="1"
+      stroke-width="48.24"
+      d="
+        M 212.05 398.54
+        C 184.58 362.86 331.04 257.48 447.67 268.89
+        C 590.19 281.78 465.4 428.45 406.57 437.43
+        C 483 432.18 584.79 531.67 451.25 605.98
+        C 315.54 679.78 173.71 643.99 188.35 573.29
+        C 203.89 500.72 312.15 481.43 416.21 534.94
+        C 457 556 485 568 525 565
+      "
+    />
+
+    <!-- 3. Primera e -->
+    <path
+      id="e-1"
+      data-order="3"
+      pathLength="1"
+      stroke-width="41.42"
+      d="
+        M 525 565
+        C 577 572 668.5 543.5 693.34 505.25
+        C 727.42 454.27 650.38 431.12 603.31 485.07
+        C 557.71 535.31 561.7 593.4 618.28 613.98
+        C 676.29 634.11 726.85 578.08 759.3 563.04
+      "
+    />
+
+    <!-- 4. Segunda e -->
+    <path
+      id="e-2"
+      data-order="4"
+      pathLength="1"
+      stroke-width="42.42"
+      d="
+        M 759.3 563.04
+        C 792.75 548.59 835.73 544.12 864.91 506.82
+        C 906.04 454.25 822.28 432.68 779.09 482.49
+        C 738.15 528.78 733.79 589.64 792.97 613.29
+        C 854.57 636.94 920.1 566.89 956.56 523.7
+      "
+    />
+
+    <!-- 5. l: ascenso y descenso -->
+    <path
+      id="l"
+      data-order="5"
+      pathLength="1"
+      stroke-width="48.22"
+      d="
+        M 956.56 523.7
+        C 993.72 483.81 1067.28 414.25 1073.65 321.29
+        C 1076.57 278.74 1027.58 287.65 998.66 323.67
+        C 950.31 383.94 930.73 504.38 952.82 570.59
+        C 975.64 653.96 1078.27 607.49 1101.58 476.35
+      "
+    />
+
+    <!-- 6. y: cuerpo, bucle y salida -->
+    <path
+      id="y"
+      data-order="6"
+      pathLength="1"
+      stroke-width="43.19"
+      d="
+        M 1101.58 476.35
+        C 1091.55 542.09 1073.09 609.33 1130.76 593.84
+        C 1182.6 581.46 1218.4 508.23 1224.33 474.42
+        C 1220.88 535.41 1220.6 711.3 1126.25 745.11
+        C 1061.96 767.26 1038.17 686.5 1139.38 642.35
+        C 1231.17 603.84 1317.05 576.89 1337.44 485.15
+      "
+    />
+  </g>
+</svg>
