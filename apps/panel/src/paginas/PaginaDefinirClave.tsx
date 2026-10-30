@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { esquemaNuevaClave } from "@beely/tipos";
-import { Aviso, Boton, Campo, Cargando, EntradaClave } from "@beely/ui";
+import { Aviso, Boton, Campo, CargandoPantalla, EntradaClave, useCargaSinParpadeo } from "@beely/ui";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
@@ -13,7 +13,7 @@ import { claseEnlace, PantallaAcceso } from "./PaginaIngreso";
 export function PaginaDefinirClave() {
   const navegar = useNavigate();
   const sesion = useSesionStore((e) => e.sesion);
-  const cargando = useSesionStore((e) => e.cargando);
+  const enCarga = useCargaSinParpadeo(useSesionStore((e) => e.cargando));
   const [error, setError] = useState<string | null>(null);
   const { register, handleSubmit, formState } = useForm({
     resolver: zodResolver(esquemaNuevaClave),
@@ -32,7 +32,7 @@ export function PaginaDefinirClave() {
     void navegar("/", { replace: true });
   });
 
-  if (cargando) return <Cargando />;
+  if (enCarga) return <CargandoPantalla />;
 
   return (
     <PantallaAcceso titulo="Define tu clave">

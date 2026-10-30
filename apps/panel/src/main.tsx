@@ -1,5 +1,5 @@
 import {
-  Cargando,
+  CargandoPantalla,
   ErrorDeApp,
   instalarRecuperacion,
   JalarParaRecargar,
@@ -8,6 +8,7 @@ import {
   ProveedorConfirmar,
   Toaster,
   useAlVolver,
+  useCargaSinParpadeo,
 } from "@beely/ui";
 import { StrictMode, useEffect } from "react";
 import { createRoot } from "react-dom/client";
@@ -70,10 +71,10 @@ function ConSesion() {
     if (usuarioId) void cargar(usuarioId, esSuperadmin);
   };
   useAlVolver(reintentar, sinNegocios);
+  const enCarga = useCargaSinParpadeo(cargandoSesion || cargandoNegocios);
 
-  if (cargandoSesion) return <Cargando />;
+  if (cargandoSesion || (sesion && enCarga)) return <CargandoPantalla />;
   if (!sesion) return <Navigate to="/ingresar" replace />;
-  if (cargandoNegocios) return <Cargando />;
   if (sinNegocios)
     return (
       <PantallaError
@@ -90,8 +91,8 @@ function ErrorDeRuta() {
 
 function SinSesion() {
   const sesion = useSesionStore((e) => e.sesion);
-  const cargando = useSesionStore((e) => e.cargando);
-  if (cargando) return <Cargando />;
+  const enCarga = useCargaSinParpadeo(useSesionStore((e) => e.cargando));
+  if (enCarga) return <CargandoPantalla />;
   return sesion ? <Navigate to="/" replace /> : <Outlet />;
 }
 
