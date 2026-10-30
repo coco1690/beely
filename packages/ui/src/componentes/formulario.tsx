@@ -126,17 +126,22 @@ export function Casilla({
 }
 
 // Interruptor de encendido/apagado (role="switch").
+// Transiciones (no keyframes) para que un doble toque retome desde donde va; la
+// perilla se encoge un poco al presionar y, con movimiento reducido, solo cambia el color.
+// `ocupado`: guardando el cambio; queda deshabilitado sin atenuarse para no parpadear.
 export function Interruptor({
   activo,
   onCambiar,
   etiqueta,
   disabled,
+  ocupado,
   className,
 }: {
   activo: boolean
   onCambiar: (activo: boolean) => void
   etiqueta: string
   disabled?: boolean
+  ocupado?: boolean
   className?: string
 }) {
   return (
@@ -145,17 +150,19 @@ export function Interruptor({
       role="switch"
       aria-checked={activo}
       aria-label={etiqueta}
-      disabled={disabled}
+      aria-busy={ocupado || undefined}
+      disabled={disabled || ocupado}
       onClick={() => onCambiar(!activo)}
       className={cn(
-        'relative inline-flex h-6 w-10 shrink-0 items-center rounded-full border border-transparent transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foco disabled:cursor-not-allowed disabled:opacity-50',
+        'group/interruptor relative inline-flex h-6 w-10 shrink-0 items-center rounded-full border border-transparent transition-colors duration-(--duracion-media) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foco disabled:cursor-not-allowed pointer-coarse:after:absolute pointer-coarse:after:-inset-2',
         activo ? 'bg-acento bg-degradado' : 'bg-borde-fuerte',
+        ocupado ? 'cursor-progress' : 'disabled:opacity-50',
         className,
       )}
     >
       <span
         className={cn(
-          'size-5 rounded-full bg-white shadow-boton transition-transform duration-200',
+          'size-5 rounded-full bg-white shadow-boton transition-[translate,scale] duration-(--duracion-media) group-active/interruptor:scale-95 motion-reduce:transition-none',
           activo ? 'translate-x-[1.0625rem]' : 'translate-x-0.5',
         )}
         aria-hidden

@@ -9,11 +9,13 @@ import {
   Aviso,
   Boton,
   Campo,
+  cn,
   Entrada,
   EntradaClave,
   EstadoVacio,
   Esqueleto,
   FilaLista,
+  Interruptor,
   Lista,
   LogoNegocio,
   Selector,
@@ -22,6 +24,7 @@ import {
   TarjetaEncabezado,
   TarjetaTitulo,
   toast,
+  useConfirmar,
 } from "@beely/ui";
 import { Plus, Search, Store } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -50,7 +53,10 @@ import {
 } from "../../lib/funciones";
 import { supabase } from "../../lib/supabase";
 import { useNegocioStore } from "../../stores/useNegocioStore";
-import { usePlataformaStore } from "../../stores/usePlataformaStore";
+import {
+  usePlataformaStore,
+  type NegocioPlataforma,
+} from "../../stores/usePlataformaStore";
 import { useSesionStore } from "../../stores/useSesionStore";
 
 export function PaginaNegocios() {
@@ -145,12 +151,18 @@ export function PaginaNegocios() {
 
         <Tarjeta>
           {/* Encabezado de columnas solo en escritorio; en móvil cada fila apila sus datos. */}
-          <div className="hidden grid-cols-[minmax(0,1fr)_6rem_6rem_6rem_7rem] gap-4 border-b border-borde px-5 py-2.5 text-xs font-medium text-texto-3 md:grid">
+          <div
+            className={cn(
+              columnas,
+              "hidden gap-4 border-b border-borde px-5 py-2.5 text-xs font-medium text-texto-3 md:grid",
+            )}
+          >
             <span>Negocio</span>
             <span className="text-right">Clientes</span>
             <span className="text-right">Sellos {dias} d</span>
             <span className="text-right">Canjes {dias} d</span>
             <span className="text-right">Último sello</span>
+            <span className="text-right">Activo</span>
           </div>
           {negocios === null ? (
             <Lista aria-busy>
@@ -177,52 +189,7 @@ export function PaginaNegocios() {
           ) : (
             <Lista>
               {filtrados.map((n) => (
-                <li key={n.id}>
-                  <Link
-                    to={`/superadmin/negocios/${n.id}`}
-                    className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-1 px-4 py-3 transition-colors hover:bg-texto/3 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-foco sm:px-5 md:grid-cols-[minmax(0,1fr)_6rem_6rem_6rem_7rem]"
-                  >
-                    <span className="flex min-w-0 items-center gap-3">
-                      <LogoNegocio
-                        url={n.logo_url}
-                        nombre={n.nombre}
-                        className="size-9"
-                      />
-                      <span className="flex min-w-0 flex-col">
-                        <span className="flex min-w-0 items-center gap-2">
-                          <span className="truncate text-sm font-medium text-texto">
-                            {n.nombre}
-                          </span>
-                          <InsigniaPlan plan={n.plan} />
-                          {n.estado !== "activo" ? (
-                            <InsigniaEstado estado={n.estado} />
-                          ) : null}
-                        </span>
-                        <span className="truncate text-xs text-texto-3">
-                          <span className="font-mono">
-                            {n.slug}.{dominioClub}
-                          </span>
-                          {n.dueno_email
-                            ? ` · ${n.dueno_email}`
-                            : " · sin dueño"}
-                        </span>
-                      </span>
-                    </span>
-                    <Columna etiqueta="Clientes" valor={numero(n.clientes)} />
-                    <Columna
-                      etiqueta={`Sellos ${dias} d`}
-                      valor={numero(n.sellos_periodo)}
-                    />
-                    <Columna
-                      etiqueta={`Canjes ${dias} d`}
-                      valor={numero(n.canjes_periodo)}
-                    />
-                    <Columna
-                      etiqueta="Último sello"
-                      valor={haceCuanto(n.ultimo_sello_en)}
-                    />
-                  </Link>
-                </li>
+                <FilaNegocio key={n.id} negocio={n} dias={dias} />
               ))}
             </Lista>
           )}
@@ -236,6 +203,119 @@ export function PaginaNegocios() {
         ) : null}
       </div>
     </>
+  );
+}
+
+// Móvil: negocio, clientes e interruptor. Escritorio: todas las métricas.
+const columnas =
+  "grid-cols-[minmax(0,1fr)_auto_auto] md:grid-cols-[minmax(0,1fr)_6rem_6rem_6rem_7rem_3.5rem]";
+
+// La fila entera abre la ficha (enlace estirado con ::after); el interruptor queda
+// por encima para cambiar el estado sin salir de la lista.
+function FilaNegocio({
+  negocio: n,
+  dias,
+}: {
+  negocio: NegocioPlataforma;
+  dias: number;
+}) {
+  const cambiarEstado = usePlataformaStore((e) => e.cambiarEstado);
+  const usuarioId = useSesionStore((e) => e.sesion?.user.id);
+  const cargarMembresias = useNegocioStore((e) => e.cargar);
+  const confirmar = useConfirmar();
+  const [guardando, setGuardando] = useState(false);
+  const activo = n.estado === "activo";
+
+  const alternar = async (encender: boolean) => {
+    const ok = await confirmar(
+      encender
+        ? {
+            titulo: `¿Activar ${n.nombre}?`,
+            descripcion: `Vuelve a sumar sellos, su club en ${n.slug}.${dominioClub} acepta registros y el equipo trabaja normal.`,
+            textoConfirmar: "Activar",
+          }
+        : {
+            titulo: `¿Suspender ${n.nombre}?`,
+            descripcion: `Mientras esté suspendido no se suman sellos ni se registran clientes en ${n.slug}.${dominioClub}. Sus datos se conservan y lo puedes reactivar cuando quieras.`,
+            textoConfirmar: "Suspender",
+            peligro: true,
+          },
+    );
+    if (!ok) return;
+    setGuardando(true);
+    const error = await cambiarEstado(n.id, encender ? "activo" : "suspendido");
+    setGuardando(false);
+    if (error) {
+      toast.error(
+        `No se pudo ${encender ? "activar" : "suspender"} ${n.nombre}`,
+        {
+          description: error,
+        },
+      );
+      return;
+    }
+    toast.success(
+      encender ? `${n.nombre} está activo` : `${n.nombre} quedó suspendido`,
+    );
+    if (usuarioId) void cargarMembresias(usuarioId, true);
+  };
+
+  return (
+    <li
+      className={cn(
+        columnas,
+        "relative grid items-center gap-x-4 gap-y-1 px-4 py-3 transition-colors hover:bg-texto/3 sm:px-5",
+      )}
+    >
+      <span className="flex min-w-0 items-center gap-3">
+        <LogoNegocio
+          url={n.logo_url}
+          nombre={n.nombre}
+          className={cn(
+            "size-9 transition-[opacity,filter] duration-(--duracion-lenta)",
+            !activo && "opacity-50 grayscale",
+          )}
+        />
+        <span className="flex min-w-0 flex-col">
+          <span className="flex min-w-0 items-center gap-2">
+            <Link
+              to={`/superadmin/negocios/${n.id}`}
+              className="truncate text-sm font-medium text-texto after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-foco"
+            >
+              {n.nombre}
+            </Link>
+            {/* En móvil el plan se ve en la ficha: el nombre tiene prioridad. */}
+            <span className="hidden shrink-0 sm:inline-flex">
+              <InsigniaPlan plan={n.plan} />
+            </span>
+            {!activo ? (
+              <span className="shrink-0 transition-[opacity,scale] duration-(--duracion-media) starting:scale-95 starting:opacity-0">
+                <InsigniaEstado estado={n.estado} />
+              </span>
+            ) : null}
+          </span>
+          <span className="truncate text-xs text-texto-3">
+            <span className="font-mono">
+              {n.slug}.{dominioClub}
+            </span>
+            {n.dueno_email ? ` · ${n.dueno_email}` : " · sin dueño"}
+          </span>
+        </span>
+      </span>
+      <Columna etiqueta="Clientes" valor={numero(n.clientes)} />
+      <Columna etiqueta={`Sellos ${dias} d`} valor={numero(n.sellos_periodo)} />
+      <Columna etiqueta={`Canjes ${dias} d`} valor={numero(n.canjes_periodo)} />
+      <Columna etiqueta="Último sello" valor={haceCuanto(n.ultimo_sello_en)} />
+      <span className="relative z-10 flex justify-end">
+        <Interruptor
+          activo={activo}
+          onCambiar={(v) => void alternar(v)}
+          etiqueta={`${activo ? "Suspender" : "Activar"} ${n.nombre}`}
+          disabled={guardando}
+          ocupado={guardando}
+        />
+      </span>
+    </li>
   );
 }
 
