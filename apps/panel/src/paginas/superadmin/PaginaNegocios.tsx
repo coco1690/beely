@@ -40,9 +40,8 @@ import {
   InsigniaEstado,
   InsigniaPlan,
   nombresEstado,
-  nombresPlan,
-  planes,
   SelectorPeriodo,
+  usePlanes,
 } from "../../componentes/plataforma";
 import {
   conectarDominioClub,
@@ -61,6 +60,7 @@ export function PaginaNegocios() {
   const [busqueda, setBusqueda] = useState("");
   const [estado, setEstado] = useState("");
   const [plan, setPlan] = useState("");
+  const planes = usePlanes();
 
   useEffect(() => {
     void cargarNegocios();
@@ -132,9 +132,9 @@ export function PaginaNegocios() {
             onChange={(e) => setPlan(e.target.value)}
           >
             <option value="">Plan: todos</option>
-            {planes.map((p) => (
-              <option key={p} value={p}>
-                {nombresPlan[p]}
+            {(planes ?? []).map((p) => (
+              <option key={p.codigo} value={p.codigo}>
+                {p.nombre}
               </option>
             ))}
           </Selector>

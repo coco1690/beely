@@ -8,6 +8,7 @@ El Sprint 1 no agrega tablas: agrega funciones, políticas y validaciones sobre 
 
 ```mermaid
 erDiagram
+    planes ||--o{ negocios : "plan asignado"
     negocios ||--o{ miembros_negocio : "equipo"
     auth_users ||--o{ miembros_negocio : "usuario del panel"
     auth_users ||--o| superadmins : "superadmin Beely"
@@ -35,9 +36,17 @@ erDiagram
         uuid id PK
         text slug UK "subdominio"
         text nombre
-        text plan
+        text plan FK "planes.codigo"
         smallint max_push_semana
         time hora_inicio_envios
+    }
+    planes {
+        text codigo PK
+        text nombre UK
+        numeric precio_mensual
+        integer max_sedes "null = sin límite"
+        integer max_clientes "null = sin límite"
+        boolean activo
     }
     clientes {
         uuid id PK
@@ -95,6 +104,7 @@ erDiagram
 | Tabla | Para qué | Escribe |
 |-------|---------|---------|
 | `superadmins` | Usuarios con control total de Beely | Superadmin desde el panel (`superadmin_agregar` / `superadmin_quitar`) o SQL para el primero |
+| `planes` | Planes de Beely: código, nombre, precio mensual (COP), máximo de sedes y de clientes (null = sin límite), activo. Sin `negocio_id`: es de plataforma. Migración `0007_planes` | Solo superadmin (RLS), desde `/superadmin/planes`. No se borran: se desactivan |
 | `negocios` | Cada empresa cliente de Beely (marca, plan, límites de envío) | Superadmin crea; dueño/admin editan columnas de marca |
 | `miembros_negocio` | Equipo del negocio con rol | Dueño (administradores y cajeros) · Superadmin (dueños) · Edge Function `panel-equipo` |
 | `sedes` | Puntos de venta con coordenadas (para Wallet) | Superadmin crea; dueño/admin editan |
@@ -139,7 +149,7 @@ Ambas solo se pueden ejecutar con `service_role`.
 | Función | Quién | Hace | Errores |
 |--------|-------|------|---------|
 | `crear_negocio(slug, nombre, zona_horaria?) → uuid` | Superadmin | Crea el negocio con su programa de sellos y diseño de tarjeta por defecto | `sin_permiso`, `slug_en_uso`, `zona_horaria_invalida` |
-| `superadmin_actualizar_negocio(negocio_id, plan, estado)` | Superadmin | Cambia plan y estado (columnas que el negocio no puede tocar) | `sin_permiso`, `negocio_no_encontrado` |
+| `superadmin_actualizar_negocio(negocio_id, plan, estado)` | Superadmin | Cambia plan y estado (columnas que el negocio no puede tocar). Desde la 0007 el plan nuevo debe existir y estar activo; conservar uno desactivado sí se permite | `sin_permiso`, `negocio_no_encontrado`, `plan_no_disponible` |
 | `equipo_negocio(negocio_id) → table` | Dueño / administrador | Equipo con correo, rol, último ingreso e invitación pendiente | `sin_permiso` |
 | `usuario_por_email(email) → uuid` | Solo `service_role` | La usa `panel-equipo` para no reinvitar a quien ya tiene cuenta | — |
 

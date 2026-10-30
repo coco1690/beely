@@ -33,6 +33,7 @@ import { PaginaSedes } from "./paginas/PaginaSedes";
 import { SinNegocio } from "./paginas/SinNegocio";
 import { PaginaFichaNegocio } from "./paginas/superadmin/PaginaFichaNegocio";
 import { PaginaNegocios } from "./paginas/superadmin/PaginaNegocios";
+import { PaginaPlanes } from "./paginas/superadmin/PaginaPlanes";
 import { PaginaSuperadmins } from "./paginas/superadmin/PaginaSuperadmins";
 import { PaginaTablero } from "./paginas/superadmin/PaginaTablero";
 import {
@@ -175,6 +176,7 @@ const enrutador = createBrowserRouter([
                 path: "/superadmin/negocios/:id",
                 element: <PaginaFichaNegocio />,
               },
+              { path: "/superadmin/planes", element: <PaginaPlanes /> },
               { path: "/superadmin/equipo", element: <PaginaSuperadmins /> },
             ],
           },

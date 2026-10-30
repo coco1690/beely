@@ -257,7 +257,13 @@ isOneToOne: false
                     "actualizado_en"?: string,"color_primario"?: string,"color_secundario"?: string,"creado_en"?: string,"estado"?: string,"hora_fin_envios"?: string,"hora_inicio_envios"?: string,"id"?: string,"logo_url"?: string | null,"max_push_semana"?: number,"nit"?: string | null,"nombre"?: string,"plan"?: string,"razon_social"?: string | null,"slug"?: string,"version_politica_datos"?: string,"zona_horaria"?: string
                   }
                   Relationships: [
-                    
+                    {
+      foreignKeyName: "negocios_plan_fkey"
+      columns: ["plan"]
+isOneToOne: false
+      referencedRelation: "planes"
+      referencedColumns: ["codigo"]
+    }
                   ]
                 },"ofertas": {
                   Row: {
@@ -304,6 +310,20 @@ isOneToOne: false
       referencedRelation: "tarjetas"
       referencedColumns: ["id"]
     }
+                  ]
+                },"planes": {
+                  Row: {
+                    "activo": boolean,"actualizado_en": string,"codigo": string,"creado_en": string,"descripcion": string | null,"max_clientes": number | null,"max_sedes": number | null,"nombre": string,"orden": number,"precio_mensual": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "activo"?: boolean,"actualizado_en"?: string,"codigo": string,"creado_en"?: string,"descripcion"?: string | null,"max_clientes"?: number | null,"max_sedes"?: number | null,"nombre": string,"orden"?: number,"precio_mensual"?: number
+                  }
+                  Update: {
+                    "activo"?: boolean,"actualizado_en"?: string,"codigo"?: string,"creado_en"?: string,"descripcion"?: string | null,"max_clientes"?: number | null,"max_sedes"?: number | null,"nombre"?: string,"orden"?: number,"precio_mensual"?: number
+                  }
+                  Relationships: [
+                    
                   ]
                 },"programas": {
                   Row: {
