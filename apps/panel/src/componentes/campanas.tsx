@@ -6,7 +6,7 @@ import {
   type TipoPromocion,
 } from "@beely/tipos";
 import { cn, Insignia } from "@beely/ui";
-import { Banknote, Clock, Copy, Gift, Percent, Ticket } from "lucide-react";
+import { Banknote, Bell, Clock, Copy, Gift, Percent, Ticket } from "lucide-react";
 import type { ReactNode } from "react";
 
 // Lo que comparten la lista de campañas y su editor.
@@ -32,8 +32,12 @@ export type EstadoCampana =
   | "terminada"
   | "cancelada";
 
-// Forma del jsonb de public.campanas_alcance().
-export type Alcance = Record<SegmentoCampana, number> & { clientes: number };
+// Forma del jsonb de public.campanas_alcance(). `push`: cuántos de cada grupo tienen
+// notificaciones activas.
+export type Alcance = Record<SegmentoCampana, number> & {
+  clientes: number;
+  push: Record<SegmentoCampana, number>;
+};
 
 export const tipos: {
   id: TipoPromocion;
@@ -188,6 +192,56 @@ export function CuponVistaPrevia({
             Vence el {fecha(`${termina}T12:00:00Z`, "UTC")}
           </span>
         </div>
+      </div>
+    </article>
+  );
+}
+
+// La notificación push tal como la muestra el teléfono: logo del negocio, título y mensaje.
+// El texto de respaldo es el mismo de campanas-motor.
+export function NotificacionVistaPrevia({
+  negocio,
+  logo,
+  titulo,
+  mensaje,
+  className,
+}: {
+  negocio: string;
+  logo: string | null | undefined;
+  titulo: string;
+  mensaje: string;
+  className?: string;
+}) {
+  return (
+    <article
+      className={cn(
+        "flex gap-3 rounded-tarjeta border border-borde bg-superficie p-3 shadow-tarjeta",
+        className,
+      )}
+    >
+      {logo ? (
+        <img
+          src={logo}
+          alt=""
+          className="size-10 shrink-0 rounded-control bg-hundido object-contain"
+        />
+      ) : (
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-control bg-acento-suave text-acento-texto">
+          <Bell className="size-5" aria-hidden />
+        </span>
+      )}
+      <div className="min-w-0 flex-1">
+        <p className="flex items-baseline gap-1.5 text-xs text-texto-3">
+          <span className="truncate">{negocio}</span>
+          <span aria-hidden>·</span>
+          <span className="shrink-0">ahora</span>
+        </p>
+        <p className="text-sm font-semibold text-pretty break-words text-texto">
+          {titulo.trim() || "Tu promoción"}
+        </p>
+        <p className="line-clamp-2 text-etiqueta text-pretty break-words text-texto-2">
+          {mensaje.trim() || `Tu cupón ya está en tu tarjeta de ${negocio}.`}
+        </p>
       </div>
     </article>
   );

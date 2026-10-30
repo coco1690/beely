@@ -296,6 +296,22 @@ function DetalleCampana({
         <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-2 text-sm">
           <dt className="text-texto-3">Para</dt>
           <dd className="text-texto">{nombreSegmento(c.filtro)}</dd>
+          {c.push_enviados > 0 || c.push_pendientes > 0 ? (
+            <>
+              <dt className="text-texto-3">Notificaciones</dt>
+              <dd className="text-texto tabular-nums">
+                {c.push_enviados === 1
+                  ? "1 enviada"
+                  : `${numero(c.push_enviados)} enviadas`}
+                {c.push_pendientes > 0 ? (
+                  <span className="text-texto-3">
+                    {" "}
+                    · {numero(c.push_pendientes)} en espera
+                  </span>
+                ) : null}
+              </dd>
+            </>
+          ) : null}
           <dt className="text-texto-3">Vigencia</dt>
           <dd className="text-texto tabular-nums">
             {rangoDias(c.inicia, c.termina)}

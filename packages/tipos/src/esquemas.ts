@@ -61,6 +61,9 @@ export const esquemaPanelCanje = z.object({
 })
 export type PanelCanje = z.infer<typeof esquemaPanelCanje>
 
+// campanas-motor desde el panel: manda ya los push en cola de ese negocio.
+export const esquemaCampanasMotor = z.object({ negocio_id: esquemaUuid })
+
 export const esquemaResultadoCanje = z.object({
   duplicado: z.boolean(),
   cupon_id: z.string(),
@@ -313,6 +316,7 @@ export const mensajesError: Record<string, string> = {
   campana_no_encontrada: 'No encontramos esa campaña.',
   campana_no_editable: 'Esa campaña ya se lanzó; ya no se puede cambiar.',
   campana_vencida: 'Las fechas de esa campaña ya pasaron. Cámbialas para lanzarla.',
+  push_no_configurado: 'Las notificaciones push aún no están configuradas.',
   error_interno: 'Algo salió mal. Intenta de nuevo.',
 }
 

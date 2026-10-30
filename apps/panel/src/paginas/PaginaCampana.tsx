@@ -32,6 +32,7 @@ import {
   dia,
   diaEnZona,
   diasEntre,
+  NotificacionVistaPrevia,
   segmentos,
   tipos,
   tituloSugerido,
@@ -39,7 +40,7 @@ import {
   type CampanaNegocio,
 } from "../componentes/campanas";
 import { EncabezadoPagina } from "../componentes/DisenoPanel";
-import { mensajeDe } from "../lib/funciones";
+import { enviarPushCampanas, mensajeDe } from "../lib/funciones";
 import { supabase } from "../lib/supabase";
 import { useNegocioActivo } from "../stores/useNegocioStore";
 
@@ -152,6 +153,10 @@ export function PaginaCampana() {
 
   const conValor = tipo === "porcentaje" || tipo === "monto_fijo";
   const llegaA = alcance?.[filtro];
+  const llegaPush = alcance?.push?.[filtro] ?? 0;
+  const franja = activo
+    ? `${activo.negocio.hora_inicio_envios.slice(0, 5)} y ${activo.negocio.hora_fin_envios.slice(0, 5)}`
+    : "";
   const empiezaHoy = inicia <= hoy;
   const dias = inicia && termina ? diasEntre(inicia, termina) + 1 : 0;
 
@@ -189,14 +194,19 @@ export function PaginaCampana() {
 
   const lanzar = handleSubmit(async (v) => {
     const cuantos = alcance?.[v.filtro] ?? 0;
+    const conPush = alcance?.push?.[v.filtro] ?? 0;
+    const avisoPush =
+      conPush > 0
+        ? ` ${conPush === 1 ? "A 1 le llega" : `A ${numero(conPush)} les llega`} además una notificación.`
+        : "";
     const hoyMismo = v.inicia <= hoy;
     const ok = await confirmar({
       titulo: hoyMismo
         ? `¿Lanzar “${v.titulo}”?`
         : `¿Programar “${v.titulo}” para el ${dia(v.inicia)}?`,
       descripcion: hoyMismo
-        ? `${numero(cuantos)} ${cuantos === 1 ? "cliente recibe" : "clientes reciben"} el cupón en su tarjeta ahora mismo. Después puedes cancelarla, pero ya no editarla.`
-        : `El ${dia(v.inicia)} a primera hora le llega el cupón a quien esté en el grupo ese día (hoy ${cuantos === 1 ? "es 1 cliente" : `son ${numero(cuantos)} clientes`}). Puedes cancelarla antes.`,
+        ? `${numero(cuantos)} ${cuantos === 1 ? "cliente recibe" : "clientes reciben"} el cupón en su tarjeta ahora mismo.${avisoPush} Después puedes cancelarla, pero ya no editarla.`
+        : `El ${dia(v.inicia)} a primera hora le llega el cupón a quien esté en el grupo ese día (hoy ${cuantos === 1 ? "es 1 cliente" : `son ${numero(cuantos)} clientes`}).${avisoPush} Puedes cancelarla antes.`,
       textoConfirmar: hoyMismo ? "Lanzar ahora" : "Programar",
     });
     if (!ok) return;
@@ -217,6 +227,9 @@ export function PaginaCampana() {
       return;
     }
     const r = data as { programada: boolean; cupones: number };
+    // Los push salen en segundo plano; lo que no salga ahora lo manda pg_cron.
+    if (!r.programada && negocioId)
+      void enviarPushCampanas(negocioId).catch(() => undefined);
     toast.success(
       r.programada
         ? `Programada para el ${dia(v.inicia)}`
@@ -483,6 +496,12 @@ export function PaginaCampana() {
             <h2 className="text-xs font-medium text-texto-3">
               Así lo ve tu cliente
             </h2>
+            <NotificacionVistaPrevia
+              negocio={activo?.negocio.nombre ?? "Tu negocio"}
+              logo={activo?.negocio.logo_url}
+              titulo={titulo}
+              mensaje={mensaje}
+            />
             <CuponVistaPrevia
               titulo={titulo}
               mensaje={mensaje}
@@ -502,6 +521,20 @@ export function PaginaCampana() {
                 </strong>{" "}
                 {empiezaHoy ? "hoy mismo" : `el ${dia(inicia)}`}, en su tarjeta
                 del club.
+                {llegaPush > 0 ? (
+                  <>
+                    {" "}
+                    {llegaPush === llegaA ? (
+                      "Todos"
+                    ) : (
+                      <span className="tabular-nums">{numero(llegaPush)}</span>
+                    )}{" "}
+                    {llegaPush === 1 && llegaPush !== llegaA
+                      ? "recibe"
+                      : "reciben"}{" "}
+                    además la notificación.
+                  </>
+                ) : null}
               </>
             )}
           </p>
@@ -531,8 +564,10 @@ export function PaginaCampana() {
             ) : null}
           </div>
           <p className="text-xs text-pretty text-texto-3">
-            Por ahora llega al club: tu cliente la ve al abrir su tarjeta. Los
-            avisos push llegan en una próxima versión.
+            La notificación llega solo a quien la activó en el club y sale
+            entre las {franja}, con un máximo de{" "}
+            {activo?.negocio.max_push_semana ?? 3} por cliente a la semana. El
+            cupón llega siempre.
           </p>
         </aside>
       </form>

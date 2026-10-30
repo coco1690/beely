@@ -123,14 +123,14 @@ isOneToOne: true
                   ]
                 },"envios_campana": {
                   Row: {
-                    "campana_id": string,"canal": string,"creado_en": string,"enviado_en": string | null,"error": string | null,"estado": string,"id": string,"negocio_id": string,"tarjeta_id": string
+                    "campana_id": string,"canal": string,"creado_en": string,"enviado_en": string | null,"error": string | null,"estado": string,"id": string,"negocio_id": string,"tarjeta_id": string,"tomado_en": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "campana_id": string,"canal": string,"creado_en"?: string,"enviado_en"?: string | null,"error"?: string | null,"estado"?: string,"id"?: string,"negocio_id": string,"tarjeta_id": string
+                    "campana_id": string,"canal": string,"creado_en"?: string,"enviado_en"?: string | null,"error"?: string | null,"estado"?: string,"id"?: string,"negocio_id": string,"tarjeta_id": string,"tomado_en"?: string | null
                   }
                   Update: {
-                    "campana_id"?: string,"canal"?: string,"creado_en"?: string,"enviado_en"?: string | null,"error"?: string | null,"estado"?: string,"id"?: string,"negocio_id"?: string,"tarjeta_id"?: string
+                    "campana_id"?: string,"canal"?: string,"creado_en"?: string,"enviado_en"?: string | null,"error"?: string | null,"estado"?: string,"id"?: string,"negocio_id"?: string,"tarjeta_id"?: string,"tomado_en"?: string | null
                   }
                   Relationships: [
                     {
@@ -460,7 +460,7 @@ isOneToOne: false
                            },
 "campanas_negocio":
 { Args: { "p_negocio_id": string }; Returns: {
-              "cancelada_en": string,"creado_en": string,"cupones_canjeados": number,"cupones_emitidos": number,"estado": string,"filtro": string,"id": string,"inicia": string,"lanzada_en": string,"mensaje": string,"producto": string,"programada_para": string,"termina": string,"termina_en": string,"tipo": string,"titulo": string,"valor": number
+              "cancelada_en": string,"creado_en": string,"cupones_canjeados": number,"cupones_emitidos": number,"estado": string,"filtro": string,"id": string,"inicia": string,"lanzada_en": string,"mensaje": string,"producto": string,"programada_para": string,"push_enviados": number,"push_pendientes": number,"termina": string,"termina_en": string,"tipo": string,"titulo": string,"valor": number
             }[]
                            },
 "canjear_cupon":
@@ -483,6 +483,14 @@ isOneToOne: false
 "equipo_negocio":
 { Args: { "p_negocio_id": string }; Returns: {
               "creado_en": string,"email": string,"invitacion_pendiente": boolean,"rol": string,"ultimo_ingreso_en": string,"usuario_id": string
+            }[]
+                           },
+"push_registrar":
+{ Args: { "p_resultados": Json }; Returns: undefined
+                           },
+"push_tomar":
+{ Args: { "p_limite"?: number,"p_negocio_id"?: string }; Returns: {
+              "campana_id": string,"envio_id": string,"logo_url": string,"mensaje": string,"negocio_nombre": string,"suscripciones": Json,"termina_en": string,"titulo": string,"token_publico": string
             }[]
                            },
 "registrar_sello":

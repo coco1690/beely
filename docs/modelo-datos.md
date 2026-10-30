@@ -120,7 +120,7 @@ erDiagram
 | `ofertas` | Plantillas de descuento | Dueño/admin |
 | `cupones` | Cupones emitidos a una tarjeta | Funciones SQL / Edge Functions |
 | `campanas` | Configuración de campañas y disparadores. Desde la 0009, promociones que emiten un cupón por tarjeta | Solo funciones (`campana_guardar`, `campana_lanzar`, `campana_cancelar`, `campana_eliminar`) y pg_cron |
-| `envios_campana` | Registro de cada envío; base del tope semanal | Motor de campañas |
+| `envios_campana` | Cola y registro de cada push (`pendiente → enviando → enviado/fallido/omitido`, un envío por campaña, tarjeta y canal); base del tope semanal | `emitir_campana` encola, `campanas-motor` envía con `push_tomar` / `push_registrar` |
 | `suscripciones_push` | Endpoints Web Push por dispositivo | `club-push-suscribir` |
 | `pases_wallet` | Pase emitido en Google/Apple por tarjeta | `wallet-google` / `wallet-apple` |
 | `llaves_api` | Llaves del POS (solo hash) | `llaves-api` |

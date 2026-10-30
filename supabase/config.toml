@@ -424,3 +424,7 @@ verify_jwt = false
 
 [functions.wallet-google]
 verify_jwt = false
+
+# La llaman el panel (valida el JWT adentro) y pg_cron (con la cabecera x-motor-clave).
+[functions.campanas-motor]
+verify_jwt = false
