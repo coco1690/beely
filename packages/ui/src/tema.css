@@ -232,12 +232,6 @@
     opacity: 0;
   }
 }
-/* Loader de Beely con movimiento reducido: el logo quieto late suave en opacidad. */
-@keyframes latir-loader {
-  50% {
-    opacity: 0.45;
-  }
-}
 @keyframes entrar-capa {
   from {
     opacity: 0;
@@ -256,8 +250,8 @@
   }
 }
 
-/* BeelyLoaderB con movimiento reducido: el logo queda quieto y solo late en opacidad. */
-@keyframes latir-b {
+/* BeelyLoader con movimiento reducido: el logo queda quieto y solo late en opacidad. */
+@keyframes latir-loader {
   50% {
     opacity: 0.5;
   }

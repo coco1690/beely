@@ -1,218 +1,228 @@
-import { useEffect, useId, useRef, useState } from 'react'
-import { useMedia } from '../useMedia'
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { cn } from '../utilidades'
+import { useMedia } from '../useMedia'
 
-// Loader de Beely: el logo se escribe a mano (palo de la B, bucle de la B y "eely" de
-// corrido), se sostiene, se desvanece y vuelve a empezar. Fuente: docs/logo-beely.svg.
+// Loader de Beely: el logo se escribe a mano, se sostiene completo un instante,
+// se desvanece y vuelve a empezar.
 //
-// Cada trazo es una línea central con pathLength=1: se dibuja moviendo stroke-dashoffset
-// de 1 a 0. El tiempo de cada trazo sale de su longitud real (getTotalLength()), así la
-// pluma va a velocidad constante y las uniones de "eely" se leen como una sola línea.
-// Solo se animan stroke-dashoffset (pintura) y opacity/transform del <svg> (compositor).
+// - Cada trazo dura lo que mide (getTotalLength) a una velocidad de pluma constante,
+//   así "eely" sale como una sola línea sin pausas en las uniones.
+// - Entre el palo y el bucle de la B la pluma "viaja por el aire": esa pausa dura
+//   lo que mide el salto entre el final de un trazo y el inicio del siguiente.
+// - Solo se anima stroke-dashoffset y opacity (nada que dispare layout), con WAAPI.
+// - Con movimiento reducido (o movimiento="reducido") el logo queda quieto y late en opacidad.
 
-// Longitudes medidas con getTotalLength() sobre docs/logo-beely.svg. Al montar se vuelven a
-// medir; estas sirven para el primer cuadro y como respaldo.
-const TRAZOS = [
-  { id: 'B-stem', largo: 234.8, d: 'M376.83 360.4C335.37 435.41 307.34 509.18 273.53 571.21' },
-  {
-    id: 'B-loop',
-    largo: 1506.2,
-    d: 'M212.05 398.54C184.58 362.86 331.04 257.48 447.67 268.89C590.19 281.78 465.4 428.45 406.57 437.43C483 432.18 584.79 531.67 451.25 605.98C315.54 679.78 173.71 643.99 188.35 573.29C203.89 500.72 312.15 481.43 416.21 534.94C457 556 485 568 525 565',
-  },
-  {
-    id: 'e-1',
-    largo: 647.1,
-    d: 'M525 565C577 572 668.5 543.5 693.34 505.25C727.42 454.27 650.38 431.12 603.31 485.07C557.71 535.31 561.7 593.4 618.28 613.98C676.29 634.11 726.85 578.08 759.3 563.04',
-  },
-  {
-    id: 'e-2',
-    largo: 626.0,
-    d: 'M759.3 563.04C792.75 548.59 835.73 544.12 864.91 506.82C906.04 454.25 822.28 432.68 779.09 482.49C738.15 528.78 733.79 589.64 792.97 613.29C854.57 636.94 920.1 566.89 956.56 523.7',
-  },
-  {
-    id: 'l',
-    largo: 851.9,
-    d: 'M956.56 523.7C993.72 483.81 1067.28 414.25 1073.65 321.29C1076.57 278.74 1027.58 287.65 998.66 323.67C950.31 383.94 930.73 504.38 952.82 570.59C975.64 653.96 1078.27 607.49 1101.58 476.35',
-  },
-  {
-    id: 'y',
-    largo: 1057.3,
-    d: 'M1101.58 476.35C1091.55 542.09 1073.09 609.33 1130.76 593.84C1182.6 581.46 1218.4 508.23 1224.33 474.42C1220.88 535.41 1220.6 711.3 1126.25 745.11C1061.96 767.26 1038.17 686.5 1139.38 642.35C1231.17 603.84 1317.05 576.89 1337.44 485.15',
-  },
-] as const
+type Tamano = 'sm' | 'md' | 'lg'
 
-// El SVG original va de 41 a 48 de grosor según el trazo y el salto se nota en las uniones
-// (sobre todo B→e y e→l). Un solo grosor, el promedio, las deja limpias.
-const GROSOR = 45
-// Recorte del lienzo de 1536×1024 a la palabra más medio grosor de margen.
-const CAJA = '160 240 1204 536'
-
-// Ritmo del ciclo (ms). La escritura incluye el levantar la pluma entre el palo y el bucle de la B.
-export const ESCRITURA_MS = 1400
-const LEVANTAR_MS = 90
-const PAUSA_MS = 450
-const DESVANECER_MS = 250
-const VACIO_MS = 140
-const CICLO_MS = ESCRITURA_MS + PAUSA_MS + DESVANECER_MS + VACIO_MS
-
-// Retraso antes de mostrarse: las cargas más cortas no muestran nada.
-export const RETRASO_MS = 300
-
-// Fuera del trazo: el guion queda entero antes del inicio del camino, sin punto de remate.
-const OCULTO = 1.001
-
-// Cuadros clave de cada trazo y del <svg>, todos con la misma duración para que no se desfasen.
-function cuadrosClave(largos: readonly number[]) {
-  const levantar = LEVANTAR_MS / ESCRITURA_MS
-  const tinta = largos.reduce((s, l) => s + l, 0)
-  // Tramos en "avance de pluma" (0-1): el levantar entre el trazo 1 y el 2 cuenta como distancia.
-  const total = tinta / (1 - levantar)
-  let cursor = 0
-  const tramos = largos.map((largo, i) => {
-    if (i === 1) cursor += levantar * total
-    const inicio = cursor / total
-    cursor += largo
-    return { inicio, fin: cursor / total }
-  })
-
-  // Pluma lineal: velocidad constante, como una barra de progreso. Cada trazo tiene su tramo
-  // del ciclo y las uniones de "eely" caen justo donde termina uno y empieza el siguiente.
-  const enCiclo = ESCRITURA_MS / CICLO_MS
-  const trazos = tramos.map(({ inicio, fin }): Keyframe[] => [
-    { offset: 0, strokeDashoffset: OCULTO },
-    { offset: inicio * enCiclo, strokeDashoffset: OCULTO },
-    { offset: inicio * enCiclo, strokeDashoffset: 1 },
-    { offset: fin * enCiclo, strokeDashoffset: 0 },
-    { offset: 1, strokeDashoffset: 0 },
-  ])
-
-  const salir = (ESCRITURA_MS + PAUSA_MS) / CICLO_MS
-  const vacio = (ESCRITURA_MS + PAUSA_MS + DESVANECER_MS) / CICLO_MS
-  const lienzo: Keyframe[] = [
-    { offset: 0, opacity: 1, transform: 'scale(1)' },
-    { offset: salir, opacity: 1, transform: 'scale(1)', easing: 'cubic-bezier(0.23, 1, 0.32, 1)' },
-    { offset: vacio, opacity: 0, transform: 'scale(0.97)' },
-    { offset: 1, opacity: 0, transform: 'scale(0.97)' },
-  ]
-  return { trazos, lienzo }
-}
-
-const TAMANOS = {
-  sm: 'w-12', // botones e inline (48 px)
-  md: 'w-28', // secciones (112 px)
-  lg: 'w-52', // pantalla completa (208 px)
-} as const
-
-export type PropsBeelyLoader = {
-  size?: keyof typeof TAMANOS
-  // Cubre la pantalla con el fondo de la app y centra el loader.
+export interface PropsBeelyLoader {
+  /** sm: botones y en línea · md: secciones · lg: pantalla completa. */
+  size?: Tamano
+  /** Ocupa toda la pantalla con el fondo de la app. */
   fullscreen?: boolean
-  // 'reducido' fuerza la versión sin trazado (para vistas de prueba); 'auto' sigue al sistema.
+  /** Fuerza la variante de movimiento reducido (para comparar en la demo). */
   movimiento?: 'auto' | 'reducido'
-  // Cuánto esperar antes de aparecer. 0 para mostrarlo de una vez (p. ej. en un botón).
+  /** Milisegundos antes de mostrarse (0 = de inmediato, p. ej. en un botón). */
   retraso?: number
-  etiqueta?: string
   className?: string
 }
 
-export function BeelyLoader({
-  size = 'md',
-  fullscreen = false,
-  movimiento = 'auto',
-  retraso = RETRASO_MS,
-  etiqueta = 'Cargando',
-  className,
-}: PropsBeelyLoader) {
-  const id = useId()
-  const svg = useRef<SVGSVGElement>(null)
+// Trazos del logo (docs/logo-beely.svg) en orden de escritura.
+const TRAZOS = [
+  'M376.83 360.4C335.37 435.41 307.34 509.18 273.53 571.21',
+  'M212.05 398.54C184.58 362.86 331.04 257.48 447.67 268.89C590.19 281.78 465.4 428.45 406.57 437.43C483 432.18 584.79 531.67 451.25 605.98C315.54 679.78 173.71 643.99 188.35 573.29C203.89 500.72 312.15 481.43 416.21 534.94C457 556 485 568 525 565',
+  'M525 565C577 572 668.5 543.5 693.34 505.25C727.42 454.27 650.38 431.12 603.31 485.07C557.71 535.31 561.7 593.4 618.28 613.98C676.29 634.11 726.85 578.08 759.3 563.04',
+  'M759.3 563.04C792.75 548.59 835.73 544.12 864.91 506.82C906.04 454.25 822.28 432.68 779.09 482.49C738.15 528.78 733.79 589.64 792.97 613.29C854.57 636.94 920.1 566.89 956.56 523.7',
+  'M956.56 523.7C993.72 483.81 1067.28 414.25 1073.65 321.29C1076.57 278.74 1027.58 287.65 998.66 323.67C950.31 383.94 930.73 504.38 952.82 570.59C975.64 653.96 1078.27 607.49 1101.58 476.35',
+  'M1101.58 476.35C1091.55 542.09 1073.09 609.33 1130.76 593.84C1182.6 581.46 1218.4 508.23 1224.33 474.42C1220.88 535.41 1220.6 711.3 1126.25 745.11C1061.96 767.26 1038.17 686.5 1139.38 642.35C1231.17 603.84 1317.05 576.89 1337.44 485.15',
+] as const
+
+// El original va de 41 a 48 de grosor por letra; en las uniones B→e, e→l y l→y el
+// salto (5–7 unidades) se ve como un escalón con el remate redondo encima. Se iguala
+// al promedio para que la línea continua no cambie de grosor.
+const GROSOR = 45
+
+// Unidades del viewBox por milisegundo: ~1.4 s para escribir el logo completo.
+const VELOCIDAD = 3.6
+// Largo real medido de tinta (4923) más el salto de pluma entre palo y bucle (184).
+const RECORRIDO_TOTAL = 5107
+const ESCRITURA_MS = Math.round(RECORRIDO_TOTAL / VELOCIDAD)
+// Logo completo en pantalla antes de desvanecerse, y respiro en blanco antes de reiniciar.
+const PAUSA_MS = 450
+const BLANCO_MS = 120
+
+const TAMANOS: Record<Tamano, string> = {
+  sm: 'h-4 w-9',
+  md: 'h-11 w-24',
+  lg: 'h-22 w-48',
+}
+
+// Lee un token de tema.css (p. ej. --ease-out) para no duplicar sus valores aquí.
+function token(el: Element, nombre: string): string {
+  return getComputedStyle(el).getPropertyValue(nombre).trim()
+}
+
+export function BeelyLoader({ size, fullscreen = false, movimiento = 'auto', retraso = 300, className }: PropsBeelyLoader) {
   const prefiereReducido = useMedia('(prefers-reduced-motion: reduce)')
   const reducido = movimiento === 'reducido' || prefiereReducido
-  const [visible, setVisible] = useState(retraso <= 0)
+  const idDegradado = `beely-loader-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`
+  const refSvg = useRef<SVGSVGElement>(null)
+  const refTrazos = useRef<(SVGPathElement | null)[]>([])
+  const [listo, setListo] = useState(retraso <= 0)
 
   useEffect(() => {
     if (retraso <= 0) return
-    const t = window.setTimeout(() => setVisible(true), retraso)
+    const t = window.setTimeout(() => setListo(true), retraso)
     return () => window.clearTimeout(t)
   }, [retraso])
 
-  // La animación arranca cuando el loader se ve: siempre empieza por el palo de la B.
-  useEffect(() => {
-    const lienzo = svg.current
-    if (!visible || reducido || !lienzo || typeof lienzo.animate !== 'function') return
-    const caminos = [...lienzo.querySelectorAll('path')]
-    const largos = caminos.map((c, i) => c.getTotalLength() || TRAZOS[i]!.largo)
-    const { trazos, lienzo: cuadrosLienzo } = cuadrosClave(largos)
-    const opciones = { duration: CICLO_MS, iterations: Infinity, easing: 'linear' }
-    const animaciones = [lienzo.animate(cuadrosLienzo, opciones), ...caminos.map((c, i) => c.animate(trazos[i]!, opciones))]
-    return () => animaciones.forEach((a) => a.cancel())
-  }, [visible, reducido])
+  // Layout effect: las animaciones quedan creadas antes del primer pintado.
+  useLayoutEffect(() => {
+    const svg = refSvg.current
+    const trazos = refTrazos.current.filter((t): t is SVGPathElement => t !== null)
+    if (!listo || reducido || !svg || trazos.length !== TRAZOS.length) return
 
-  const degradado = `${id}-degradado`
-  const loader = (
+    // Inicio y duración de cada trazo según su largo real, con la pluma a velocidad constante.
+    let reloj = 0
+    let anterior: DOMPoint | null = null
+    const tramos = trazos.map((trazo) => {
+      const largo = trazo.getTotalLength()
+      const inicio = trazo.getPointAtLength(0)
+      if (anterior) reloj += Math.hypot(inicio.x - anterior.x, inicio.y - anterior.y) / VELOCIDAD
+      const tramo = { desde: reloj, dura: largo / VELOCIDAD }
+      reloj += tramo.dura
+      anterior = trazo.getPointAtLength(largo)
+      return tramo
+    })
+
+    const curvaSalida = token(svg, '--ease-out') || 'ease-out'
+    const salidaMs = Number.parseFloat(token(svg, '--duracion-lenta')) || 240
+    const finEscritura = reloj
+    const inicioSalida = finEscritura + PAUSA_MS
+    const ciclo = inicioSalida + salidaMs + BLANCO_MS
+    const opciones: KeyframeAnimationOptions = { duration: ciclo, iterations: Infinity }
+
+    const animaciones = trazos.map((trazo, i) => {
+      const { desde, dura } = tramos[i] ?? { desde: 0, dura: 0 }
+      const a = desde / ciclo
+      const b = (desde + dura) / ciclo
+      // Oculto (opacity 0) hasta que la pluma llega: evita el punto del remate redondo
+      // que algunos navegadores pintan con un guion de largo cero.
+      return trazo.animate(
+        [
+          { offset: 0, strokeDashoffset: '1', opacity: 0 },
+          { offset: a, strokeDashoffset: '1', opacity: 0 },
+          { offset: a, strokeDashoffset: '1', opacity: 1, easing: 'linear' },
+          { offset: b, strokeDashoffset: '0', opacity: 1 },
+          { offset: 1, strokeDashoffset: '0', opacity: 1 },
+        ],
+        opciones,
+      )
+    })
+
+    // El desvanecido va en el <svg> (no en un <g>) para que el compositor lo pueda llevar.
+    animaciones.push(
+      svg.animate(
+        [
+          { offset: 0, opacity: 1 },
+          { offset: inicioSalida / ciclo, opacity: 1, easing: curvaSalida },
+          { offset: (inicioSalida + salidaMs) / ciclo, opacity: 0 },
+          { offset: 1, opacity: 0 },
+        ],
+        opciones,
+      ),
+    )
+
+    // Todas arrancan en el mismo instante para que no se desfasen entre ciclos.
+    const ahora = document.timeline.currentTime
+    if (ahora !== null) for (const animacion of animaciones) animacion.startTime = ahora
+
+    return () => {
+      for (const animacion of animaciones) animacion.cancel()
+    }
+  }, [listo, reducido])
+
+  if (!listo) return null
+
+  return (
     <div
       role="status"
-      aria-label={etiqueta}
-      className={cn('inline-flex shrink-0', TAMANOS[size], !fullscreen && className)}
+      aria-label="Cargando"
+      className={cn(
+        // A pantalla completa el fondo tapa el contenido: entra con un fundido corto, no de golpe.
+        fullscreen
+          ? 'fixed inset-0 z-50 grid place-items-center bg-fondo animate-[desvanecer_var(--duracion-media)_var(--ease-out)_both]'
+          : 'inline-grid place-items-center',
+        className,
+      )}
     >
       <svg
-        ref={svg}
-        viewBox={CAJA}
+        ref={refSvg}
+        viewBox="150 230 1224 556"
+        fill="none"
         aria-hidden
         className={cn(
-          'block h-auto w-full',
-          !visible && 'invisible',
-          visible && reducido && 'animate-[latir-loader_1.8s_ease-in-out_infinite]',
+          TAMANOS[size ?? (fullscreen ? 'lg' : 'md')],
+          reducido && 'animate-[latir-loader_1800ms_var(--ease-in-out)_infinite]',
         )}
       >
         <defs>
-          {/* En coordenadas del dibujo: el color corre a lo largo de la palabra, no se reinicia en cada trazo. */}
-          <linearGradient id={degradado} gradientUnits="userSpaceOnUse" x1="160" y1="0" x2="1360" y2="0">
+          <linearGradient id={idDegradado} gradientUnits="userSpaceOnUse" x1="160" y1="0" x2="1360" y2="0">
             <stop offset="0" stopColor="#F77369" />
             <stop offset="0.5" stopColor="#F1687E" />
             <stop offset="1" stopColor="#ED5687" />
           </linearGradient>
         </defs>
-        <g fill="none" stroke={`url(#${degradado})`} strokeWidth={GROSOR} strokeLinecap="round" strokeLinejoin="round">
-          {TRAZOS.map((t) => (
+        <g stroke={`url(#${idDegradado})`} strokeWidth={GROSOR} strokeLinecap="round" strokeLinejoin="round">
+          {TRAZOS.map((d, i) => (
             <path
-              key={t.id}
-              d={t.d}
+              key={d}
+              ref={(el) => {
+                refTrazos.current[i] = el
+              }}
+              d={d}
               pathLength={1}
-              strokeDasharray={reducido ? undefined : '1 2'}
-              strokeDashoffset={reducido ? undefined : OCULTO}
+              strokeDasharray={reducido ? undefined : 1}
+              strokeDashoffset={reducido ? undefined : 1}
+              opacity={reducido ? undefined : 0}
             />
           ))}
         </g>
       </svg>
     </div>
   )
-
-  if (!fullscreen) return loader
-  return <div className={cn('fixed inset-0 z-50 grid place-items-center bg-fondo pb-[8vh]', className)}>{loader}</div>
 }
 
-// Decide si mostrar la carga sin parpadeos: el loader aparece tras RETRASO_MS y, una vez a la
-// vista, se queda hasta terminar de escribir el logo aunque los datos lleguen antes.
-//   const mostrarCarga = useCargaSinParpadeo(cargando)
-//   if (mostrarCarga) return <BeelyLoader fullscreen size="lg" />
-export function useCargaSinParpadeo(cargando: boolean, { retraso = RETRASO_MS, minimo = ESCRITURA_MS } = {}) {
-  // oculto: aún no se ve · minimo: visible sin cumplir el mínimo · libre: ya puede irse.
-  const [fase, setFase] = useState<'oculto' | 'minimo' | 'libre'>('oculto')
+// Lo mínimo que se queda visible: una escritura completa del logo y un respiro para verlo entero.
+const MINIMO_VISIBLE_MS = ESCRITURA_MS + 150
+
+/**
+ * Dice cuándo mostrar <BeelyLoader /> sin parpadeos: true mientras se carga (el loader mismo
+ * espera `retraso` antes de verse) y, si alcanzó a verse, hasta cumplir `minimo` para que la
+ * escritura no se corte a la mitad.
+ *   if (useCargaSinParpadeo(cargando)) return <BeelyLoader fullscreen />
+ */
+export function useCargaSinParpadeo(
+  cargando: boolean,
+  { retraso = 300, minimo = MINIMO_VISIBLE_MS }: { retraso?: number; minimo?: number } = {},
+): boolean {
+  const [visible, setVisible] = useState(false)
+  const visibleDesde = useRef(0)
 
   useEffect(() => {
-    if (cargando && fase === 'oculto') {
-      const t = window.setTimeout(() => setFase('minimo'), retraso)
+    if (cargando && !visible) {
+      const t = window.setTimeout(() => {
+        visibleDesde.current = performance.now()
+        setVisible(true)
+      }, retraso)
       return () => window.clearTimeout(t)
     }
-    if (!cargando && fase === 'libre') setFase('oculto')
-  }, [cargando, fase, retraso])
+    if (!cargando && visible) {
+      const resta = Math.max(0, minimo - (performance.now() - visibleDesde.current))
+      const t = window.setTimeout(() => setVisible(false), resta)
+      return () => window.clearTimeout(t)
+    }
+    return undefined
+  }, [cargando, visible, retraso, minimo])
 
-  // Aparte, para que el mínimo no se reinicie si `cargando` cambia mientras corre.
-  useEffect(() => {
-    if (fase !== 'minimo') return
-    const t = window.setTimeout(() => setFase('libre'), minimo)
-    return () => window.clearTimeout(t)
-  }, [fase, minimo])
-
-  return cargando || fase === 'minimo'
+  return cargando || visible
 }
