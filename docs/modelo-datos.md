@@ -184,7 +184,17 @@ RLS de `anon` (la PWA): ve el negocio del slug o del token, su programa activo, 
 | `superadmin_agregar(email) → uuid` | Superadmin | Hace superadmin a una cuenta existente | `sin_permiso`, `usuario_no_encontrado`, `ya_es_superadmin` |
 | `superadmin_quitar(usuario_id)` | Superadmin | Quita a otro superadmin; nadie se quita a sí mismo, así siempre queda uno | `sin_permiso`, `no_puedes_quitarte`, `usuario_no_encontrado` |
 
-"Sellos" en las métricas son los de venta (`origen in ('api_pos', 'panel')`, cantidad positiva); no cuentan ajustes ni el descuento al emitir premio. El panel de plataforma vive en `/superadmin` (tablero), `/superadmin/negocios`, `/superadmin/negocios/:id` y `/superadmin/equipo`.
+### Clientes (migración 0008)
+
+| Función | Quién | Hace | Errores |
+|--------|-------|------|---------|
+| `clientes_negocio(negocio_id, busqueda?, filtro = 'todos', orden = 'reciente', limite = 50, desde = 0) → setof` | Dueño / administrador / superadmin (`security invoker`: aplica además la RLS) | Clientes del negocio con su tarjeta (sellos actuales y requeridos, históricos, premios, cupones vigentes, última visita) y `total` del filtro en cada fila. Filtros: `todos`, `premio`, `cumple` (mes actual en la zona del negocio), `inactivos` (registrados y sin volver hace más de 30 días). Orden: `reciente`, `visita`, `sellos`, `nombre`. Busca por nombre o por 3+ dígitos del celular, sin comodines | `sin_permiso`, `solicitud_invalida` |
+| `clientes_resumen(negocio_id) → jsonb` | Dueño / administrador / superadmin | Cuántos clientes hay en total, nuevos en 30 días, con marketing y en cada filtro | `sin_permiso` |
+| `superadmin_clientes(negocio_id?, busqueda?, limite = 50, desde = 0) → setof` | Superadmin | Clientes de toda la plataforma con su negocio, celular y fecha de nacimiento (datos completos por decisión de producto, 2026-10-30), sellos, premios y última visita | `sin_permiso`, `solicitud_invalida` |
+
+El cajero no lista clientes: en caja solo abre una tarjeta por QR o celular. Pantallas: `/clientes` (dueño y administrador) y `/superadmin/clientes` (acepta `?negocio=` desde la ficha).
+
+"Sellos" en las métricas son los de venta (`origen in ('api_pos', 'panel')`, cantidad positiva); no cuentan ajustes ni el descuento al emitir premio. El panel de plataforma vive en `/superadmin` (tablero), `/superadmin/negocios`, `/superadmin/negocios/:id`, `/superadmin/clientes` y `/superadmin/equipo`.
 
 ## Checklist de pruebas (Supabase local con Postgres 17)
 
@@ -238,3 +248,10 @@ RLS de `anon` (la PWA): ve el negocio del slug o del token, su programa activo, 
 - [x] Agregar superadmin exige cuenta existente y no duplica; nadie se quita a sí mismo
 - [x] Dueño y anon no llaman ninguna de estas funciones
 - [x] Eliminar exige el subdominio y borra clientes, tarjetas y equipo del negocio sin tocar los demás
+
+### Clientes (`0009_clientes_aserciones.sql`)
+
+- [x] Dueño y administrador listan los clientes de su negocio; el cajero, otro negocio y anon reciben `sin_permiso` / permiso denegado
+- [x] Filtros `premio` (solo cupones emitidos y vigentes), `cumple` e `inactivos`, búsqueda por nombre o parte del celular sin comodines, orden y paginación
+- [x] `clientes_resumen` cuenta lo mismo que cada filtro
+- [x] `superadmin_clientes` ve todos los negocios, filtra por negocio, busca por celular y trae el celular completo

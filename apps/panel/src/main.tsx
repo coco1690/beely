@@ -21,6 +21,7 @@ import {
 } from "react-router";
 import { DisenoPanel } from "./componentes/DisenoPanel";
 import { PaginaCaja } from "./paginas/PaginaCaja";
+import { PaginaClientes } from "./paginas/PaginaClientes";
 import { PaginaDefinirClave } from "./paginas/PaginaDefinirClave";
 import { PaginaEquipo } from "./paginas/PaginaEquipo";
 import { PaginaIngreso } from "./paginas/PaginaIngreso";
@@ -32,6 +33,7 @@ import { PaginaRecuperar } from "./paginas/PaginaRecuperar";
 import { PaginaSedes } from "./paginas/PaginaSedes";
 import { SinNegocio } from "./paginas/SinNegocio";
 import { PaginaFichaNegocio } from "./paginas/superadmin/PaginaFichaNegocio";
+import { PaginaClientesPlataforma } from "./paginas/superadmin/PaginaClientesPlataforma";
 import { PaginaNegocios } from "./paginas/superadmin/PaginaNegocios";
 import { PaginaPlanes } from "./paginas/superadmin/PaginaPlanes";
 import { PaginaSuperadmins } from "./paginas/superadmin/PaginaSuperadmins";
@@ -176,6 +178,10 @@ const enrutador = createBrowserRouter([
                 path: "/superadmin/negocios/:id",
                 element: <PaginaFichaNegocio />,
               },
+              {
+                path: "/superadmin/clientes",
+                element: <PaginaClientesPlataforma />,
+              },
               { path: "/superadmin/planes", element: <PaginaPlanes /> },
               { path: "/superadmin/equipo", element: <PaginaSuperadmins /> },
             ],
@@ -194,6 +200,7 @@ const enrutador = createBrowserRouter([
               {
                 element: <SoloConfiguracion />,
                 children: [
+                  { path: "/clientes", element: <PaginaClientes /> },
                   { path: "/negocio", element: <PaginaNegocio /> },
                   { path: "/equipo", element: <PaginaEquipo /> },
                 ],

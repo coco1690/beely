@@ -200,7 +200,17 @@ export function PaginaFichaNegocio() {
             <Cifra
               etiqueta="Clientes"
               valor={metricas.clientes}
-              detalle={`+${numero(metricas.clientes_nuevos)} en ${dias} días`}
+              detalle={
+                <>
+                  +{numero(metricas.clientes_nuevos)} en {dias} días ·{" "}
+                  <Link
+                    to={`/superadmin/clientes?negocio=${metricas.id}`}
+                    className="rounded-control text-texto-2 underline decoration-borde-fuerte underline-offset-2 hover:text-texto focus-visible:outline-2 focus-visible:outline-foco"
+                  >
+                    Ver clientes
+                  </Link>
+                </>
+              }
             />
             <Cifra
               etiqueta={`Sellos en ${dias} días`}

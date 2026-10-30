@@ -446,6 +446,14 @@ isOneToOne: false
             "canjear_cupon":
 { Args: { "p_canjeado_por"?: string,"p_codigo": string,"p_negocio_id": string,"p_sede_id"?: string,"p_venta_externa_id"?: string }; Returns: Json
                            },
+"clientes_negocio":
+{ Args: { "p_busqueda"?: string,"p_desde"?: number,"p_filtro"?: string,"p_limite"?: number,"p_negocio_id": string,"p_orden"?: string }; Returns: {
+              "acepta_marketing": boolean,"aceptado_en": string,"celular": string,"celular_verificado": boolean,"creado_en": string,"cupones_vigentes": number,"estado_tarjeta": string,"fecha_nacimiento": string,"id": string,"nombre": string,"premios_ganados": number,"sellos_actuales": number,"sellos_historicos": number,"sellos_requeridos": number,"tarjeta_id": string,"total": number,"ultima_visita_en": string,"version_politica": string
+            }[]
+                           },
+"clientes_resumen":
+{ Args: { "p_negocio_id": string }; Returns: Json
+                           },
 "club_registrar":
 { Args: { "p_acepta_marketing": boolean,"p_celular": string,"p_fecha_nacimiento": string,"p_huella_ip": string,"p_nombre": string,"p_slug": string }; Returns: Json
                            },
@@ -465,6 +473,11 @@ isOneToOne: false
                            },
 "superadmin_agregar":
 { Args: { "p_email": string }; Returns: string
+                           },
+"superadmin_clientes":
+{ Args: { "p_busqueda"?: string,"p_desde"?: number,"p_limite"?: number,"p_negocio_id"?: string }; Returns: {
+              "acepta_marketing": boolean,"celular": string,"creado_en": string,"fecha_nacimiento": string,"id": string,"negocio_estado": string,"negocio_id": string,"negocio_logo_url": string,"negocio_nombre": string,"negocio_slug": string,"nombre": string,"premios_ganados": number,"sellos_historicos": number,"total": number,"ultima_visita_en": string
+            }[]
                            },
 "superadmin_eliminar_negocio":
 { Args: { "p_confirmacion": string,"p_negocio_id": string }; Returns: undefined
