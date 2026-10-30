@@ -51,30 +51,15 @@ const CAJA = '160 240 1204 536'
 export const ESCRITURA_MS = 1400
 const LEVANTAR_MS = 90
 const PAUSA_MS = 450
-const DESVANECER_MS = 320
+const DESVANECER_MS = 250
 const VACIO_MS = 140
 const CICLO_MS = ESCRITURA_MS + PAUSA_MS + DESVANECER_MS + VACIO_MS
 
 // Retraso antes de mostrarse: las cargas más cortas no muestran nada.
 export const RETRASO_MS = 300
 
-// La pluma arranca y llega un poco más lenta (±15 %), sin perder la velocidad casi constante.
-const pluma = (t: number) => 0.8 * t + 0.1 * (1 - Math.cos(Math.PI * t))
-// Inversa de `pluma` por bisección: en qué momento de la escritura se llega a cierto avance.
-function momento(avance: number) {
-  let a = 0
-  let b = 1
-  for (let i = 0; i < 30; i++) {
-    const m = (a + b) / 2
-    if (pluma(m) < avance) a = m
-    else b = m
-  }
-  return (a + b) / 2
-}
-
 // Fuera del trazo: el guion queda entero antes del inicio del camino, sin punto de remate.
 const OCULTO = 1.001
-const MUESTRAS = 90
 
 // Cuadros clave de cada trazo y del <svg>, todos con la misma duración para que no se desfasen.
 function cuadrosClave(largos: readonly number[]) {
@@ -90,21 +75,16 @@ function cuadrosClave(largos: readonly number[]) {
     return { inicio, fin: cursor / total }
   })
 
+  // Pluma lineal: velocidad constante, como una barra de progreso. Cada trazo tiene su tramo
+  // del ciclo y las uniones de "eely" caen justo donde termina uno y empieza el siguiente.
   const enCiclo = ESCRITURA_MS / CICLO_MS
-  const trazos = tramos.map(({ inicio, fin }) => {
-    const t0 = momento(inicio)
-    const t1 = momento(fin)
-    const cuadros: Keyframe[] = [{ offset: 0, strokeDashoffset: OCULTO }]
-    if (t0 > 0) cuadros.push({ offset: t0 * enCiclo, strokeDashoffset: OCULTO })
-    for (let k = 1; k < MUESTRAS; k++) {
-      const t = k / MUESTRAS
-      if (t <= t0 || t >= t1) continue
-      const f = (pluma(t) - inicio) / (fin - inicio)
-      cuadros.push({ offset: t * enCiclo, strokeDashoffset: 1 - f })
-    }
-    cuadros.push({ offset: t1 * enCiclo, strokeDashoffset: 0 }, { offset: 1, strokeDashoffset: 0 })
-    return cuadros
-  })
+  const trazos = tramos.map(({ inicio, fin }): Keyframe[] => [
+    { offset: 0, strokeDashoffset: OCULTO },
+    { offset: inicio * enCiclo, strokeDashoffset: OCULTO },
+    { offset: inicio * enCiclo, strokeDashoffset: 1 },
+    { offset: fin * enCiclo, strokeDashoffset: 0 },
+    { offset: 1, strokeDashoffset: 0 },
+  ])
 
   const salir = (ESCRITURA_MS + PAUSA_MS) / CICLO_MS
   const vacio = (ESCRITURA_MS + PAUSA_MS + DESVANECER_MS) / CICLO_MS
