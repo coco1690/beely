@@ -58,8 +58,7 @@ export function PaginaTarjeta() {
           Esta tarjeta está bloqueada. Pregunta en caja.
         </p>
       ) : null}
-      <Pase {...datos} />
-
+      {/* Con un premio listo, eso es lo primero: el pase ya volvió a empezar en 0. */}
       {premios.length > 0 ? (
         <Link
           to="cupones"
@@ -78,6 +77,8 @@ export function PaginaTarjeta() {
           </span>
         </Link>
       ) : null}
+
+      <Pase {...datos} />
 
       <UltimasVisitas tarjeta={tarjeta} />
     </div>
@@ -152,7 +153,8 @@ const nombresOrigen: Record<string, string> = {
   api_pos: 'Compra',
   panel: 'Compra',
   ajuste: 'Ajuste',
-  canje_premio: 'Premio canjeado',
+  // Los sellos se descuentan cuando se gana el premio, no cuando se canjea el cupón.
+  canje_premio: 'Premio ganado',
 }
 
 function UltimasVisitas({ tarjeta }: { tarjeta: TarjetaClub }) {
