@@ -46,3 +46,4 @@ export { coloresDeNegocio, LLAVE_TEMA, temas, useTemaStore, type ColoresMarca, t
 export { crearManifest, esAppInstalada, iconosBeely, type OpcionesManifest } from './pwa'
 export { useMedia } from './useMedia'
 export { SellosTarjeta } from './componentes/sellos-tarjeta'
+export { BeelyLoaderB, useCargaSinParpadeoB, type PropsBeelyLoaderB } from './componentes/beely-loader-b'

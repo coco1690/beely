@@ -1,4 +1,4 @@
-import { BeelyLoader, BotonModo, Boton, useCargaSinParpadeo } from "@beely/ui";
+import { BeelyLoader, BeelyLoaderB, BotonModo, Boton, useCargaSinParpadeo } from "@beely/ui";
 import { useState, type ReactNode } from "react";
 
 // Vitrina del loader de Beely (solo en desarrollo: /demo/loader).
@@ -23,33 +23,40 @@ export function PaginaDemoLoader() {
       <header className="mb-6 flex items-center justify-between gap-4">
         <div>
           <h1 className="text-titulo text-texto">Loader de Beely</h1>
-          <p className="text-sm text-texto-3">Tres tamaños, modo claro/oscuro y movimiento reducido.</p>
+          <p className="text-sm text-texto-3">Dos versiones lado a lado: tres tamaños y movimiento reducido. Cambia el modo arriba.</p>
         </div>
         <BotonModo />
       </header>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Caja titulo="sm · botones e inline">
-          <div className="flex items-center gap-4">
-            <BeelyLoader size="sm" retraso={0} />
-            <span className="inline-flex items-center gap-2 text-sm text-texto-2">
-              <BeelyLoader size="sm" retraso={0} /> Guardando…
-            </span>
-          </div>
-        </Caja>
-        <Caja titulo="md · secciones">
-          <BeelyLoader size="md" retraso={0} />
-        </Caja>
-        <Caja titulo="lg · pantalla completa" ancho>
-          <BeelyLoader size="lg" retraso={0} />
-        </Caja>
-        <Caja titulo="Movimiento reducido (sm · md · lg)" ancho>
-          <div className="flex flex-wrap items-center gap-8">
-            <BeelyLoader size="sm" retraso={0} movimiento="reducido" />
-            <BeelyLoader size="md" retraso={0} movimiento="reducido" />
-            <BeelyLoader size="lg" retraso={0} movimiento="reducido" />
-          </div>
-        </Caja>
+        {(["A", "B"] as const).map((v) => {
+          const Loader = v === "A" ? BeelyLoader : BeelyLoaderB;
+          return (
+            <section key={v} className="flex flex-col gap-4" data-version={v}>
+              <h2 className="text-seccion text-texto">
+                {v === "A" ? "A · primera versión" : "B · hecha con las skills"}
+              </h2>
+              <Caja titulo="sm · botones e inline">
+                <span className="inline-flex items-center gap-2 text-sm text-texto-2">
+                  <Loader size="sm" retraso={0} /> Guardando…
+                </span>
+              </Caja>
+              <Caja titulo="md · secciones">
+                <Loader size="md" retraso={0} />
+              </Caja>
+              <Caja titulo="lg · pantalla completa">
+                <Loader size="lg" retraso={0} />
+              </Caja>
+              <Caja titulo="Movimiento reducido (sm · md · lg)">
+                <div className="flex flex-wrap items-center justify-center gap-6">
+                  <Loader size="sm" retraso={0} movimiento="reducido" />
+                  <Loader size="md" retraso={0} movimiento="reducido" />
+                  <Loader size="lg" retraso={0} movimiento="reducido" />
+                </div>
+              </Caja>
+            </section>
+          );
+        })}
         <Caja titulo="Sin parpadeo" ancho>
           <div className="flex w-full flex-col items-center gap-4">
             <div className="flex flex-wrap justify-center gap-2">

@@ -255,3 +255,10 @@
     --escala-capa: 1;
   }
 }
+
+/* BeelyLoaderB con movimiento reducido: el logo queda quieto y solo late en opacidad. */
+@keyframes latir-b {
+  50% {
+    opacity: 0.5;
+  }
+}
