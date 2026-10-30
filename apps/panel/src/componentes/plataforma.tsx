@@ -1,22 +1,18 @@
 import { numero } from "@beely/tipos";
 import { cn, Insignia } from "@beely/ui";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
   periodos,
+  usePlataformaStore,
   type Periodo,
+  type PlanBeely,
   type PuntoSerie,
 } from "../stores/usePlataformaStore";
 
 export const dominioClub =
   import.meta.env.VITE_CLUB_DOMINIO_BASE ?? "hibeely.com";
 
-export const planes = ["basico", "pro", "empresa"] as const;
 export const estados = ["activo", "suspendido", "cancelado"] as const;
-export const nombresPlan: Record<string, string> = {
-  basico: "Básico",
-  pro: "Pro",
-  empresa: "Empresa",
-};
 export const nombresEstado: Record<string, string> = {
   activo: "Activo",
   suspendido: "Suspendido",
@@ -33,8 +29,24 @@ export function InsigniaEstado({ estado }: { estado: string }) {
   return <Insignia tono={tono}>{nombresEstado[estado] ?? estado}</Insignia>;
 }
 
+// Planes de la tabla public.planes (los gestiona el superadmin en /superadmin/planes).
+// Se cargan una vez y se comparten entre pantallas; null mientras llegan.
+export function usePlanes(): PlanBeely[] | null {
+  const planes = usePlataformaStore((e) => e.planes);
+  const cargarPlanes = usePlataformaStore((e) => e.cargarPlanes);
+  useEffect(() => {
+    if (planes === null) void cargarPlanes();
+  }, [planes, cargarPlanes]);
+  return planes;
+}
+
+export function nombrePlan(planes: PlanBeely[] | null, codigo: string): string {
+  return planes?.find((p) => p.codigo === codigo)?.nombre ?? codigo;
+}
+
 export function InsigniaPlan({ plan }: { plan: string }) {
-  return <Insignia>{nombresPlan[plan] ?? plan}</Insignia>;
+  const planes = usePlanes();
+  return <Insignia>{nombrePlan(planes, plan)}</Insignia>;
 }
 
 // Una cifra con su etiqueta y, si aplica, un detalle debajo.

@@ -22,6 +22,7 @@ import {
   Building2,
   ChevronsUpDown,
   Ellipsis,
+  Layers,
   LayoutDashboard,
   LogOut,
   MapPin,
@@ -73,6 +74,12 @@ function useEnlaces(modo: ModoPanel): Enlace[] {
         texto: "Negocios",
         corto: "Negocios",
         icono: <Building2 />,
+      },
+      {
+        a: "/superadmin/planes",
+        texto: "Planes",
+        corto: "Planes",
+        icono: <Layers />,
       },
       {
         a: "/superadmin/equipo",

@@ -164,6 +164,27 @@ export const esquemaAgregarSuperadmin = z.object({
   email: z.email('Correo inválido').trim().toLowerCase(),
 })
 
+// Superadmin: plan de Beely. Los límites vacíos (null) son "sin límite".
+export const esquemaCodigoPlan = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .regex(/^[a-z0-9]([a-z0-9_]{0,28}[a-z0-9])?$/, 'Solo minúsculas, números y guion bajo (máximo 30)')
+
+const limitePlan = (max: number) =>
+  z.number('Escribe un número').int('Sin decimales').min(1, 'Mínimo 1').max(max, `Máximo ${max}`).nullable()
+
+export const esquemaPlan = z.object({
+  codigo: esquemaCodigoPlan,
+  nombre: z.string().trim().min(2, 'Mínimo 2 caracteres').max(40, 'Máximo 40 caracteres'),
+  descripcion: textoOpcional(200),
+  precio_mensual: z.number('Escribe un precio').min(0, 'No puede ser negativo').max(9_999_999_999, 'Precio muy alto'),
+  max_sedes: limitePlan(1000),
+  max_clientes: limitePlan(10_000_000),
+  activo: z.boolean(),
+})
+export type Plan = z.infer<typeof esquemaPlan>
+
 export const esquemaMarcaNegocio = z.object({
   nombre: z.string().trim().min(2, 'Mínimo 2 caracteres').max(80),
   razon_social: textoOpcional(120),
@@ -229,6 +250,7 @@ export const mensajesError: Record<string, string> = {
   usuario_no_encontrado: 'No hay una cuenta de Beely con ese correo. Primero debe ingresar o ser invitada a un negocio.',
   ya_es_superadmin: 'Esa persona ya es superadmin.',
   clave_actual_incorrecta: 'Tu clave actual no es correcta.',
+  plan_no_disponible: 'Ese plan no existe o está desactivado.',
   no_puedes_quitarte: 'No puedes quitarte a ti mismo; pídeselo a otro superadmin.',
   wallet_no_configurado: 'Google Wallet aún no está disponible para este club.',
   wallet_fallo: 'Google Wallet no respondió. Intenta de nuevo en un momento.',

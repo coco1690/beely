@@ -37,8 +37,7 @@ import {
   InsigniaEstado,
   InsigniaPlan,
   nombresEstado,
-  nombresPlan,
-  planes,
+  usePlanes,
 } from "../../componentes/plataforma";
 import { conectarDominioClub, mensajeDe } from "../../lib/funciones";
 import { supabase } from "../../lib/supabase";
@@ -105,10 +104,13 @@ export function PaginaFichaNegocio() {
     try {
       const { dominio } = await conectarDominioClub(id);
       toast.success(`${dominio} conectado`, {
-        description: "Puede tardar unos minutos en abrir mientras se emite el certificado.",
+        description:
+          "Puede tardar unos minutos en abrir mientras se emite el certificado.",
       });
     } catch (e) {
-      toast.error("No se pudo conectar el subdominio", { description: mensajeDe(e) });
+      toast.error("No se pudo conectar el subdominio", {
+        description: mensajeDe(e),
+      });
     } finally {
       setConectando(false);
     }
@@ -261,6 +263,11 @@ function PlanEstado({
   onGuardado: () => Promise<void>;
 }) {
   const recargarTodo = useRecargarTodo();
+  const planes = usePlanes();
+  // Se ofrecen los planes activos y, aunque esté desactivado, el que ya tiene.
+  const opciones = (planes ?? []).filter(
+    (p) => p.activo || p.codigo === negocio.plan,
+  );
   const [plan, setPlan] = useState(negocio.plan);
   const [estado, setEstado] = useState(negocio.estado);
   const [guardando, setGuardando] = useState(false);
@@ -305,9 +312,10 @@ function PlanEstado({
               value={plan}
               onChange={(e) => setPlan(e.target.value)}
             >
-              {planes.map((p) => (
-                <option key={p} value={p}>
-                  {nombresPlan[p]}
+              {opciones.map((p) => (
+                <option key={p.codigo} value={p.codigo}>
+                  {p.nombre}
+                  {p.activo ? "" : " (inactivo)"}
                 </option>
               ))}
             </Selector>

@@ -21,8 +21,8 @@ import {
   GrupoCifras,
   haceCuanto,
   InsigniaPlan,
-  planes,
   SelectorPeriodo,
+  usePlanes,
 } from "../../componentes/plataforma";
 import { usePlataformaStore } from "../../stores/usePlataformaStore";
 
@@ -36,6 +36,7 @@ export function PaginaTablero() {
     cargarNegocios,
     cargarTablero,
   } = usePlataformaStore();
+  const planes = usePlanes();
 
   useEffect(() => {
     void cargarTablero();
@@ -165,16 +166,23 @@ export function PaginaTablero() {
             </TarjetaEncabezado>
             <TarjetaContenido>
               <dl className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3 lg:grid-cols-6">
-                {planes.map((p) => (
-                  <div key={p} className="flex flex-col gap-1">
-                    <dt>
-                      <InsigniaPlan plan={p} />
-                    </dt>
-                    <dd className="text-lg font-semibold text-texto tabular-nums">
-                      {numero(tablero.negocios.por_plan[p] ?? 0)}
-                    </dd>
-                  </div>
-                ))}
+                {/* Los planes activos, y los inactivos solo si algún negocio sigue en ellos. */}
+                {(planes ?? [])
+                  .filter(
+                    (p) =>
+                      p.activo ||
+                      (tablero.negocios.por_plan[p.codigo] ?? 0) > 0,
+                  )
+                  .map((p) => (
+                    <div key={p.codigo} className="flex flex-col gap-1">
+                      <dt>
+                        <InsigniaPlan plan={p.codigo} />
+                      </dt>
+                      <dd className="text-lg font-semibold text-texto tabular-nums">
+                        {numero(tablero.negocios.por_plan[p.codigo] ?? 0)}
+                      </dd>
+                    </div>
+                  ))}
                 <EstadoCifra
                   etiqueta="Activos"
                   valor={tablero.negocios.activos}
