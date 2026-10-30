@@ -7,14 +7,14 @@ export type Database = {
           Tables: {
             "campanas": {
                   Row: {
-                    "actualizado_en": string,"cancelada_en": string | null,"canales": (string)[],"config": NonNullable<Json>,"creado_en": string,"creado_por": string | null,"disparador": string,"estado": string,"id": string,"lanzada_en": string | null,"mensaje": string,"negocio_id": string,"nombre": string,"oferta_id": string | null,"programada_para": string | null,"segmento": NonNullable<Json>,"termina_en": string | null,"titulo": string
+                    "actualizado_en": string,"canales": (string)[],"cancelada_en": string | null,"config": NonNullable<Json>,"creado_en": string,"creado_por": string | null,"disparador": string,"estado": string,"id": string,"lanzada_en": string | null,"mensaje": string,"negocio_id": string,"nombre": string,"oferta_id": string | null,"programada_para": string | null,"segmento": NonNullable<Json>,"termina_en": string | null,"titulo": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "actualizado_en"?: string,"cancelada_en"?: string | null,"canales"?: (string)[],"config"?: NonNullable<Json>,"creado_en"?: string,"creado_por"?: string | null,"disparador": string,"estado"?: string,"id"?: string,"lanzada_en"?: string | null,"mensaje": string,"negocio_id": string,"nombre": string,"oferta_id"?: string | null,"programada_para"?: string | null,"segmento"?: NonNullable<Json>,"termina_en"?: string | null,"titulo": string
+                    "actualizado_en"?: string,"canales"?: (string)[],"cancelada_en"?: string | null,"config"?: NonNullable<Json>,"creado_en"?: string,"creado_por"?: string | null,"disparador": string,"estado"?: string,"id"?: string,"lanzada_en"?: string | null,"mensaje": string,"negocio_id": string,"nombre": string,"oferta_id"?: string | null,"programada_para"?: string | null,"segmento"?: NonNullable<Json>,"termina_en"?: string | null,"titulo": string
                   }
                   Update: {
-                    "actualizado_en"?: string,"cancelada_en"?: string | null,"canales"?: (string)[],"config"?: NonNullable<Json>,"creado_en"?: string,"creado_por"?: string | null,"disparador"?: string,"estado"?: string,"id"?: string,"lanzada_en"?: string | null,"mensaje"?: string,"negocio_id"?: string,"nombre"?: string,"oferta_id"?: string | null,"programada_para"?: string | null,"segmento"?: NonNullable<Json>,"termina_en"?: string | null,"titulo"?: string
+                    "actualizado_en"?: string,"canales"?: (string)[],"cancelada_en"?: string | null,"config"?: NonNullable<Json>,"creado_en"?: string,"creado_por"?: string | null,"disparador"?: string,"estado"?: string,"id"?: string,"lanzada_en"?: string | null,"mensaje"?: string,"negocio_id"?: string,"nombre"?: string,"oferta_id"?: string | null,"programada_para"?: string | null,"segmento"?: NonNullable<Json>,"termina_en"?: string | null,"titulo"?: string
                   }
                   Relationships: [
                     {
