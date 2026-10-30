@@ -67,8 +67,9 @@ function CuponVigente({ cupon }: { cupon: CuponClub }) {
         {esPremio ? <Gift className="size-6" aria-hidden /> : <Ticket className="size-6" aria-hidden />}
       </div>
       <div className="min-w-0 flex-1 p-3.5">
-        <p className="text-xs text-texto-3">{esPremio ? 'Premio de tu tarjeta' : 'Cupón'}</p>
-        <p className="text-sm font-semibold text-texto">{cupon.descripcion}</p>
+        <p className="text-xs text-texto-3">{esPremio ? 'Premio de tu tarjeta' : cupon.origen === 'campana' ? 'Promoción' : 'Cupón'}</p>
+        <p className="text-sm font-semibold text-pretty break-words text-texto">{cupon.descripcion}</p>
+        {cupon.campanas?.mensaje ? <p className="mt-0.5 text-etiqueta text-pretty break-words text-texto-2">{cupon.campanas.mensaje}</p> : null}
         <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
           <span className="rounded-sm bg-hundido px-1.5 py-0.5 font-mono text-etiqueta tracking-wider text-texto">{cupon.codigo}</span>
           <span className="text-xs text-texto-3">Vence el {fecha(cupon.vence_en)}</span>

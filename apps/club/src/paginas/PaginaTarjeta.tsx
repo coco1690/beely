@@ -1,6 +1,6 @@
 import { fecha } from '@beely/tipos'
 import { cn, coloresDeNegocio, EstadoVacio, FilaLista, Lista, LogoNegocio, SellosTarjeta, type ColoresMarca } from '@beely/ui'
-import { Gift, Stamp } from 'lucide-react'
+import { ChevronRight, Gift, Stamp, Ticket } from 'lucide-react'
 import type { CSSProperties } from 'react'
 import { Link } from 'react-router'
 import { BotonGoogleWallet } from '../componentes/BotonGoogleWallet'
@@ -49,6 +49,7 @@ export function PaginaTarjeta() {
   const requeridos = programa?.sellos_requeridos ?? 10
   const faltan = Math.max(requeridos - tarjeta.sellos_actuales, 0)
   const premios = cuponesVigentes(tarjeta).filter((c) => c.origen === 'premio_sellos')
+  const promociones = cuponesVigentes(tarjeta).filter((c) => c.origen === 'campana')
   const datos = { tarjeta, negocio, requeridos, faltan, premio: programa?.premio_descripcion ?? '' }
 
   return (
@@ -75,6 +76,30 @@ export function PaginaTarjeta() {
               {premios[0]?.descripcion} · vence el {fecha(premios[0]?.vence_en)}
             </span>
           </span>
+        </Link>
+      ) : null}
+
+      {/* Promociones del negocio: debajo del premio, sin competir con él. */}
+      {promociones.length > 0 ? (
+        <Link
+          to="cupones"
+          className="flex items-center gap-3 rounded-tarjeta border border-borde bg-superficie p-3.5 shadow-tarjeta transition-colors hover:border-borde-fuerte"
+        >
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-acento-suave text-acento-texto" aria-hidden>
+            <Ticket className="size-5" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-sm font-semibold text-texto">
+              {promociones.length === 1 ? promociones[0]?.descripcion : `Tienes ${promociones.length} promociones`}
+            </span>
+            {promociones.length === 1 && promociones[0]?.campanas?.mensaje ? (
+              <span className="line-clamp-2 text-etiqueta text-texto-2">{promociones[0].campanas.mensaje}</span>
+            ) : null}
+            <span className="block text-xs text-texto-3">
+              {promociones.length === 1 ? `Muéstrala en caja · vence el ${fecha(promociones[0]?.vence_en)}` : 'Muéstralas en caja antes de que venzan'}
+            </span>
+          </span>
+          <ChevronRight className="size-4 shrink-0 text-texto-3" aria-hidden />
         </Link>
       ) : null}
 

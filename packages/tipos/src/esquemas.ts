@@ -239,13 +239,50 @@ export const esquemaPrograma = z
   })
 
 // ---------------------------------------------------------------------
+// Campañas de promociones (migración 0009). Las validaciones repiten las de
+// public.campana_guardar(); las fechas son días (AAAA-MM-DD) del negocio.
+// ---------------------------------------------------------------------
+export const tiposPromocion = ['porcentaje', 'monto_fijo', 'producto_gratis', 'dos_por_uno'] as const
+export type TipoPromocion = (typeof tiposPromocion)[number]
+export const segmentosCampana = ['todos', 'inactivos', 'cumple', 'nuevos'] as const
+export type SegmentoCampana = (typeof segmentosCampana)[number]
+
+const esquemaDia = z.iso.date('Elige una fecha')
+
+export const esquemaCampana = z
+  .object({
+    tipo: z.enum(tiposPromocion),
+    valor: z.number('Escribe un número').positive('Debe ser mayor que 0').nullable(),
+    producto: z.string().trim().max(80, 'Máximo 80 caracteres'),
+    titulo: z.string().trim().min(3, 'Mínimo 3 caracteres').max(60, 'Máximo 60 caracteres'),
+    mensaje: z.string().trim().max(180, 'Máximo 180 caracteres'),
+    filtro: z.enum(segmentosCampana),
+    inicia: esquemaDia,
+    termina: esquemaDia,
+  })
+  .refine((v) => !(v.tipo === 'porcentaje' || v.tipo === 'monto_fijo') || v.valor !== null, {
+    message: 'Escribe el descuento',
+    path: ['valor'],
+  })
+  .refine((v) => v.tipo !== 'porcentaje' || v.valor === null || v.valor <= 100, {
+    message: 'Máximo 100%',
+    path: ['valor'],
+  })
+  .refine((v) => !(v.tipo === 'producto_gratis' || v.tipo === 'dos_por_uno') || v.producto.length > 0, {
+    message: 'Escribe el producto',
+    path: ['producto'],
+  })
+  .refine((v) => v.termina >= v.inicia, { message: 'Termina antes de empezar', path: ['termina'] })
+export type Campana = z.infer<typeof esquemaCampana>
+
+// ---------------------------------------------------------------------
 // Errores: los códigos salen de las excepciones de las funciones SQL.
 // ---------------------------------------------------------------------
 export const mensajesError: Record<string, string> = {
   tarjeta_no_encontrada: 'No encontramos esa tarjeta en este negocio.',
   tarjeta_bloqueada: 'La tarjeta está bloqueada.',
   programa_inactivo: 'El programa de sellos está inactivo.',
-  negocio_inactivo: 'El negocio no está activo; no se pueden sumar sellos.',
+  negocio_inactivo: 'El negocio no está activo; no puede sumar sellos ni lanzar campañas.',
   sede_no_encontrada: 'La sede no existe o está inactiva.',
   origen_invalido: 'Origen de sello inválido.',
   cupon_no_encontrado: 'No encontramos ese cupón.',
@@ -272,6 +309,10 @@ export const mensajesError: Record<string, string> = {
   no_puedes_quitarte: 'No puedes quitarte a ti mismo; pídeselo a otro superadmin.',
   wallet_no_configurado: 'Google Wallet aún no está disponible para este club.',
   wallet_fallo: 'Google Wallet no respondió. Intenta de nuevo en un momento.',
+  fechas_invalidas: 'Revisa las fechas: empieza hoy o después y dura hasta un año.',
+  campana_no_encontrada: 'No encontramos esa campaña.',
+  campana_no_editable: 'Esa campaña ya se lanzó; ya no se puede cambiar.',
+  campana_vencida: 'Las fechas de esa campaña ya pasaron. Cámbialas para lanzarla.',
   error_interno: 'Algo salió mal. Intenta de nuevo.',
 }
 

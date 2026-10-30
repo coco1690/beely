@@ -21,6 +21,8 @@ import {
 } from "react-router";
 import { DisenoPanel } from "./componentes/DisenoPanel";
 import { PaginaCaja } from "./paginas/PaginaCaja";
+import { PaginaCampana } from "./paginas/PaginaCampana";
+import { PaginaCampanas } from "./paginas/PaginaCampanas";
 import { PaginaClientes } from "./paginas/PaginaClientes";
 import { PaginaDefinirClave } from "./paginas/PaginaDefinirClave";
 import { PaginaEquipo } from "./paginas/PaginaEquipo";
@@ -201,6 +203,9 @@ const enrutador = createBrowserRouter([
                 element: <SoloConfiguracion />,
                 children: [
                   { path: "/clientes", element: <PaginaClientes /> },
+                  { path: "/campanas", element: <PaginaCampanas /> },
+                  { path: "/campanas/nueva", element: <PaginaCampana /> },
+                  { path: "/campanas/:id", element: <PaginaCampana /> },
                   { path: "/negocio", element: <PaginaNegocio /> },
                   { path: "/equipo", element: <PaginaEquipo /> },
                 ],

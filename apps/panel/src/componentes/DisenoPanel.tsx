@@ -27,6 +27,7 @@ import {
   LayoutDashboard,
   LogOut,
   MapPin,
+  Megaphone,
   Moon,
   ScanLine,
   Settings2,
@@ -108,6 +109,13 @@ function useEnlaces(modo: ModoPanel): Enlace[] {
       texto: "Clientes",
       corto: "Clientes",
       icono: <Contact />,
+      visible: puedeConfigurar(rol),
+    },
+    {
+      a: "/campanas",
+      texto: "Campañas",
+      corto: "Campañas",
+      icono: <Megaphone />,
       visible: puedeConfigurar(rol),
     },
     {

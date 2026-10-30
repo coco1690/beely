@@ -62,3 +62,20 @@ export const nombresRol: Record<string, string> = {
   administrador: 'Administrador',
   cajero: 'Cajero',
 }
+
+// Texto del cupón de una promoción: "20% de descuento en conos", "2x1 en malteadas".
+export function textoPromocion(tipo: string, valor: number | null, producto: string): string {
+  const en = producto.trim() ? ` en ${producto.trim()}` : ''
+  switch (tipo) {
+    case 'porcentaje':
+      return `${valor ?? '—'}% de descuento${en}`
+    case 'monto_fijo':
+      return `${pesos(valor)} de descuento${en}`
+    case 'producto_gratis':
+      return producto.trim() ? `${producto.trim().replace(/^./, (l) => l.toUpperCase())} gratis` : 'Producto gratis'
+    case 'dos_por_uno':
+      return `2x1${en}`
+    default:
+      return producto.trim()
+  }
+}
