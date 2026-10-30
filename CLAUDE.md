@@ -99,7 +99,7 @@ beely/
 | `panel-equipo` | Panel (dueño o superadmin) | Suma a alguien al equipo: con clave crea la cuenta lista, sin clave invita por correo; crea la membresía. ✅ Sprint 1 |
 | `club-dominio` | Panel (superadmin) | Conecta `{slug}.hibeely.com`: dominio en el proyecto Vercel del club + CNAME en Hostinger. Se llama al crear el negocio y desde su ficha. |
 | `wallet-google` | PWA (anon + token) | Crea/actualiza LoyaltyClass y LoyaltyObject, genera el enlace firmado "Agregar a Google Wallet". `panel-sello` actualiza el pase al sumar sellos. ✅ (ver `docs/google-wallet.md`) |
-| `campanas-motor` | pg_cron | Evalúa disparadores, aplica topes y envía push/Wallet. |
+| `campanas-motor` | Panel (al lanzar) y pg_cron cada 5 min (`x-motor-clave`) | Vacía la cola de `envios_campana`: push con título, mensaje y logo del negocio; `push_tomar` aplica franja horaria, tope semanal y `acepta_marketing`. ✅ push (Wallet pendiente) |
 | `llaves-api` | Panel (dueño) | Genera llave, guarda hash, la muestra una vez. |
 
 Contrato de errores de la API: `{ "error": { "codigo": "tarjeta_no_encontrada", "mensaje": "..." } }` con HTTP 4xx. Los códigos salen de las excepciones de las funciones SQL.
@@ -132,6 +132,7 @@ SUPABASE_SERVICE_ROLE_KEY=
 VAPID_PUBLIC_KEY=
 VAPID_PRIVATE_KEY=
 VAPID_SUBJECT=mailto:soporte@hibeely.com
+CAMPANAS_MOTOR_CLAVE=               # campanas-motor: la misma clave que el secreto beely_motor_clave de Vault (pg_cron)
 GOOGLE_WALLET_ISSUER_ID=
 GOOGLE_WALLET_SERVICE_ACCOUNT_JSON=
 CLUB_DOMINIO_BASE=hibeely.com

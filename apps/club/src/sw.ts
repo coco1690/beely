@@ -14,7 +14,8 @@ precacheAndRoute(self.__WB_MANIFEST)
 // Toda navegación (/, /t/{token}…) abre la app precargada; /api queda para la red.
 registerRoute(new NavigationRoute(createHandlerBoundToURL('/index.html'), { denylist: [/^\/api\//, /^\/manifest\.webmanifest/] }))
 
-type MensajePush = { titulo?: string; mensaje?: string; url?: string; etiqueta?: string }
+// Lo arma campanas-motor: icono es el logo del negocio.
+type MensajePush = { titulo?: string; mensaje?: string; url?: string; etiqueta?: string; icono?: string }
 
 self.addEventListener('push', (evento) => {
   let datos: MensajePush = {}
@@ -26,7 +27,7 @@ self.addEventListener('push', (evento) => {
   evento.waitUntil(
     self.registration.showNotification(datos.titulo ?? 'Tienes novedades', {
       body: datos.mensaje,
-      icon: '/icono-192.png',
+      icon: datos.icono ?? '/icono-192.png',
       badge: '/icono-192.png',
       tag: datos.etiqueta,
       data: { url: datos.url ?? '/' },

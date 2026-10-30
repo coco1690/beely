@@ -101,7 +101,7 @@ select v.tarjeta, p.negocio_id, p.id, v.cliente, v.token, v.historicos, v.histor
 -- 2. Alcance: solo quien acepta promociones, con tarjeta activa
 set local role authenticated;
 set local request.jwt.claim.sub = 'ea000000-0000-0000-0000-000000000002';
-select pg_temp.igual(public.campanas_alcance(current_setting('prueba.a')::uuid),
+select pg_temp.igual(public.campanas_alcance(current_setting('prueba.a')::uuid) - 'push',
        '{"todos": 3, "inactivos": 1, "cumple": 1, "nuevos": 1, "clientes": 5}'::jsonb,
        'alcance: sin quien no acepta promociones ni tarjetas bloqueadas; cumple exige un sello');
 select pg_temp.debe_fallar(format('select public.campanas_alcance(%L)', current_setting('prueba.b')),
