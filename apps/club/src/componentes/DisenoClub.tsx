@@ -1,4 +1,4 @@
-import { BarraFlotante, Cargando, clasePestana, EstadoVacio, JalarParaRecargar, LogoNegocio, toast } from '@beely/ui'
+import { BarraFlotante, Cargando, clasePestana, EstadoVacio, JalarParaRecargar, LogoNegocio, PantallaError, toast, useAlVolver } from '@beely/ui'
 import { CreditCard, SearchX, Ticket, UserRound } from 'lucide-react'
 import { useEffect, useRef, type ReactNode } from 'react'
 import { Navigate, NavLink, Outlet, useParams } from 'react-router'
@@ -22,13 +22,10 @@ export function DisenoClub() {
     const intervalo = window.setInterval(() => {
       if (document.visibilityState === 'visible') void refrescar()
     }, INTERVALO_MS)
-    const alVolver = () => document.visibilityState === 'visible' && void refrescar()
-    document.addEventListener('visibilitychange', alVolver)
-    return () => {
-      window.clearInterval(intervalo)
-      document.removeEventListener('visibilitychange', alVolver)
-    }
+    return () => window.clearInterval(intervalo)
   }, [token, abrirTarjeta, refrescar])
+  // Al volver a la app (o la red), la tarjeta se pone al día enseguida.
+  useAlVolver(() => void refrescar())
 
   useAvisosDeSellos()
 
@@ -39,7 +36,8 @@ export function DisenoClub() {
       </main>
     )
   }
-  if (!tarjeta || !negocio) return estado === 'error' ? <ErrorCarga /> : <Cargando />
+  // Sin red sigue reintentando sola (intervalo y al volver); el botón no hace esperar.
+  if (!tarjeta || !negocio) return estado === 'error' ? <ErrorCarga alReintentar={() => void refrescar()} /> : <Cargando />
 
   // Tarjeta de otro negocio abierta en este subdominio: se lleva a su club.
   const slugTarjeta = tarjeta.negocios?.slug
@@ -87,13 +85,9 @@ export function DisenoClub() {
   )
 }
 
-function ErrorCarga() {
+function ErrorCarga({ alReintentar }: { alReintentar: () => void }) {
   const error = useClubStore((e) => e.error)
-  return (
-    <main className="mx-auto max-w-md px-4 pt-24">
-      <EstadoVacio icono={<SearchX />} titulo="No pudimos cargar tu tarjeta" descripcion={error ?? 'Revisa tu conexión e intenta de nuevo.'} />
-    </main>
-  )
+  return <PantallaError titulo="No pudimos cargar tu tarjeta" descripcion={error} alReintentar={alReintentar} />
 }
 
 // Avisa cuando la caja suma sellos o se emite el premio mientras la tarjeta está abierta.

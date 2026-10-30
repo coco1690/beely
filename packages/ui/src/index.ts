@@ -31,6 +31,15 @@ export { LogoBeely, LogoNegocio, MarcaBeely, Sello } from './componentes/marca'
 export { BarraFlotante, clasePestana } from './componentes/barra-flotante'
 export { Cargando } from './componentes/cargando'
 export { JalarParaRecargar } from './componentes/jalar-para-recargar'
+export {
+  ErrorDeApp,
+  esErrorDeVersion,
+  instalarRecuperacion,
+  LimiteErrores,
+  PantallaError,
+  recargarUnaVez,
+  useAlVolver,
+} from './componentes/recuperacion'
 export { BotonModo, SelectorTema } from './componentes/selector-tema'
 export { coloresDeNegocio, LLAVE_TEMA, temas, useTemaStore, type ColoresMarca, type IdTema, type Modo } from './tema'
 export { crearManifest, esAppInstalada, iconosBeely, type OpcionesManifest } from './pwa'

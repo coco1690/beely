@@ -1,8 +1,13 @@
 import {
   Cargando,
+  ErrorDeApp,
+  instalarRecuperacion,
   JalarParaRecargar,
+  LimiteErrores,
+  PantallaError,
   ProveedorConfirmar,
   Toaster,
+  useAlVolver,
 } from "@beely/ui";
 import { StrictMode, useEffect } from "react";
 import { createRoot } from "react-dom/client";
@@ -11,6 +16,7 @@ import {
   Navigate,
   Outlet,
   RouterProvider,
+  useRouteError,
 } from "react-router";
 import { DisenoPanel } from "./componentes/DisenoPanel";
 import { PaginaCaja } from "./paginas/PaginaCaja";
@@ -47,6 +53,10 @@ function ConSesion() {
   const cargar = useNegocioStore((e) => e.cargar);
   const limpiar = useNegocioStore((e) => e.limpiar);
   const cargandoNegocios = useNegocioStore((e) => e.cargando);
+  // Falló la carga y no hay nada en pantalla (p. ej. el navegador la recargó sin red).
+  const sinNegocios = useNegocioStore(
+    (e) => e.error !== null && e.membresias.length === 0,
+  );
   const usuarioId = sesion?.user.id;
 
   useEffect(() => {
@@ -55,10 +65,26 @@ function ConSesion() {
     else limpiar();
   }, [usuarioId, esSuperadmin, cargandoSesion, cargar, limpiar]);
 
+  const reintentar = () => {
+    if (usuarioId) void cargar(usuarioId, esSuperadmin);
+  };
+  useAlVolver(reintentar, sinNegocios);
+
   if (cargandoSesion) return <Cargando />;
   if (!sesion) return <Navigate to="/ingresar" replace />;
   if (cargandoNegocios) return <Cargando />;
+  if (sinNegocios)
+    return (
+      <PantallaError
+        titulo="No pudimos cargar tu negocio"
+        alReintentar={reintentar}
+      />
+    );
   return <Outlet />;
+}
+
+function ErrorDeRuta() {
+  return <ErrorDeApp error={useRouteError()} />;
 }
 
 function SinSesion() {
@@ -115,14 +141,20 @@ function SoloSuperadmin() {
 const enrutador = createBrowserRouter([
   {
     element: <SinSesion />,
+    errorElement: <ErrorDeRuta />,
     children: [
       { path: "/ingresar", element: <PaginaIngreso /> },
       { path: "/recuperar", element: <PaginaRecuperar /> },
     ],
   },
-  { path: "/definir-clave", element: <PaginaDefinirClave /> },
+  {
+    path: "/definir-clave",
+    element: <PaginaDefinirClave />,
+    errorElement: <ErrorDeRuta />,
+  },
   {
     element: <ConSesion />,
+    errorElement: <ErrorDeRuta />,
     children: [
       { index: true, element: <Inicio /> },
       {
@@ -184,10 +216,14 @@ function App() {
   );
 }
 
+instalarRecuperacion();
+
 const raiz = document.getElementById("raiz");
 if (!raiz) throw new Error("No existe #raiz");
 createRoot(raiz).render(
   <StrictMode>
-    <App />
+    <LimiteErrores>
+      <App />
+    </LimiteErrores>
   </StrictMode>,
 );
