@@ -1,8 +1,7 @@
-import { Cargando, EstadoVacio, ProveedorConfirmar, Toaster, useTemaStore } from '@beely/ui'
-import { SearchX } from 'lucide-react'
+import { Cargando, ErrorDeApp, instalarRecuperacion, LimiteErrores, PantallaError, ProveedorConfirmar, Toaster, useAlVolver, useTemaStore } from '@beely/ui'
 import { StrictMode, useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
-import { createBrowserRouter, Navigate, Outlet, RouterProvider } from 'react-router'
+import { createBrowserRouter, Navigate, Outlet, RouterProvider, useRouteError } from 'react-router'
 import { registerSW } from 'virtual:pwa-register'
 import { DisenoClub, Inicio, SinClub } from './componentes/DisenoClub'
 import { PaginaCupones } from './paginas/PaginaCupones'
@@ -26,22 +25,25 @@ function ConNegocio() {
   const error = useClubStore((e) => e.error)
   const cargarNegocio = useClubStore((e) => e.cargarNegocio)
   useEffect(() => void cargarNegocio(), [cargarNegocio])
+  // Si abrió sin red (el teléfono la recargó al desbloquear), reintenta al volver la conexión.
+  useAlVolver(() => void cargarNegocio(), estado === 'error')
 
   if (estado === 'cargando') return <Cargando />
   if (estado === 'no_encontrado') return <SinClub />
   if (estado === 'error') {
-    return (
-      <main className="mx-auto max-w-md px-4 pt-24">
-        <EstadoVacio icono={<SearchX />} titulo="No pudimos abrir el club" descripcion={error ?? 'Revisa tu conexión.'} />
-      </main>
-    )
+    return <PantallaError titulo="No pudimos abrir el club" descripcion={error} alReintentar={() => void cargarNegocio()} />
   }
   return <Outlet />
+}
+
+function ErrorDeRuta() {
+  return <ErrorDeApp error={useRouteError()} />
 }
 
 const enrutador = createBrowserRouter([
   {
     element: <ConNegocio />,
+    errorElement: <ErrorDeRuta />,
     children: [
       {
         index: true,
@@ -67,15 +69,28 @@ const enrutador = createBrowserRouter([
 
 // Service worker: precarga la app (abre sin red) y recibe los Web Push.
 registerSW({ immediate: true })
+instalarRecuperacion()
+
+// Si se publica una versión nueva con el club abierto, su service worker toma el control y
+// borra los archivos de la vieja: la pestaña se recarga en cuanto deja de verse, para que
+// al volver abra la versión nueva completa en vez de quedar a medias.
+if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (document.visibilityState === 'hidden') return window.location.reload()
+    document.addEventListener('visibilitychange', () => document.visibilityState === 'hidden' && window.location.reload())
+  })
+}
 
 const raiz = document.getElementById('raiz')
 if (!raiz) throw new Error('No existe #raiz')
 createRoot(raiz).render(
   <StrictMode>
-    <ProveedorConfirmar>
-      <RouterProvider router={enrutador} />
-      {/* En móvil los toasts quedan sobre la barra inferior de secciones. */}
-      <Toaster margenInferiorMovil="4.5rem" />
-    </ProveedorConfirmar>
+    <LimiteErrores>
+      <ProveedorConfirmar>
+        <RouterProvider router={enrutador} />
+        {/* En móvil los toasts quedan sobre la barra inferior de secciones. */}
+        <Toaster margenInferiorMovil="4.5rem" />
+      </ProveedorConfirmar>
+    </LimiteErrores>
   </StrictMode>,
 )
