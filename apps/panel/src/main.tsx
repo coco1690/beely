@@ -1,5 +1,5 @@
 import {
-  Cargando,
+  CargandoPantalla,
   ErrorDeApp,
   instalarRecuperacion,
   JalarParaRecargar,
@@ -8,6 +8,7 @@ import {
   ProveedorConfirmar,
   Toaster,
   useAlVolver,
+  useCargaSinParpadeo,
 } from "@beely/ui";
 import { StrictMode, useEffect } from "react";
 import { createRoot } from "react-dom/client";
@@ -25,6 +26,7 @@ import { PaginaEquipo } from "./paginas/PaginaEquipo";
 import { PaginaIngreso } from "./paginas/PaginaIngreso";
 import { PaginaNegocio } from "./paginas/PaginaNegocio";
 import { PaginaPerfil } from "./paginas/PaginaPerfil";
+import { PaginaDemoLoader } from "./paginas/PaginaDemoLoader";
 import { PaginaPrograma } from "./paginas/PaginaPrograma";
 import { PaginaRecuperar } from "./paginas/PaginaRecuperar";
 import { PaginaSedes } from "./paginas/PaginaSedes";
@@ -69,10 +71,10 @@ function ConSesion() {
     if (usuarioId) void cargar(usuarioId, esSuperadmin);
   };
   useAlVolver(reintentar, sinNegocios);
+  const enCarga = useCargaSinParpadeo(cargandoSesion || cargandoNegocios);
 
-  if (cargandoSesion) return <Cargando />;
+  if (cargandoSesion || (sesion && enCarga)) return <CargandoPantalla />;
   if (!sesion) return <Navigate to="/ingresar" replace />;
-  if (cargandoNegocios) return <Cargando />;
   if (sinNegocios)
     return (
       <PantallaError
@@ -89,8 +91,8 @@ function ErrorDeRuta() {
 
 function SinSesion() {
   const sesion = useSesionStore((e) => e.sesion);
-  const cargando = useSesionStore((e) => e.cargando);
-  if (cargando) return <Cargando />;
+  const enCarga = useCargaSinParpadeo(useSesionStore((e) => e.cargando));
+  if (enCarga) return <CargandoPantalla />;
   return sesion ? <Navigate to="/" replace /> : <Outlet />;
 }
 
@@ -200,6 +202,10 @@ const enrutador = createBrowserRouter([
       },
     ],
   },
+  // Vitrina del loader, solo en desarrollo.
+  ...(import.meta.env.DEV
+    ? [{ path: "/demo/loader", element: <PaginaDemoLoader /> }]
+    : []),
   { path: "*", element: <Navigate to="/" replace /> },
 ]);
 

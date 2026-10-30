@@ -1,4 +1,4 @@
-import { BarraFlotante, Cargando, clasePestana, EstadoVacio, JalarParaRecargar, LogoNegocio, PantallaError, toast, useAlVolver } from '@beely/ui'
+import { BarraFlotante, Cargando, CargandoPantalla, clasePestana, EstadoVacio, JalarParaRecargar, LogoNegocio, PantallaError, toast, useAlVolver, useCargaSinParpadeo } from '@beely/ui'
 import { CreditCard, SearchX, Ticket, UserRound } from 'lucide-react'
 import { useEffect, useRef, type ReactNode } from 'react'
 import { Navigate, NavLink, Outlet, useParams } from 'react-router'
@@ -28,6 +28,7 @@ export function DisenoClub() {
   useAlVolver(() => void refrescar())
 
   useAvisosDeSellos()
+  const enCarga = useCargaSinParpadeo((!tarjeta || !negocio) && estado !== 'error' && estado !== 'no_encontrado')
 
   if (estado === 'no_encontrado') {
     return (
@@ -37,14 +38,15 @@ export function DisenoClub() {
     )
   }
   // Sin red sigue reintentando sola (intervalo y al volver); el botón no hace esperar.
-  if (!tarjeta || !negocio) return estado === 'error' ? <ErrorCarga alReintentar={() => void refrescar()} /> : <Cargando />
+  if (enCarga) return <Cargando />
+  if (!tarjeta || !negocio) return <ErrorCarga alReintentar={() => void refrescar()} />
 
   // Tarjeta de otro negocio abierta en este subdominio: se lleva a su club.
   const slugTarjeta = tarjeta.negocios?.slug
   if (slugTarjeta && slugTarjeta !== negocio.slug) {
     const destino = urlClub(slugTarjeta, `/t/${token}`)
     if (destino) window.location.replace(destino)
-    return <Cargando />
+    return <CargandoPantalla />
   }
 
   const cupones = cuponesVigentes(tarjeta).length

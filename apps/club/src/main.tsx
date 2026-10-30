@@ -1,4 +1,4 @@
-import { Cargando, ErrorDeApp, instalarRecuperacion, LimiteErrores, PantallaError, ProveedorConfirmar, Toaster, useAlVolver, useTemaStore } from '@beely/ui'
+import { CargandoPantalla, ErrorDeApp, instalarRecuperacion, LimiteErrores, PantallaError, ProveedorConfirmar, Toaster, useAlVolver, useCargaSinParpadeo, useTemaStore } from '@beely/ui'
 import { StrictMode, useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, Navigate, Outlet, RouterProvider, useRouteError } from 'react-router'
@@ -27,8 +27,9 @@ function ConNegocio() {
   useEffect(() => void cargarNegocio(), [cargarNegocio])
   // Si abrió sin red (el teléfono la recargó al desbloquear), reintenta al volver la conexión.
   useAlVolver(() => void cargarNegocio(), estado === 'error')
+  const enCarga = useCargaSinParpadeo(estado === 'cargando')
 
-  if (estado === 'cargando') return <Cargando />
+  if (enCarga) return <CargandoPantalla />
   if (estado === 'no_encontrado') return <SinClub />
   if (estado === 'error') {
     return <PantallaError titulo="No pudimos abrir el club" descripcion={error} alReintentar={() => void cargarNegocio()} />

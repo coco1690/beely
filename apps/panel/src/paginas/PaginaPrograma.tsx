@@ -10,6 +10,7 @@ import {
   Tarjeta,
   TarjetaContenido,
   toast,
+  useCargaSinParpadeo,
 } from "@beely/ui";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -65,8 +66,9 @@ export function PaginaPrograma() {
         }
       });
   }, [negocioId, reset]);
+  const enCarga = useCargaSinParpadeo(programa === undefined);
 
-  if (programa === undefined) return <Cargando />;
+  if (enCarga) return <Cargando />;
 
   const guardar = handleSubmit(async (valores) => {
     if (!programa) return;
