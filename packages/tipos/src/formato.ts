@@ -29,6 +29,12 @@ export function celularOculto(celular: string): string {
   return `${inicio} ••• ${final}`
 }
 
+// +573001234567 → +57 300 123 4567 (otros países: el código y el resto en grupos de 3).
+export function celularLegible(celular: string): string {
+  if (/^\+57\d{10}$/.test(celular)) return `+57 ${celular.slice(3, 6)} ${celular.slice(6, 9)} ${celular.slice(9)}`
+  return celular.replace(/(\d{3})(?=\d{4})/g, '$1 ')
+}
+
 // Lo que se escribe en caja: un celular colombiano de 10 dígitos o en E.164.
 export function normalizarCelular(texto: string): string | null {
   const limpio = texto.replace(/[\s()-]/g, '')

@@ -21,6 +21,7 @@ import {
   ArrowLeft,
   Building2,
   ChevronsUpDown,
+  Contact,
   Ellipsis,
   Layers,
   LayoutDashboard,
@@ -76,6 +77,12 @@ function useEnlaces(modo: ModoPanel): Enlace[] {
         icono: <Building2 />,
       },
       {
+        a: "/superadmin/clientes",
+        texto: "Clientes",
+        corto: "Clientes",
+        icono: <Contact />,
+      },
+      {
         a: "/superadmin/planes",
         texto: "Planes",
         corto: "Planes",
@@ -95,6 +102,13 @@ function useEnlaces(modo: ModoPanel): Enlace[] {
       corto: "Caja",
       icono: <ScanLine />,
       visible: Boolean(activo),
+    },
+    {
+      a: "/clientes",
+      texto: "Clientes",
+      corto: "Clientes",
+      icono: <Contact />,
+      visible: puedeConfigurar(rol),
     },
     {
       a: "/programa",
