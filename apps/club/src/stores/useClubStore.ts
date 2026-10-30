@@ -28,7 +28,7 @@ async function consultarTarjeta(slug: string, token: string) {
        negocios ( slug ),
        programas ( sellos_requeridos, premio_descripcion, premio_vigencia_dias,
          disenos_tarjeta ( color_fondo, color_texto, color_etiquetas, titulo, logo_url ) ),
-       cupones ( id, codigo, descripcion, origen, estado, vence_en, canjeado_en, creado_en ),
+       cupones ( id, codigo, descripcion, origen, estado, vence_en, canjeado_en, creado_en, campanas ( mensaje ) ),
        eventos_sello ( id, cantidad, origen, creado_en, sedes ( nombre ) )`,
     )
     .order('creado_en', { referencedTable: 'eventos_sello', ascending: false })

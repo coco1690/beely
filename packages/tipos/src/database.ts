@@ -7,14 +7,14 @@ export type Database = {
           Tables: {
             "campanas": {
                   Row: {
-                    "actualizado_en": string,"canales": (string)[],"config": NonNullable<Json>,"creado_en": string,"creado_por": string | null,"disparador": string,"estado": string,"id": string,"mensaje": string,"negocio_id": string,"nombre": string,"oferta_id": string | null,"programada_para": string | null,"segmento": NonNullable<Json>,"titulo": string
+                    "actualizado_en": string,"cancelada_en": string | null,"canales": (string)[],"config": NonNullable<Json>,"creado_en": string,"creado_por": string | null,"disparador": string,"estado": string,"id": string,"lanzada_en": string | null,"mensaje": string,"negocio_id": string,"nombre": string,"oferta_id": string | null,"programada_para": string | null,"segmento": NonNullable<Json>,"termina_en": string | null,"titulo": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "actualizado_en"?: string,"canales"?: (string)[],"config"?: NonNullable<Json>,"creado_en"?: string,"creado_por"?: string | null,"disparador": string,"estado"?: string,"id"?: string,"mensaje": string,"negocio_id": string,"nombre": string,"oferta_id"?: string | null,"programada_para"?: string | null,"segmento"?: NonNullable<Json>,"titulo": string
+                    "actualizado_en"?: string,"cancelada_en"?: string | null,"canales"?: (string)[],"config"?: NonNullable<Json>,"creado_en"?: string,"creado_por"?: string | null,"disparador": string,"estado"?: string,"id"?: string,"lanzada_en"?: string | null,"mensaje": string,"negocio_id": string,"nombre": string,"oferta_id"?: string | null,"programada_para"?: string | null,"segmento"?: NonNullable<Json>,"termina_en"?: string | null,"titulo": string
                   }
                   Update: {
-                    "actualizado_en"?: string,"canales"?: (string)[],"config"?: NonNullable<Json>,"creado_en"?: string,"creado_por"?: string | null,"disparador"?: string,"estado"?: string,"id"?: string,"mensaje"?: string,"negocio_id"?: string,"nombre"?: string,"oferta_id"?: string | null,"programada_para"?: string | null,"segmento"?: NonNullable<Json>,"titulo"?: string
+                    "actualizado_en"?: string,"cancelada_en"?: string | null,"canales"?: (string)[],"config"?: NonNullable<Json>,"creado_en"?: string,"creado_por"?: string | null,"disparador"?: string,"estado"?: string,"id"?: string,"lanzada_en"?: string | null,"mensaje"?: string,"negocio_id"?: string,"nombre"?: string,"oferta_id"?: string | null,"programada_para"?: string | null,"segmento"?: NonNullable<Json>,"termina_en"?: string | null,"titulo"?: string
                   }
                   Relationships: [
                     {
@@ -443,7 +443,27 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "canjear_cupon":
+            "campana_cancelar":
+{ Args: { "p_campana_id": string }; Returns: Json
+                           },
+"campana_eliminar":
+{ Args: { "p_campana_id": string }; Returns: undefined
+                           },
+"campana_guardar":
+{ Args: { "p_campana_id"?: string,"p_filtro": string,"p_inicia": string,"p_mensaje"?: string,"p_negocio_id": string,"p_producto"?: string,"p_termina": string,"p_tipo": string,"p_titulo": string,"p_valor"?: number }; Returns: string
+                           },
+"campana_lanzar":
+{ Args: { "p_campana_id": string }; Returns: Json
+                           },
+"campanas_alcance":
+{ Args: { "p_negocio_id": string }; Returns: Json
+                           },
+"campanas_negocio":
+{ Args: { "p_negocio_id": string }; Returns: {
+              "cancelada_en": string,"creado_en": string,"cupones_canjeados": number,"cupones_emitidos": number,"estado": string,"filtro": string,"id": string,"inicia": string,"lanzada_en": string,"mensaje": string,"producto": string,"programada_para": string,"termina": string,"termina_en": string,"tipo": string,"titulo": string,"valor": number
+            }[]
+                           },
+"canjear_cupon":
 { Args: { "p_canjeado_por"?: string,"p_codigo": string,"p_negocio_id": string,"p_sede_id"?: string,"p_venta_externa_id"?: string }; Returns: Json
                            },
 "clientes_negocio":

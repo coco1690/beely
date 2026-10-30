@@ -1,6 +1,6 @@
 # Modelo de datos — Beely
 
-Migraciones: `supabase/migrations/20261027000001_nucleo.sql` (núcleo), `20261027000002_panel.sql` (Sprint 1, panel) y `20261027000005_club.sql` (Sprint 2, club) · Pruebas: `supabase/tests/0001_nucleo.sql` (recorrido), `0002_nucleo_aserciones.sql` y `0003_panel_aserciones.sql` (aserciones, corren en CI)
+Migraciones: `supabase/migrations/20261027000001_nucleo.sql` (núcleo), `20261030000009_campanas.sql` (campañas), `20261027000002_panel.sql` (Sprint 1, panel) y `20261027000005_club.sql` (Sprint 2, club) · Pruebas: `supabase/tests/0001_nucleo.sql` (recorrido), `0002_nucleo_aserciones.sql` y `0003_panel_aserciones.sql` (aserciones, corren en CI)
 
 El Sprint 1 no agrega tablas: agrega funciones, políticas y validaciones sobre las del núcleo.
 
@@ -93,9 +93,13 @@ erDiagram
         uuid id PK
         text disparador
         jsonb config
-        jsonb segmento
-        text_arr canales
+        jsonb segmento "filtro: todos | inactivos | cumple | nuevos"
+        text_arr canales "push | wallet | club"
         text estado
+        timestamptz programada_para "empieza"
+        timestamptz termina_en "vencen sus cupones"
+        timestamptz lanzada_en
+        timestamptz cancelada_en
     }
 ```
 
@@ -115,7 +119,7 @@ erDiagram
 | `eventos_sello` | Ledger inmutable de sellos (+venta, −premio, ±ajuste) | Solo `registrar_sello()` |
 | `ofertas` | Plantillas de descuento | Dueño/admin |
 | `cupones` | Cupones emitidos a una tarjeta | Funciones SQL / Edge Functions |
-| `campanas` | Configuración de campañas y disparadores | Dueño/admin |
+| `campanas` | Configuración de campañas y disparadores. Desde la 0009, promociones que emiten un cupón por tarjeta | Solo funciones (`campana_guardar`, `campana_lanzar`, `campana_cancelar`, `campana_eliminar`) y pg_cron |
 | `envios_campana` | Registro de cada envío; base del tope semanal | Motor de campañas |
 | `suscripciones_push` | Endpoints Web Push por dispositivo | `club-push-suscribir` |
 | `pases_wallet` | Pase emitido en Google/Apple por tarjeta | `wallet-google` / `wallet-apple` |
@@ -192,6 +196,24 @@ RLS de `anon` (la PWA): ve el negocio del slug o del token, su programa activo, 
 | `clientes_resumen(negocio_id) → jsonb` | Dueño / administrador / superadmin | Cuántos clientes hay en total, nuevos en 30 días, con marketing y en cada filtro | `sin_permiso` |
 | `superadmin_clientes(negocio_id?, busqueda?, limite = 50, desde = 0) → setof` | Superadmin | Clientes de toda la plataforma con su negocio, celular y fecha de nacimiento (datos completos por decisión de producto, 2026-10-30), sellos, premios y última visita | `sin_permiso`, `solicitud_invalida` |
 
+### Campañas de promociones (migración 0009)
+
+Una campaña es una promoción (`ofertas.tipo`: `porcentaje`, `monto_fijo`, `producto_gratis`, `dos_por_uno`) para un grupo de clientes y unas fechas. Al lanzarla, cada tarjeta del grupo recibe un cupón `origen = 'campana'` (único por campaña y tarjeta) que vence al terminar el último día en la zona del negocio y se canjea en caja con `canjear_cupon()` como cualquier otro. Solo reciben quienes aceptan promociones (`acepta_marketing`, regla 8) y tienen la tarjeta activa del programa activo. Hoy el canal es el club (`canales = {club}`); push y Wallet llegan en el Sprint 5.
+
+| Función | Quién | Hace | Errores |
+|--------|-------|------|---------|
+| `campana_guardar(negocio_id, tipo, titulo, filtro, inicia, termina, valor?, producto?, mensaje?, campana_id?) → uuid` | Dueño / administrador / superadmin | Crea o edita un borrador y su oferta. `inicia` y `termina` son días del negocio; empieza a las 00:00 de `inicia` | `sin_permiso`, `solicitud_invalida`, `fechas_invalidas`, `campana_no_encontrada`, `campana_no_editable` |
+| `campana_lanzar(campana_id) → jsonb` | Ídem | Si su día llegó emite los cupones ya (`{programada:false, cupones}`); si no, la deja `activa` y la emite pg_cron | `campana_no_encontrada`, `campana_no_editable`, `negocio_inactivo`, `campana_vencida` |
+| `campana_cancelar(campana_id) → jsonb` | Ídem | Anula los cupones sin canjear (`{anulados}`) y la finaliza | `campana_no_encontrada`, `campana_no_editable` |
+| `campana_eliminar(campana_id)` | Ídem | Borra un borrador y su oferta | `campana_no_encontrada`, `campana_no_editable` |
+| `campanas_negocio(negocio_id) → setof` | Ídem (`security invoker`) | Campañas con su oferta, estado visible (`borrador`, `programada`, `en_curso`, `terminada`, `cancelada`), días y cupones emitidos/canjeados | `sin_permiso` |
+| `campanas_alcance(negocio_id) → jsonb` | Ídem | Cuántas tarjetas hay hoy en cada grupo y cuántos clientes en total | `sin_permiso` |
+| `privado.lanzar_campanas_programadas()` | pg_cron cada 10 min (`beely-campanas-programadas`) | Emite las programadas cuyo día llegó y cierra las que vencieron sin lanzarse | — |
+
+Grupos (`segmento.filtro`): `todos`; `inactivos` (registrados y sin volver hace más de 30 días); `cumple` (cumplen este mes en la zona del negocio y ya tienen un sello, como el bono de cumpleaños); `nuevos` (registrados en los últimos 30 días). El grupo se evalúa el día del lanzamiento.
+
+`authenticated` ya no inserta, actualiza ni borra `campanas` directo. El club (anon) ve `titulo` y `mensaje` solo de las campañas de las que su tarjeta tiene un cupón, y `cupones.campana_id`. Pantallas: `/campanas`, `/campanas/nueva` y `/campanas/:id` (borrador), para dueño y administrador.
+
 El cajero no lista clientes: en caja solo abre una tarjeta por QR o celular. Pantallas: `/clientes` (dueño y administrador) y `/superadmin/clientes` (acepta `?negocio=` desde la ficha).
 
 "Sellos" en las métricas son los de venta (`origen in ('api_pos', 'panel')`, cantidad positiva); no cuentan ajustes ni el descuento al emitir premio. El panel de plataforma vive en `/superadmin` (tablero), `/superadmin/negocios`, `/superadmin/negocios/:id`, `/superadmin/clientes` y `/superadmin/equipo`.
@@ -255,3 +277,15 @@ El cajero no lista clientes: en caja solo abre una tarjeta por QR o celular. Pan
 - [x] Filtros `premio` (solo cupones emitidos y vigentes), `cumple` e `inactivos`, búsqueda por nombre o parte del celular sin comodines, orden y paginación
 - [x] `clientes_resumen` cuenta lo mismo que cada filtro
 - [x] `superadmin_clientes` ve todos los negocios, filtra por negocio, busca por celular y trae el celular completo
+
+### Campañas (`0010_campanas_aserciones.sql`)
+
+- [x] Alcance solo con quien acepta promociones y tiene tarjeta activa; `cumple` exige un sello
+- [x] Guardar valida tipo, valor, producto, grupo y fechas; editar conserva la oferta; nadie escribe `campanas` directo
+- [x] Lanzar hoy emite un cupón por tarjeta, con texto, vencimiento y oferta; no se lanza, edita ni borra dos veces; emitir de nuevo no duplica
+- [x] El cupón de campaña se canjea con `canjear_cupon`; la lista trae estado, días y resultados
+- [x] Cajero y otro negocio no listan, crean ni cancelan; anon no llama las funciones
+- [x] El club ve título y mensaje solo de sus campañas, nunca el segmento
+- [x] Cancelar anula los cupones sin canjear y conserva el canjeado
+- [x] Programada: el job la emite cuando llega su día, una sola vez, y cierra las vencidas
+- [x] Borrar un borrador borra su oferta; un negocio suspendido no lanza
