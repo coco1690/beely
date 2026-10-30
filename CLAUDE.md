@@ -95,6 +95,7 @@ beely/
 | `pos-cupones-canjear` | POS (llave API) | `POST /v1/cupones/canjear` → `canjear_cupon`. |
 | `pos-clientes` | POS (llave API) | Buscar tarjeta por token o celular. |
 | `panel-sello` | Panel (cajero autenticado) | Igual que `pos-sellos` pero con sesión del cajero. ✅ Sprint 1 |
+| `panel-canje` | Panel (cajero autenticado) | Canjea un cupón de la tarjeta abierta en caja → `canjear_cupon`, idempotente por clave; actualiza el pase de Google Wallet. ✅ |
 | `panel-equipo` | Panel (dueño o superadmin) | Suma a alguien al equipo: con clave crea la cuenta lista, sin clave invita por correo; crea la membresía. ✅ Sprint 1 |
 | `club-dominio` | Panel (superadmin) | Conecta `{slug}.hibeely.com`: dominio en el proyecto Vercel del club + CNAME en Hostinger. Se llama al crear el negocio y desde su ficha. |
 | `wallet-google` | PWA (anon + token) | Crea/actualiza LoyaltyClass y LoyaltyObject, genera el enlace firmado "Agregar a Google Wallet". `panel-sello` actualiza el pase al sumar sellos. ✅ (ver `docs/google-wallet.md`) |

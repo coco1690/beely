@@ -14,9 +14,11 @@ import {
   TarjetaContenido,
   TarjetaEncabezado,
   TarjetaTitulo,
+  toast,
+  useConfirmar,
   useMedia,
 } from "@beely/ui";
-import { Camera, Gift, Info, Search, Stamp } from "lucide-react";
+import { Camera, Check, Gift, Info, Search, Stamp } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { EncabezadoPagina } from "../componentes/DisenoPanel";
 import { EscanerQr } from "../componentes/EscanerQr";
@@ -28,6 +30,7 @@ import {
   normalizarCelular,
   numero,
   pesos,
+  type ResultadoCanje,
   type ResultadoSello,
 } from "@beely/tipos";
 import { llamarFuncion, mensajeDe } from "../lib/funciones";
@@ -52,6 +55,8 @@ async function buscarTarjeta(negocioId: string, token: string) {
 }
 
 type TarjetaCaja = NonNullable<Awaited<ReturnType<typeof buscarTarjeta>>>;
+
+type CuponCaja = TarjetaCaja["cupones"][number];
 
 type Movimiento = {
   id: string;
@@ -86,6 +91,9 @@ export function PaginaCaja() {
     resultado: ResultadoSello;
   } | null>(null);
   const [movimientos, setMovimientos] = useState<Movimiento[]>([]);
+  // En el celular la tarjeta abierta y la confirmación quedan fuera de la pantalla: se llevan a la vista.
+  const refTarjeta = useRef<HTMLDivElement>(null);
+  const refAviso = useRef<HTMLDivElement>(null);
 
   const negocioId = activo?.negocio.id;
   const zona = activo?.negocio.zona_horaria;
@@ -112,6 +120,22 @@ export function PaginaCaja() {
     setUltimo(null);
     void cargarMovimientos();
   }, [cargarMovimientos]);
+
+  const tarjetaId = tarjeta?.id;
+  useEffect(() => {
+    if (tarjetaId)
+      refTarjeta.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+  }, [tarjetaId]);
+  useEffect(() => {
+    if (ultimo)
+      refAviso.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
+  }, [ultimo]);
 
   const abrirTarjeta = async (token: string) => {
     if (!negocioId) return;
@@ -195,6 +219,26 @@ export function PaginaCaja() {
     }
   };
 
+  // Canjea un cupón de la tarjeta abierta. Devuelve si quedó canjeado (también si ya lo estaba
+  // por esta misma petición); la tarjeta sigue abierta por si la compra también suma sello.
+  const canjearCupon = async (cupon: CuponCaja): Promise<boolean> => {
+    if (!negocioId) return false;
+    setError(null);
+    try {
+      await llamarFuncion<ResultadoCanje>("panel-canje", {
+        negocio_id: negocioId,
+        codigo: cupon.codigo,
+        sede_id: sedeCajaId,
+        clave_idempotencia: crypto.randomUUID(),
+      });
+      toast.success(`Canjeado: ${cupon.descripcion}`);
+      return true;
+    } catch (e) {
+      setError(mensajeDe(e));
+      return false;
+    }
+  };
+
   const limpiar = () => {
     setTarjeta(null);
     setResultado(null);
@@ -252,7 +296,19 @@ export function PaginaCaja() {
             </Aviso>
           ) : null}
 
-          {escaneando && !esMovil ? (
+          {ultimo && !tarjeta ? (
+            <div
+              ref={refAviso}
+              className="scroll-mt-[calc(6rem+env(safe-area-inset-top))] md:scroll-mt-4"
+            >
+              <AvisoResultado
+                nombre={ultimo.nombre}
+                resultado={ultimo.resultado}
+              />
+            </div>
+          ) : null}
+
+          {tarjeta ? null : escaneando && !esMovil ? (
             <Tarjeta className="motion-safe:animate-aparecer">
               <TarjetaContenido sinEncabezado>{escaner}</TarjetaContenido>
             </Tarjeta>
@@ -305,16 +361,10 @@ export function PaginaCaja() {
 
           {error ? <Aviso tono="peligro">{error}</Aviso> : null}
 
-          {ultimo && !tarjeta ? (
-            <AvisoResultado
-              nombre={ultimo.nombre}
-              resultado={ultimo.resultado}
-            />
-          ) : null}
-
           {tarjeta ? (
             <VistaTarjeta
               key={tarjeta.id}
+              ref={refTarjeta}
               tarjeta={tarjeta}
               zona={zona}
               resultado={resultado}
@@ -329,6 +379,7 @@ export function PaginaCaja() {
                       : null
               }
               onSumar={(compra) => void sumarSello(compra)}
+              onCanjear={canjearCupon}
               onOtro={limpiar}
             />
           ) : null}
@@ -372,14 +423,17 @@ export function PaginaCaja() {
 }
 
 function VistaTarjeta({
+  ref,
   tarjeta,
   zona,
   resultado,
   sumando,
   motivoBloqueo,
   onSumar,
+  onCanjear,
   onOtro,
 }: {
+  ref: React.Ref<HTMLDivElement>;
   tarjeta: TarjetaCaja;
   zona: string | undefined;
   resultado: ResultadoSello | null;
@@ -387,8 +441,12 @@ function VistaTarjeta({
   // Si no se puede sumar, por qué (se muestra junto al botón).
   motivoBloqueo: string | null;
   onSumar: (compra: { monto_venta?: number; unidades?: number }) => void;
+  onCanjear: (cupon: CuponCaja) => Promise<boolean>;
   onOtro: () => void;
 }) {
+  const confirmar = useConfirmar();
+  const [canjeando, setCanjeando] = useState<string | null>(null);
+  const [canjeados, setCanjeados] = useState<string[]>([]);
   const requeridos = tarjeta.programas?.sellos_requeridos ?? 10;
   const regla = tarjeta.programas?.regla_sello;
   // Lo que la caja debe preguntar según la regla del programa.
@@ -416,6 +474,20 @@ function VistaTarjeta({
   const vigentes = tarjeta.cupones.filter(
     (c) => new Date(c.vence_en) > new Date(),
   );
+  const nombre = tarjeta.clientes?.nombre ?? "el cliente";
+
+  const canjear = async (cupon: CuponCaja) => {
+    if (canjeando) return;
+    const seguro = await confirmar({
+      titulo: `¿Canjear “${cupon.descripcion}”?`,
+      descripcion: `Entrégaselo a ${nombre}. El cupón queda usado y no se puede deshacer.`,
+      textoConfirmar: "Canjear",
+    });
+    if (!seguro) return;
+    setCanjeando(cupon.id);
+    if (await onCanjear(cupon)) setCanjeados((c) => [...c, cupon.id]);
+    setCanjeando(null);
+  };
   const motivo =
     motivoBloqueo ??
     (compraValida
@@ -425,129 +497,160 @@ function VistaTarjeta({
         : "Escribe las unidades compradas.");
 
   return (
-    <Tarjeta className="motion-safe:animate-aparecer">
-      <TarjetaEncabezado className="flex-row items-start justify-between gap-3">
-        <div className="min-w-0">
-          <TarjetaTitulo className="line-clamp-2 break-words">
-            {tarjeta.clientes?.nombre}
-          </TarjetaTitulo>
-          <p className="font-mono text-etiqueta text-texto-3">
-            {tarjeta.clientes ? celularOculto(tarjeta.clientes.celular) : null}
-          </p>
-        </div>
-        {tarjeta.estado !== "activa" ? (
-          <Insignia tono="peligro">Bloqueada</Insignia>
-        ) : null}
-      </TarjetaEncabezado>
-      <TarjetaContenido className="flex flex-col gap-5">
-        <ProgresoSellos
-          actuales={tarjeta.sellos_actuales}
-          requeridos={requeridos}
-          premio={tarjeta.programas?.premio_descripcion}
-        />
-
-        <dl className="grid grid-cols-3 gap-px overflow-hidden rounded-control border border-borde bg-borde text-center">
-          {[
-            ["Última visita", fechaHora(tarjeta.ultima_visita_en, zona)],
-            ["Sellos en total", numero(tarjeta.sellos_historicos)],
-            ["Premios", numero(tarjeta.premios_ganados)],
-          ].map(([titulo, valor]) => (
-            <div
-              key={titulo}
-              className="flex min-w-0 flex-col gap-0.5 bg-superficie px-2 py-2.5"
-            >
-              <dt className="truncate text-xs text-texto-3">{titulo}</dt>
-              <dd className="text-etiqueta font-medium text-texto tabular-nums">
-                {valor}
-              </dd>
-            </div>
-          ))}
-        </dl>
-
-        {resultado ? <AvisoResultado resultado={resultado} /> : null}
-
-        {vigentes.length > 0 ? (
-          <div className="flex flex-col gap-2">
-            <p className="text-etiqueta font-medium text-texto-2">
-              Cupones por canjear
+    <div
+      ref={ref}
+      className="scroll-mt-[calc(6rem+env(safe-area-inset-top))] md:scroll-mt-4"
+    >
+      <Tarjeta className="motion-safe:animate-aparecer">
+        <TarjetaEncabezado className="flex-row items-start justify-between gap-3">
+          <div className="min-w-0">
+            <TarjetaTitulo className="line-clamp-2 break-words">
+              {tarjeta.clientes?.nombre}
+            </TarjetaTitulo>
+            <p className="font-mono text-etiqueta text-texto-3">
+              {tarjeta.clientes
+                ? celularOculto(tarjeta.clientes.celular)
+                : null}
             </p>
-            <Lista className="rounded-control border border-acento-borde bg-acento-suave">
-              {vigentes.map((c) => (
-                <FilaLista key={c.id} className="gap-y-1 px-3 py-2.5 sm:px-3">
-                  <span className="flex min-w-0 items-center gap-2 text-sm text-texto">
-                    <Gift
-                      className="size-4 shrink-0 text-acento-texto"
-                      aria-hidden
-                    />
-                    <span className="min-w-0">{c.descripcion}</span>
-                  </span>
-                  <span className="font-mono text-xs text-texto-2">
-                    {c.codigo} · vence {fecha(c.vence_en, zona)}
-                  </span>
-                </FilaLista>
-              ))}
-            </Lista>
           </div>
-        ) : null}
-
-        {pideMonto ? (
-          <Campo
-            id="monto"
-            etiqueta="Valor de la compra"
-            ayuda={
-              regla === "por_monto"
-                ? `1 sello por cada ${pesos(tarjeta.programas?.monto_por_sello)}`
-                : `Compra mínima ${pesos(tarjeta.programas?.monto_minimo)}`
-            }
-          >
-            <Entrada
-              id="monto"
-              type="number"
-              inputMode="numeric"
-              min={0}
-              step="100"
-              value={monto}
-              onChange={(e) => setMonto(e.target.value)}
-            />
-          </Campo>
-        ) : null}
-        {pideUnidades ? (
-          <Campo id="unidades" etiqueta="Unidades compradas">
-            <Entrada
-              id="unidades"
-              type="number"
-              inputMode="numeric"
-              min={1}
-              max={100}
-              value={unidades}
-              onChange={(e) => setUnidades(e.target.value)}
-            />
-          </Campo>
-        ) : null}
-
-        <div className="flex flex-col gap-2">
-          <div className="flex gap-2">
-            <Boton
-              tamano="lg"
-              className="flex-1"
-              onClick={sumar}
-              cargando={sumando}
-              disabled={motivo !== null}
-            >
-              <Stamp className="size-5" /> Sumar sello
-            </Boton>
-            <Boton tamano="lg" variante="contorno" onClick={onOtro}>
-              Otro cliente
-            </Boton>
-          </div>
-          {motivo && !sumando ? (
-            <p className="flex items-center gap-1.5 text-etiqueta text-texto-3">
-              <Info className="size-3.5 shrink-0" aria-hidden /> {motivo}
-            </p>
+          {tarjeta.estado !== "activa" ? (
+            <Insignia tono="peligro">Bloqueada</Insignia>
           ) : null}
-        </div>
-      </TarjetaContenido>
-    </Tarjeta>
+        </TarjetaEncabezado>
+        <TarjetaContenido className="flex flex-col gap-5">
+          <ProgresoSellos
+            actuales={tarjeta.sellos_actuales}
+            requeridos={requeridos}
+            premio={tarjeta.programas?.premio_descripcion}
+          />
+
+          {vigentes.length > 0 ? (
+            <div className="flex flex-col gap-2">
+              <p className="text-etiqueta font-medium text-texto-2">
+                Cupones por canjear
+              </p>
+              <Lista className="rounded-control border border-acento-borde bg-acento-suave">
+                {vigentes.map((c) => {
+                  const canjeado = canjeados.includes(c.id);
+                  return (
+                    <FilaLista
+                      key={c.id}
+                      className="flex-nowrap gap-3 px-3 py-2.5 sm:px-3"
+                    >
+                      <div className="flex min-w-0 flex-col gap-0.5">
+                        <span className="flex min-w-0 items-center gap-2 text-sm font-medium text-texto">
+                          <Gift
+                            className="size-4 shrink-0 text-acento-texto"
+                            aria-hidden
+                          />
+                          <span className="min-w-0">{c.descripcion}</span>
+                        </span>
+                        <span className="font-mono text-xs text-texto-2">
+                          {c.codigo} · vence {fecha(c.vence_en, zona)}
+                        </span>
+                      </div>
+                      {canjeado ? (
+                        <Insignia tono="exito">
+                          <Check className="size-3.5" aria-hidden /> Canjeado
+                        </Insignia>
+                      ) : (
+                        <Boton
+                          tamano="sm"
+                          variante="contorno"
+                          cargando={canjeando === c.id}
+                          disabled={motivoBloqueo !== null}
+                          onClick={() => void canjear(c)}
+                        >
+                          Canjear
+                        </Boton>
+                      )}
+                    </FilaLista>
+                  );
+                })}
+              </Lista>
+            </div>
+          ) : null}
+
+          <dl className="grid grid-cols-3 gap-px overflow-hidden rounded-control border border-borde bg-borde text-center">
+            {[
+              ["Última visita", fechaHora(tarjeta.ultima_visita_en, zona)],
+              ["Sellos en total", numero(tarjeta.sellos_historicos)],
+              ["Premios", numero(tarjeta.premios_ganados)],
+            ].map(([titulo, valor]) => (
+              <div
+                key={titulo}
+                className="flex min-w-0 flex-col gap-0.5 bg-superficie px-2 py-2.5"
+              >
+                <dt className="truncate text-xs text-texto-3">{titulo}</dt>
+                <dd className="text-etiqueta font-medium text-texto tabular-nums">
+                  {valor}
+                </dd>
+              </div>
+            ))}
+          </dl>
+
+          {resultado ? <AvisoResultado resultado={resultado} /> : null}
+
+          {pideMonto ? (
+            <Campo
+              id="monto"
+              etiqueta="Valor de la compra"
+              ayuda={
+                regla === "por_monto"
+                  ? `1 sello por cada ${pesos(tarjeta.programas?.monto_por_sello)}`
+                  : `Compra mínima ${pesos(tarjeta.programas?.monto_minimo)}`
+              }
+            >
+              <Entrada
+                id="monto"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                step="100"
+                value={monto}
+                onChange={(e) => setMonto(e.target.value)}
+              />
+            </Campo>
+          ) : null}
+          {pideUnidades ? (
+            <Campo id="unidades" etiqueta="Unidades compradas">
+              <Entrada
+                id="unidades"
+                type="number"
+                inputMode="numeric"
+                min={1}
+                max={100}
+                value={unidades}
+                onChange={(e) => setUnidades(e.target.value)}
+              />
+            </Campo>
+          ) : null}
+
+          {/* En el celular las acciones quedan pegadas encima de la barra flotante. */}
+          <div className="sticky bottom-[calc(5.25rem+env(safe-area-inset-bottom))] z-10 -mx-4 -mb-4 flex flex-col gap-2 rounded-b-tarjeta border-t border-borde bg-superficie px-4 py-3 sm:-mx-5 sm:-mb-5 sm:px-5 md:static md:mx-0 md:mb-0 md:border-0 md:p-0">
+            <div className="flex gap-2">
+              <Boton
+                tamano="lg"
+                className="flex-1"
+                onClick={sumar}
+                cargando={sumando}
+                disabled={motivo !== null}
+              >
+                <Stamp className="size-5" /> Sumar sello
+              </Boton>
+              <Boton tamano="lg" variante="contorno" onClick={onOtro}>
+                Otro cliente
+              </Boton>
+            </div>
+            {motivo && !sumando ? (
+              <p className="flex items-center gap-1.5 text-etiqueta text-texto-3">
+                <Info className="size-3.5 shrink-0" aria-hidden /> {motivo}
+              </p>
+            ) : null}
+          </div>
+        </TarjetaContenido>
+      </Tarjeta>
+    </div>
   );
 }
 

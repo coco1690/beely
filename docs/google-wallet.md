@@ -9,6 +9,7 @@ El cliente toca **Agregar a Google Wallet** en su tarjeta del club (`{slug}.hibe
 | Edge Function pública | `supabase/functions/wallet-google` (`verify_jwt = false`) |
 | Cliente de la API de Google Wallet | `supabase/functions/_compartido/google-wallet.ts` (JWT RS256 con WebCrypto, sin dependencias) |
 | Sincronización al sumar sellos | `supabase/functions/panel-sello` (en segundo plano, no demora la caja) |
+| Sincronización al canjear un cupón en caja | `supabase/functions/panel-canje` (igual, en segundo plano) |
 | Botón en la PWA | `apps/club/src/componentes/BotonGoogleWallet.tsx` |
 | Esquema zod | `esquemaWalletGoogle` en `packages/tipos/src/esquemas.ts` |
 

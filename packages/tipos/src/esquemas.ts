@@ -51,6 +51,24 @@ export const esquemaResultadoSello = z.object({
 })
 export type ResultadoSello = z.infer<typeof esquemaResultadoSello>
 
+// POST /functions/v1/panel-canje
+export const esquemaPanelCanje = z.object({
+  negocio_id: esquemaUuid,
+  codigo: z.string().trim().min(4, 'Código muy corto').max(40, 'Código muy largo'),
+  sede_id: esquemaUuid.nullable().optional(),
+  // Una por intento de canje: si la red repite la petición responde duplicado sin fallar.
+  clave_idempotencia: esquemaUuid,
+})
+export type PanelCanje = z.infer<typeof esquemaPanelCanje>
+
+export const esquemaResultadoCanje = z.object({
+  duplicado: z.boolean(),
+  cupon_id: z.string(),
+  estado: z.string(),
+  descripcion: z.string().optional(),
+})
+export type ResultadoCanje = z.infer<typeof esquemaResultadoCanje>
+
 // POST /functions/v1/panel-equipo
 export const esquemaInvitarMiembro = z.object({
   negocio_id: esquemaUuid,

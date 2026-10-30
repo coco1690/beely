@@ -55,6 +55,33 @@ Respuesta 200: el JSON de `registrar_sello` (`sellos_sumados`, `sellos_actuales`
 | `tarjeta_no_encontrada`, `sede_no_encontrada` | 404 |
 | `tarjeta_bloqueada`, `programa_inactivo`, `negocio_inactivo` | 409 |
 
+### `POST /functions/v1/panel-canje`
+
+```json
+{
+  "negocio_id": "uuid",
+  "codigo": "código del cupón (ej. ANG-7H2K)",
+  "sede_id": "uuid | null",
+  "clave_idempotencia": "uuid"
+}
+```
+
+1. Igual que `panel-sello`: valida el JWT y que quien llama vea el negocio por RLS. Si no → `403 sin_permiso`.
+2. Llama `canjear_cupon` con `service_role`, `canjeado_por = usuario` y `venta_externa_id = 'panel:' + clave_idempotencia`. Repetir la misma petición responde `duplicado: true`.
+3. En segundo plano actualiza el pase de Google Wallet de la tarjeta (cuenta los premios listos).
+
+En la Caja cada cupón vigente de la tarjeta abierta tiene un botón **Canjear**, con confirmación ("no se puede deshacer"). La tarjeta queda abierta por si la compra también suma sello.
+
+Respuesta 200: el JSON de `canjear_cupon` (`duplicado`, `cupon_id`, `estado`, `descripcion`).
+
+| Código | HTTP |
+|-------|------|
+| `no_autenticado` | 401 |
+| `solicitud_invalida` | 400 |
+| `sin_permiso` | 403 |
+| `cupon_no_encontrado` | 404 |
+| `cupon_ya_canjeado`, `cupon_no_disponible`, `cupon_vencido` | 409 |
+
 ### `POST /functions/v1/panel-equipo`
 
 ```json
@@ -116,7 +143,7 @@ La cámara del navegador exige `https` o `localhost`; para probar con un celular
 - Auth → desactivar registros (`enable_signup = false`, igual que `config.toml`): solo entra quien el negocio invita.
 - Auth → Site URL `https://app.hibeely.com` y redirect `https://app.hibeely.com/**`.
 - Secretos: `supabase secrets set PANEL_URL=https://app.hibeely.com`.
-- Desplegar: `supabase functions deploy panel-sello panel-equipo`.
+- Desplegar: `supabase functions deploy panel-sello panel-canje panel-equipo`.
 - Primer superadmin: `insert into public.superadmins (usuario_id) values ('<uuid del usuario>');` desde el SQL editor.
 
 ## Checklist de pruebas manuales (hecho en local con Playwright y curl)
