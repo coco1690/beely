@@ -1,0 +1,195 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-30T06:22:15Z",
+  "title": "Design System: Beely",
+  "extensions": {
+    "colorMeta": {
+      "acento-beely": {
+        "role": "primary",
+        "displayName": "Coral Beely",
+        "canonical": "linear-gradient(135deg, #dd4f3a, #d03568)",
+        "tonalRamp": [
+          "#4a140d",
+          "#7a2216",
+          "#a8301f",
+          "#dd4f3a",
+          "#e8735f",
+          "#f09a89",
+          "#f7c3b8",
+          "#fce9e5"
+        ]
+      },
+      "fondo": {
+        "role": "neutral",
+        "displayName": "Papel tibio"
+      },
+      "superficie": {
+        "role": "neutral",
+        "displayName": "Hoja"
+      },
+      "hundido": {
+        "role": "neutral",
+        "displayName": "Mostrador"
+      },
+      "borde": {
+        "role": "neutral",
+        "displayName": "Línea de piedra"
+      },
+      "texto": {
+        "role": "neutral",
+        "displayName": "Tinta",
+        "tonalRamp": [
+          "#0e0d0c",
+          "#1c1917",
+          "#44403c",
+          "#6f6862",
+          "#a29b95",
+          "#d4cdc6",
+          "#e7e3de",
+          "#f7f6f4"
+        ]
+      },
+      "exito": {
+        "role": "status",
+        "displayName": "Verde estado"
+      },
+      "peligro": {
+        "role": "status",
+        "displayName": "Rojo estado"
+      }
+    },
+    "typographyMeta": {
+      "titulo": {
+        "displayName": "Título",
+        "purpose": "Encabezado de cada página del panel."
+      },
+      "seccion": {
+        "displayName": "Sección",
+        "purpose": "Títulos de tarjeta y diálogo."
+      },
+      "cuerpo": {
+        "displayName": "Cuerpo",
+        "purpose": "Texto base, filas y campos."
+      },
+      "etiqueta": {
+        "displayName": "Etiqueta",
+        "purpose": "Etiquetas de campo y botones pequeños."
+      },
+      "pequeno": {
+        "displayName": "Pequeño",
+        "purpose": "Metadatos, columnas y ayudas."
+      }
+    },
+    "shadows": [
+      {
+        "name": "sombra-tarjeta",
+        "value": "0 1px 2px rgb(28 25 23 / 0.04)",
+        "purpose": "Tarjetas en claro; en oscuro, inset 0 1px 0 rgb(255 255 255 / 0.04)."
+      },
+      {
+        "name": "sombra-capa",
+        "value": "0 0 0 1px rgb(28 25 23 / 0.06), 0 12px 32px -8px rgb(28 25 23 / 0.16), 0 4px 8px -2px rgb(28 25 23 / 0.06)",
+        "purpose": "Diálogos, menús, panel inferior y avisos."
+      },
+      {
+        "name": "sombra-boton",
+        "value": "inset 0 1px 0 rgb(255 255 255 / 0.18), 0 1px 2px rgb(28 25 23 / 0.1)",
+        "purpose": "Botones rellenos."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0.23, 1, 0.32, 1)",
+        "purpose": "Curva por defecto de entradas y cambios de estado."
+      },
+      {
+        "name": "ease-in-out",
+        "value": "cubic-bezier(0.77, 0, 0.175, 1)",
+        "purpose": "Movimiento dentro de la pantalla."
+      },
+      {
+        "name": "duracion-rapida",
+        "value": "120ms",
+        "purpose": "Salidas y respuestas inmediatas."
+      },
+      {
+        "name": "duracion-media",
+        "value": "180ms",
+        "purpose": "Interruptores, entradas de capas y apariciones."
+      },
+      {
+        "name": "duracion-lenta",
+        "value": "240ms",
+        "purpose": "Sello que se estampa."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Botón primario",
+      "kind": "button",
+      "refersTo": "boton-primario",
+      "description": "Acción principal de cada pantalla.",
+      "html": "<button class=\"ds-btn-primario\">Guardar</button>",
+      "css": ".ds-btn-primario{height:36px;padding:0 14px;border:0;border-radius:8px;background:linear-gradient(135deg,#dd4f3a,#d03568);color:#fff;font:500 14px/20px 'Inter Variable',Inter,system-ui,sans-serif;box-shadow:inset 0 1px 0 rgb(255 255 255/.18),0 1px 2px rgb(28 25 23/.1);transition:transform 150ms cubic-bezier(.23,1,.32,1),filter 150ms}.ds-btn-primario:hover{filter:brightness(.92)}.ds-btn-primario:active{transform:scale(.97)}.ds-btn-primario:focus-visible{outline:2px solid #8d3a2e;outline-offset:2px}"
+    },
+    {
+      "name": "Botón contorno",
+      "kind": "button",
+      "refersTo": "boton-contorno",
+      "description": "Acción secundaria.",
+      "html": "<button class=\"ds-btn-contorno\">Cancelar</button>",
+      "css": ".ds-btn-contorno{height:36px;padding:0 14px;border:1px solid #e7e3de;border-radius:8px;background:#fff;color:#1c1917;font:500 14px/20px 'Inter Variable',Inter,system-ui,sans-serif;box-shadow:0 1px 2px rgb(28 25 23/.04);transition:background-color 150ms,border-color 150ms}.ds-btn-contorno:hover{background:#f1efec;border-color:#d4cdc6}.ds-btn-contorno:focus-visible{outline:2px solid #8d3a2e;outline-offset:2px}"
+    },
+    {
+      "name": "Campo",
+      "kind": "input",
+      "refersTo": "entrada",
+      "description": "Campo de texto.",
+      "html": "<input class=\"ds-entrada\" placeholder=\"Buscar negocio\">",
+      "css": ".ds-entrada{height:36px;width:240px;padding:0 12px;border:1px solid #e7e3de;border-radius:8px;background:#fff;color:#1c1917;font:400 14px/20px 'Inter Variable',Inter,system-ui,sans-serif;transition:border-color 150ms,box-shadow 150ms}.ds-entrada::placeholder{color:#6f6862}.ds-entrada:hover{border-color:#d4cdc6}.ds-entrada:focus{outline:none;border-color:#8d3a2e;box-shadow:0 0 0 3px rgb(141 58 46/.2)}"
+    },
+    {
+      "name": "Insignia",
+      "kind": "chip",
+      "refersTo": "insignia",
+      "description": "Plan o estado de un registro.",
+      "html": "<span class=\"ds-insignia\">Empresa</span> <span class=\"ds-insignia ds-insignia-peligro\">Suspendido</span>",
+      "css": ".ds-insignia{display:inline-flex;align-items:center;height:20px;padding:0 8px;border-radius:9999px;background:#f1efec;color:#44403c;box-shadow:inset 0 0 0 1px #e7e3de;font:500 12px/16px 'Inter Variable',Inter,system-ui,sans-serif}.ds-insignia-peligro{background:#f8e8e8;color:#b91c1c;box-shadow:inset 0 0 0 1px #eabbbb}"
+    },
+    {
+      "name": "Tarjeta",
+      "kind": "card",
+      "refersTo": "tarjeta",
+      "description": "Contenedor de listas y formularios.",
+      "html": "<div class=\"ds-tarjeta\"><p class=\"ds-tarjeta-titulo\">Plan y estado</p><p class=\"ds-tarjeta-texto\">Angelato · angelato.hibeely.com</p></div>",
+      "css": ".ds-tarjeta{width:280px;padding:16px 20px;border:1px solid #e7e3de;border-radius:12px;background:#fff;box-shadow:0 1px 2px rgb(28 25 23/.04);font-family:'Inter Variable',Inter,system-ui,sans-serif}.ds-tarjeta-titulo{margin:0 0 4px;font:600 15px/22px inherit;color:#1c1917}.ds-tarjeta-texto{margin:0;font:400 12px/16px inherit;color:#6f6862}"
+    },
+    {
+      "name": "Interruptor",
+      "kind": "custom",
+      "refersTo": "interruptor",
+      "description": "Encendido/apagado, por ejemplo activar un negocio.",
+      "html": "<button class=\"ds-interruptor\" role=\"switch\" aria-checked=\"true\"><span></span></button>",
+      "css": ".ds-interruptor{position:relative;width:40px;height:24px;border:0;border-radius:9999px;background:linear-gradient(135deg,#dd4f3a,#d03568);cursor:pointer}.ds-interruptor span{position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:9999px;background:#fff;box-shadow:0 1px 2px rgb(28 25 23/.1);transform:translateX(16px);transition:transform 180ms cubic-bezier(.23,1,.32,1)}.ds-interruptor[aria-checked=false]{background:#d4cdc6}.ds-interruptor[aria-checked=false] span{transform:none}.ds-interruptor:active span{scale:.95}.ds-interruptor:focus-visible{outline:2px solid #8d3a2e;outline-offset:2px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "El mostrador ordenado"
+  }
+}
