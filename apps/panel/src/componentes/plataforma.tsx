@@ -133,87 +133,145 @@ const formatoDia = new Intl.DateTimeFormat("es-CO", {
 const diaCorto = (dia: string) =>
   formatoDia.format(new Date(`${dia}T00:00:00Z`)).replace(".", "");
 
-// Barras de sellos por día. Una sola serie: el título la nombra, sin leyenda.
-// Al pasar el cursor (o tocar) una columna se ve el día con sus sellos y clientes nuevos.
-export function GraficaDiaria({ serie }: { serie: PuntoSerie[] }) {
+// Escala limpia para el eje: 1, 2 o 5 por potencia de 10 (4 → 4, 56 → 60, 1.284 → 1.500).
+function techoLimpio(valor: number): number {
+  if (valor <= 4) return Math.max(1, Math.ceil(valor));
+  const potencia = 10 ** Math.floor(Math.log10(valor));
+  const paso = [1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10].find(
+    (m) => m * potencia >= valor,
+  )!;
+  return paso * potencia;
+}
+
+// Columnas de una medida por día (una sola serie: el título la nombra, sin leyenda).
+// Pasar el cursor, tocar o moverse con las flechas muestra el día en una etiqueta flotante.
+export function GraficaDiaria({
+  serie,
+  medida,
+  nombre,
+}: {
+  serie: PuntoSerie[];
+  medida: "sellos" | "clientes";
+  // En plural y en minúscula: "sellos", "clientes nuevos".
+  nombre: string;
+}) {
   const [activo, setActivo] = useState<number | null>(null);
-  const maximo = Math.max(1, ...serie.map((p) => p.sellos));
+  const valores = serie.map((p) => p[medida]);
+  const techo = techoLimpio(Math.max(0, ...valores));
+  const marcas = [techo, techo / 2, 0];
   const punto = activo === null ? null : serie[activo];
-  const total = serie.reduce((suma, p) => suma + p.sellos, 0);
+  // Cinco fechas repartidas en el eje, sin repetir el mismo día.
+  const fechas = [
+    ...new Set(
+      [0, 0.25, 0.5, 0.75, 1].map((f) => Math.round(f * (serie.length - 1))),
+    ),
+  ];
+  const mover = (evento: React.KeyboardEvent) => {
+    if (evento.key !== "ArrowLeft" && evento.key !== "ArrowRight") return;
+    evento.preventDefault();
+    const paso = evento.key === "ArrowLeft" ? -1 : 1;
+    setActivo((a) =>
+      Math.min(serie.length - 1, Math.max(0, (a ?? serie.length) + paso)),
+    );
+  };
 
   return (
-    <figure className="flex flex-col gap-3">
-      <div className="flex min-h-10 items-end justify-between gap-3">
-        <figcaption className="text-sm font-semibold text-texto">
-          Sellos por día
-        </figcaption>
-        <p
-          className="text-right text-xs text-texto-3 tabular-nums"
-          aria-live="polite"
-        >
-          {punto ? (
-            <>
-              <span className="font-medium text-texto">
-                {diaCorto(punto.dia)}
-              </span>{" "}
-              · {numero(punto.sellos)} sellos · {numero(punto.clientes)}{" "}
-              clientes nuevos
-            </>
-          ) : (
-            <>{numero(total)} sellos en el periodo</>
-          )}
-        </p>
-      </div>
-      <div className="relative h-40" onMouseLeave={() => setActivo(null)}>
-        {/* Guías recesivas: base y mitad. */}
+    <figure className="flex flex-col gap-2">
+      <figcaption className="sr-only">{nombre} por día</figcaption>
+      <div className="relative h-48 pl-9 sm:h-56">
+        {/* Guías: finas, sólidas y recesivas, con su cifra a la izquierda. */}
+        {marcas.map((m, i) => (
+          <div
+            key={m}
+            className={cn(
+              "pointer-events-none absolute inset-x-0 border-t",
+              i === marcas.length - 1
+                ? "border-borde-fuerte"
+                : "border-borde/70",
+            )}
+            style={{ bottom: `${(m / techo) * 100}%` }}
+            aria-hidden
+          >
+            <span className="absolute -top-2 left-0 text-xs leading-none text-texto-3 tabular-nums">
+              {numero(m)}
+            </span>
+          </div>
+        ))}
         <div
-          className="pointer-events-none absolute inset-x-0 bottom-0 border-t border-borde"
-          aria-hidden
-        />
-        <div
-          className="pointer-events-none absolute inset-x-0 top-1/2 border-t border-dashed border-borde/70"
-          aria-hidden
-        />
-        <span
-          className="pointer-events-none absolute top-0 left-0 text-[0.6875rem] text-texto-3 tabular-nums"
-          aria-hidden
-        >
-          {numero(maximo)}
-        </span>
-        <div
-          className="absolute inset-0 flex items-end gap-[2px] pl-8"
-          aria-hidden
+          role="group"
+          aria-label={`${nombre} por día. Usa las flechas para recorrer los días.`}
+          tabIndex={0}
+          onKeyDown={mover}
+          onBlur={() => setActivo(null)}
+          onMouseLeave={() => setActivo(null)}
+          className="absolute inset-y-0 right-0 left-9 flex items-end gap-0.5 rounded-control focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foco"
         >
           {serie.map((p, i) => (
             <div
               key={p.dia}
-              className="flex h-full min-w-0 flex-1 items-end"
+              className="flex h-full min-w-0 flex-1 cursor-default items-end justify-center"
               onMouseEnter={() => setActivo(i)}
               onClick={() => setActivo(i)}
             >
               <div
                 className={cn(
-                  "w-full rounded-t-[4px] bg-acento transition-opacity",
-                  activo !== null && activo !== i && "opacity-40",
-                  p.sellos === 0 && "bg-borde",
+                  "w-full max-w-6 rounded-t-[4px] transition-[opacity,background-color] duration-150",
+                  p[medida] === 0 ? "bg-borde" : "bg-acento",
+                  activo !== null && activo !== i && "opacity-35",
                 )}
                 style={{
                   height:
-                    p.sellos === 0
+                    p[medida] === 0
                       ? 2
-                      : `${Math.max(3, (p.sellos / maximo) * 100)}%`,
+                      : `${Math.max(2, (p[medida] / techo) * 100)}%`,
                 }}
               />
             </div>
           ))}
         </div>
+        {punto && activo !== null ? (
+          <div
+            className="pointer-events-none absolute top-0 z-10 rounded-control border border-borde bg-superficie px-2.5 py-1.5 text-xs whitespace-nowrap shadow-capa"
+            style={{
+              left: `calc(2.25rem + (100% - 2.25rem) * ${(activo + 0.5) / serie.length})`,
+              transform: `translate(${activo < serie.length / 2 ? "-10%" : "-90%"}, -50%)`,
+            }}
+            aria-live="polite"
+          >
+            <span className="text-texto-3">{diaCorto(punto.dia)} · </span>
+            <span className="font-semibold text-texto tabular-nums">
+              {numero(punto[medida])}
+            </span>{" "}
+            <span className="text-texto-2">
+              {punto[medida] === 1 ? nombre.replace(/s\b/g, "") : nombre}
+            </span>
+          </div>
+        ) : null}
       </div>
       <div
-        className="flex justify-between pl-8 text-[0.6875rem] text-texto-3 tabular-nums"
+        className="relative ml-9 h-4 text-xs text-texto-3 tabular-nums"
         aria-hidden
       >
-        <span>{serie[0] ? diaCorto(serie[0].dia) : ""}</span>
-        <span>{serie.at(-1) ? diaCorto(serie.at(-1)!.dia) : ""}</span>
+        {fechas.map((i) => (
+          <span
+            key={i}
+            className={cn(
+              "absolute top-0 whitespace-nowrap",
+              i === 0
+                ? "left-0"
+                : i === serie.length - 1
+                  ? "right-0"
+                  : "-translate-x-1/2",
+            )}
+            style={
+              i === 0 || i === serie.length - 1
+                ? undefined
+                : { left: `${((i + 0.5) / serie.length) * 100}%` }
+            }
+          >
+            {serie[i] ? diaCorto(serie[i].dia) : ""}
+          </span>
+        ))}
       </div>
       {/* Vista en tabla para lectores de pantalla. */}
       <table className="sr-only">
@@ -236,6 +294,63 @@ export function GraficaDiaria({ serie }: { serie: PuntoSerie[] }) {
         </tbody>
       </table>
     </figure>
+  );
+}
+
+// Una barra delgada partida en partes proporcionales (un todo: estados o planes).
+// Los nombres y cifras van en la lista de abajo; la barra no lleva texto.
+export function BarraPartes({
+  partes,
+  etiqueta,
+}: {
+  partes: { nombre: string; valor: number; color: string }[];
+  etiqueta: string;
+}) {
+  const total = partes.reduce((s, p) => s + p.valor, 0);
+  return (
+    <div className="flex flex-col gap-3">
+      <div
+        role="img"
+        aria-label={`${etiqueta}: ${partes.map((p) => `${p.nombre} ${p.valor}`).join(", ")}`}
+        className="flex h-2 gap-0.5 overflow-hidden rounded-full bg-hundido"
+      >
+        {total > 0
+          ? partes
+              .filter((p) => p.valor > 0)
+              .map((p) => (
+                <div
+                  key={p.nombre}
+                  className="h-full rounded-full"
+                  style={{
+                    flexGrow: p.valor,
+                    flexBasis: 0,
+                    background: p.color,
+                  }}
+                />
+              ))
+          : null}
+      </div>
+      <ul className="flex flex-col gap-1.5">
+        {partes.map((p) => (
+          <li key={p.nombre} className="flex items-center gap-2 text-sm">
+            <span
+              className="size-2 shrink-0 rounded-full"
+              style={{ background: p.color }}
+              aria-hidden
+            />
+            <span className="min-w-0 flex-1 truncate text-texto-2">
+              {p.nombre}
+            </span>
+            <span className="font-medium text-texto tabular-nums">
+              {numero(p.valor)}
+            </span>
+            <span className="w-10 text-right text-xs text-texto-3 tabular-nums">
+              {total > 0 ? `${Math.round((p.valor / total) * 100)}%` : "—"}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
