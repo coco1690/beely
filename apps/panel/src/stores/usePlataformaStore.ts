@@ -42,6 +42,7 @@ type EstadoPlataforma = {
   cargarNegocios: () => Promise<void>;
   cargarTablero: () => Promise<void>;
   cargarPlanes: () => Promise<void>;
+  cambiarEstado: (id: string, estado: string) => Promise<string | null>;
 };
 
 let cargaPlanes: Promise<void> | null = null;
@@ -72,6 +73,32 @@ export const usePlataformaStore = create<EstadoPlataforma>()((set, get) => ({
     });
     if (error) set({ error: mensajeDe(error) });
     else set({ tablero: data as unknown as Tablero, error: null });
+  },
+
+  // Cambio optimista desde la lista: el interruptor responde al instante y, si
+  // la RPC falla, la fila vuelve a su estado. Devuelve el error, o null.
+  cambiarEstado: async (id, estado) => {
+    const negocio = get().negocios?.find((n) => n.id === id);
+    if (!negocio) return "negocio_no_encontrado";
+    const poner = (valor: string) =>
+      set((e) => ({
+        negocios:
+          e.negocios?.map((n) => (n.id === id ? { ...n, estado: valor } : n)) ??
+          null,
+      }));
+    const anterior = negocio.estado;
+    poner(estado);
+    const { error } = await supabase.rpc("superadmin_actualizar_negocio", {
+      p_negocio_id: id,
+      p_plan: negocio.plan,
+      p_estado: estado,
+    });
+    if (error) {
+      poner(anterior);
+      return mensajeDe(error);
+    }
+    void get().cargarTablero();
+    return null;
   },
 
   // Varias pantallas (y cada insignia) la piden a la vez: una sola consulta en vuelo.
